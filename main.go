@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	//	"path/filepath"
 	"unicode/utf16"
 	"unicode/utf8"
 
@@ -30,6 +31,7 @@ func goString(b []byte) string {
 	return ret.String()
 }
 
+// DELETE
 func onMessageReceived(msg []byte) []byte {
 	y, err := yaml.JSONToYAML([]byte(goString(msg)))
 	if err != nil {
@@ -40,75 +42,18 @@ func onMessageReceived(msg []byte) []byte {
 	return nil
 }
 
-func resolveModule(specifier string, referrer string) int {
-	fmt.Printf("%s: resolve %s", referrer, specifier)
-	return 0
-}
-
-const jk = `
-function stringToArrayBuffer(s) {
-  const buf = new ArrayBuffer(s.length * 2);
-  const view = new Uint16Array(buf);
-  for (let i = 0, l = s.length; i < l; i ++) {
-    view[i] = s.charCodeAt(i);
-  }
-  return buf;
-}
-
-function write(value) {
-    const json = JSON.stringify(value);
-    const buf = stringToArrayBuffer(json);
-    V8Worker2.send(buf);
-}
-
-export default {
-  write,
-};
-`
-
-const kubernetes = `
-const Container = function(name, image) {
-	return {
-		name,
-		image,
+func localLoadModule(worker *v8.Worker, specifier string, cb v8.ModuleResolverCallback) error {
+	// FIXME don't allow climbing out of the base directory with '../../...'
+	_, err := os.Stat(specifier)
+	if err != nil {
+		return err
 	}
-};
-
-const Deployment = function(name, replicas, containers) {
-	return {
-		apiVersion: 'apps/v1',
-		kind: 'Deployment',
-		metadata: {
-			name,
-			labels: {
-				app: name,
-			},
-		},
-		spec: {
-			replicas,
-			selector: {
-				matchLabels: {
-					app: name,
-				},
-			},
-			template: {
-				metadata: {
-					labels: {
-						app: name,
-					},
-				},
-				containers,
-			},
-		},
-	};
-};
-
-
-export default {
-	Container,
-	Deployment,
-	};
-`
+	codeBytes, err := ioutil.ReadFile(specifier)
+	if err != nil {
+		return err
+	}
+	return worker.LoadModule(specifier, string(codeBytes), cb)
+}
 
 func main() {
 	if len(os.Args) != 2 {
@@ -116,18 +61,21 @@ func main() {
 	}
 
 	worker := v8.New(onMessageReceived)
-	if err := worker.LoadModule("jk", jk, resolveModule); err != nil {
-		log.Fatalf("error: %v", err)
-	}
-	if err := worker.LoadModule("kubernetes", kubernetes, resolveModule); err != nil {
-		log.Fatalf("error: %v", err)
-	}
 	filename := os.Args[1]
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := worker.LoadModule(path.Base(filename), string(input), resolveModule); err != nil {
+
+	var resolve v8.ModuleResolverCallback
+	resolve = func(specifier, referrer string) int {
+		if err := localLoadModule(worker, specifier, resolve); err != nil {
+			return 1
+		}
+		return 0
+	}
+
+	if err := worker.LoadModule(path.Base(filename), string(input), resolve); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 }
