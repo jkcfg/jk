@@ -66,12 +66,17 @@ func onMessageReceived(msg []byte) []byte {
 //  means you need to carry any directory context around with you,
 //  since relative imports will otherwise lose the full path.
 
-func localLoadModule(worker *v8.Worker, specifier, referrer string, cb v8.ModuleResolverCallback) error {
+type resolveContext struct {
+	worker *v8.Worker
+	base   string
+}
+
+func (c resolveContext) resolveModule(specifier, referrer string) int {
 	println("[DEBUG] load module specifier:", specifier, "; referrer:", referrer)
 
 	path := specifier
 	if !filepath.IsAbs(path) {
-		path = filepath.Join(filepath.Dir(referrer), specifier)
+		path = filepath.Join(c.base, specifier)
 	}
 
 	if filepath.Ext(path) == "" {
@@ -82,7 +87,7 @@ func localLoadModule(worker *v8.Worker, specifier, referrer string, cb v8.Module
 			path = filepath.Join(path, "index.js")
 		case err != nil:
 			println("[ERROR] stat", path, ":", err.Error())
-			return err
+			return 1
 		default:
 			path = path + ".js"
 		}
@@ -93,18 +98,21 @@ func localLoadModule(worker *v8.Worker, specifier, referrer string, cb v8.Module
 	// FIXME don't allow climbing out of the base directory with '../../...'
 	if _, err := os.Stat(path); err != nil {
 		println("[ERROR] error on stat", path, ":", err.Error())
-		return err
+		return 1
 	}
 	codeBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		println("[ERROR] reading file", path, ":", err.Error())
-		return err
+		return 1
 	}
-	err = worker.LoadModule(specifier, string(codeBytes), cb)
+
+	resolver := resolveContext{worker: c.worker, base: filepath.Dir(path)}
+	err = c.worker.LoadModule(specifier, string(codeBytes), resolver.resolveModule)
 	if err != nil {
 		println("[ERROR]", err.Error())
+		return 1
 	}
-	return err
+	return 0
 }
 
 func main() {
@@ -119,16 +127,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var resolve v8.ModuleResolverCallback
-	resolve = func(specifier, referrer string) int {
-		if err := localLoadModule(worker, specifier, referrer, resolve); err != nil {
-			println("[ERROR]", err.Error())
-			return 1
-		}
-		return 0
-	}
-
-	if err := worker.LoadModule(path.Base(filename), string(input), resolve); err != nil {
+	resolver := resolveContext{worker: worker, base: "."}
+	if err := worker.LoadModule(path.Base(filename), string(input), resolver.resolveModule); err != nil {
 		log.Fatalf("error: %v", err)
 	}
 }
