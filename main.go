@@ -72,8 +72,6 @@ type resolveContext struct {
 }
 
 func (c resolveContext) resolveModule(specifier, referrer string) int {
-	println("[DEBUG] load module specifier:", specifier, "; referrer:", referrer)
-
 	path := specifier
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(c.base, specifier)
@@ -83,33 +81,26 @@ func (c resolveContext) resolveModule(specifier, referrer string) int {
 		_, err := os.Stat(path + ".js")
 		switch {
 		case os.IsNotExist(err):
-			println("[DEBUG] no file at", path+".js")
 			path = filepath.Join(path, "index.js")
 		case err != nil:
-			println("[ERROR] stat", path, ":", err.Error())
 			return 1
 		default:
 			path = path + ".js"
 		}
 	}
 
-	println("[DEBUG] path:", path)
-
-	// FIXME don't allow climbing out of the base directory with '../../...'
+	// TODO don't allow climbing out of the base directory with '../../...'
 	if _, err := os.Stat(path); err != nil {
-		println("[ERROR] error on stat", path, ":", err.Error())
 		return 1
 	}
 	codeBytes, err := ioutil.ReadFile(path)
 	if err != nil {
-		println("[ERROR] reading file", path, ":", err.Error())
 		return 1
 	}
 
 	resolver := resolveContext{worker: c.worker, base: filepath.Dir(path)}
 	err = c.worker.LoadModule(specifier, string(codeBytes), resolver.resolveModule)
 	if err != nil {
-		println("[ERROR]", err.Error())
 		return 1
 	}
 	return 0
