@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dlespiau/jk.svg?branch=master)](https://travis-ci.org/dlespiau/jk)
+
 ```shell
 $ cat nginx.js 
 import k from 'kubernetes';
