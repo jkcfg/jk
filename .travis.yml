@@ -1,3 +1,4 @@
+language: minimal
 sudo: required
 services:
   - docker
