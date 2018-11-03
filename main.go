@@ -101,6 +101,7 @@ func (c resolveContext) resolveModule(specifier, referrer string) int {
 	resolver := resolveContext{worker: c.worker, base: filepath.Dir(path)}
 	err = c.worker.LoadModule(specifier, string(codeBytes), resolver.resolveModule)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v", err)
 		return 1
 	}
 	return 0
