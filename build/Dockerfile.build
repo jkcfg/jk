@@ -1,0 +1,19 @@
+FROM golang:1.11.1 as v8builder
+RUN apt-get update && apt-get install -y \
+    bzip2 \
+    libglib2.0-dev \
+    libxml2 \
+    xz-utils \
+  && rm -rf /var/lib/apt/lists/*
+RUN go get -d github.com/dlespiau/v8worker2
+RUN cd $GOPATH/src/github.com/dlespiau/v8worker2 \
+    && ./build.py
+
+FROM golang:1.11.1
+COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8.pc /usr/lib/pkgconfig/
+RUN sed -i \
+     -e 's#Cflags: .*#Cflags: -I/usr/include/v8#' \
+     -e 's#Libs: .*#Libs: /usr/lib/v8/libv8_monolith.a#' \
+     /usr/lib/pkgconfig/v8.pc
+COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8/include /usr/include/v8/
+COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/out/v8build/obj/libv8_monolith.a /usr/lib/v8/
