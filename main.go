@@ -11,7 +11,8 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
-	"github.com/ghodss/yaml"
+	"github.com/dlespiau/jk/pkg/std"
+
 	v8 "github.com/ry/v8worker2"
 )
 
@@ -33,13 +34,7 @@ func goString(b []byte) string {
 
 // DELETE
 func onMessageReceived(msg []byte) []byte {
-	y, err := yaml.JSONToYAML([]byte(goString(msg)))
-	if err != nil {
-		log.Fatalf("yaml: %s", err)
-		return nil
-	}
-	fmt.Print(string(y))
-	return nil
+	return std.Execute(msg)
 }
 
 // This is how the module loading works with V8Worker: You can ask a
