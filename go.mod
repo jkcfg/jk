@@ -2,6 +2,7 @@ module github.com/dlespiau/jk
 
 require (
 	github.com/ghodss/yaml v1.0.0
+	github.com/google/flatbuffers v1.10.0
 	github.com/ry/v8worker2 v0.0.0-20180926144945-e3fa6c4d602b
 	gopkg.in/yaml.v2 v2.2.1 // indirect
 )
