@@ -258,6 +258,10 @@ flatbuffers.Builder.prototype.asUint8Array = function() {
   return this.bb.bytes().subarray(this.bb.position(), this.bb.position() + this.offset());
 };
 
+flatbuffers.Builder.prototype.asArrayBuffer = function() {
+  return this.bb.bytes().buffer.slice(this.bb.position(), this.bb.position() + this.offset());
+};
+
 /// @cond FLATBUFFERS_INTERNAL
 /**
  * Prepare to write an element of `size` after `additional_bytes` have been
