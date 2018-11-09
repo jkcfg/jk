@@ -1,10 +1,10 @@
 import { __std as w } from '__std_Write_generated';
-import { __std as m } from '__std_generated'
+import { __std as m } from '__std_generated';
 import flatbuffers from 'flatbuffers';
 
 const outputFormat = w.OutputFormat;
 
-function write(value, path="", fmt=outputFormat.Auto) {
+function write(value, path = '', fmt = outputFormat.Auto) {
   const builder = new flatbuffers.Builder(1024);
   const json = JSON.stringify(value);
   const jsonStr = builder.createString(json);
@@ -28,4 +28,4 @@ function write(value, path="", fmt=outputFormat.Auto) {
 export {
   outputFormat,
   write,
-}
+};

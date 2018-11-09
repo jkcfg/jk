@@ -1,8 +1,8 @@
-import { log } from 'std_log.js';
-import { outputFormat, write } from 'std_write.js';
+import log from 'std_log';
+import { outputFormat, write } from 'std_write';
 
 export default {
-    log,
-    outputFormat,
-    write,
-}
+  log,
+  outputFormat,
+  write,
+};

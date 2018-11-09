@@ -1,9 +1,9 @@
-import { write } from 'std_write.js';
+import { write } from 'std_write';
 
 function log(value, format) {
-    write(value, "", format)
+  write(value, '', format);
 }
 
-export {
-    log
-}
+export default {
+  log,
+};
