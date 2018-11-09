@@ -1,0 +1,13 @@
+{
+  "extends": "airbnb-base",
+  "globals": {
+    "V8Worker2": true
+  },
+  "settings": {
+     "import/resolver": {
+        "node": {
+          "paths": ["."]
+        }
+     }
+  }
+}
