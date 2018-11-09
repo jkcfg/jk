@@ -1,0 +1,26 @@
+{
+  "name": "std",
+  "version": "0.1.0",
+  "description": "jk standard library",
+  "main": "std.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dlespiau/jk.git"
+  },
+  "keywords": [
+    "configuration",
+    "code",
+    "generation"
+  ],
+  "author": "Damien Lespiau",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dlespiau/jk/issues"
+  },
+  "homepage": "https://github.com/dlespiau/jk#readme",
+  "devDependencies": {},
+  "dependencies": {}
+}
