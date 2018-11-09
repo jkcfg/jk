@@ -1,6 +1,6 @@
 import k from 'kubernetes.js';
-import write from 'write.js';
+import std from 'std/std';
 
 const container = k.Container('nginx', 'nginx:1.15.4');
 const deployment = k.Deployment('nginx', 3, [container]);
-write(deployment);
+std.log(deployment, std.outputFormat.YAML);
