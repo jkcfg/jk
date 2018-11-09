@@ -1,5 +1,6 @@
 #!/bin/sh -e
 
+echo "==> Building std"
 (
   cd std
   npm install
@@ -7,15 +8,16 @@
   npm run build
 )
 
-# Run std tests
+echo "==> Running std tests"
 (
   cd std
   npm test
 )
 
-# Build jk
+echo "==> Building jk"
 export GO111MODULE=on
 go install
 
 # Tests, both unit tests and integration tests under /tests
+echo "==> Running jk tests"
 go test -v ./...
