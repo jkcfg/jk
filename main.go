@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,6 +12,12 @@ import (
 
 	v8 "github.com/ry/v8worker2"
 )
+
+func errorf(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, "error: ")
+	fmt.Fprintf(os.Stderr, format, args...)
+	os.Exit(1)
+}
 
 func onMessageReceived(msg []byte) []byte {
 	return std.Execute(msg)
@@ -25,11 +32,11 @@ func main() {
 	filename := os.Args[1]
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatal(err)
+		errorf("%v", err)
 	}
 
 	resolver := resolve.NewResolver(worker, ".")
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
-		log.Fatalf("error: %v", err)
+		errorf("%v", err)
 	}
 }
