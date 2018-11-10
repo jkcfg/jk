@@ -1,0 +1,13 @@
+namespace __std;
+
+enum OutputFormat : byte {
+    Auto,
+    JSON,
+    YAML,
+}
+
+table WriteArgs {
+    path: string;
+    value: string;
+    type: OutputFormat;
+}

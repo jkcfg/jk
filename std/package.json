@@ -1,0 +1,35 @@
+{
+  "name": "std",
+  "version": "0.1.0",
+  "description": "jk standard library",
+  "main": "std.js",
+  "scripts": {
+    "lint": "eslint std*.js",
+    "build": "rollup -c | terser --mangle --module > build/std.js",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dlespiau/jk.git"
+  },
+  "keywords": [
+    "configuration",
+    "code",
+    "generation"
+  ],
+  "author": "Damien Lespiau",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dlespiau/jk/issues"
+  },
+  "homepage": "https://github.com/dlespiau/jk#readme",
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "rollup": "^0.67.0",
+    "rollup-plugin-includepaths": "^0.2.3",
+    "terser": "^3.10.11"
+  },
+  "dependencies": {}
+}

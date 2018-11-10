@@ -5,4 +5,4 @@ services:
 before_script:
   - docker build -t quay.io/justkidding/ci -f build/Dockerfile.ci .
 script:
-  - docker run quay.io/justkidding/ci ./run-tests.sh
+  - docker run quay.io/justkidding/ci make dep install test

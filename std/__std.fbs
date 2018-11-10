@@ -1,0 +1,11 @@
+include "__std_Write.fbs";
+
+namespace __std;
+
+union Args {
+    WriteArgs,
+}
+
+table Message {
+    args: Args;
+}
