@@ -32,7 +32,6 @@ func goString(b []byte) string {
 	return ret.String()
 }
 
-// DELETE
 func onMessageReceived(msg []byte) []byte {
 	return std.Execute(msg)
 }
