@@ -4,6 +4,6 @@ function log(value, format) {
   write(value, '', format);
 }
 
-export default {
+export {
   log,
 };
