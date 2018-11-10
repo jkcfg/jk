@@ -35,7 +35,7 @@ func main() {
 		errorf("%v", err)
 	}
 
-	resolver := resolve.NewResolver(worker, ".")
+	resolver := resolve.NewResolver(worker, ".", &resolve.FileImporter{})
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		errorf("%v", err)
 	}

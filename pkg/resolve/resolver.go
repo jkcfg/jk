@@ -2,7 +2,6 @@ package resolve
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -33,50 +32,50 @@ import (
 
 // Resolver implements ES 2015 module resolving.
 type Resolver struct {
-	loader Loader
-	base   string
+	loader    Loader
+	base      string
+	importers []Importer
 }
 
 // NewResolver creates a new Resolver.
-func NewResolver(loader Loader, basePath string) *Resolver {
+func NewResolver(loader Loader, basePath string, importers ...Importer) *Resolver {
 	return &Resolver{
-		loader: loader,
-		base:   basePath,
+		loader:    loader,
+		base:      basePath,
+		importers: importers,
 	}
 }
 
 // ResolveModule imports the specifier from an import statement located in the
 // referrer module.
-func (c Resolver) ResolveModule(specifier, referrer string) int {
-	path := specifier
-	if !filepath.IsAbs(path) {
-		path = filepath.Join(c.base, specifier)
-	}
+func (r Resolver) ResolveModule(specifier, referrer string) int {
+	// The first importer that resolver the specifier wins.
+	var source string
+	var candidates []string
 
-	if filepath.Ext(path) == "" {
-		_, err := os.Stat(path + ".js")
-		switch {
-		case os.IsNotExist(err):
-			path = filepath.Join(path, "index.js")
-		case err != nil:
-			return 1
-		default:
-			path = path + ".js"
+	for _, importer := range r.importers {
+		data, considered := importer.Import(r.base, specifier, referrer)
+		candidates = append(candidates, considered...)
+		if data != nil {
+			source = string(data)
+			break
 		}
 	}
 
-	// TODO don't allow climbing out of the base directory with '../../...'
-	if _, err := os.Stat(path); err != nil {
-		return 1
-	}
-	codeBytes, err := ioutil.ReadFile(path)
-	if err != nil {
+	if source == "" {
+		fmt.Fprintf(os.Stderr, "error: could not import '%s' from '%s'\n", specifier, filepath.Join(r.base, referrer))
+		if len(candidates) > 0 {
+			fmt.Fprintf(os.Stderr, "candidates considered:\n")
+			for _, candidate := range candidates {
+				fmt.Fprintf(os.Stderr, "    %s\n", candidate)
+			}
+		}
 		return 1
 	}
 
-	resolver := Resolver{loader: c.loader, base: filepath.Dir(path)}
-	err = c.loader.LoadModule(specifier, string(codeBytes), resolver.ResolveModule)
-	if err != nil {
+	resolver := r
+	resolver.base = filepath.Dir(filepath.Join(r.base, specifier))
+	if err := r.loader.LoadModule(specifier, source, resolver.ResolveModule); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return 1
 	}
