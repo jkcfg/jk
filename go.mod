@@ -4,6 +4,8 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/flatbuffers v1.10.0
 	github.com/ry/v8worker2 v0.0.0-20180926144945-e3fa6c4d602b
+	github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371 // indirect
+	github.com/shurcooL/vfsgen v0.0.0-20181020040650-a97a25d856ca
 	gopkg.in/yaml.v2 v2.2.1 // indirect
 )
 

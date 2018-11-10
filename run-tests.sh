@@ -14,12 +14,13 @@ echo "==> Running std tests"
   npm test
 )
 
-echo "==> Checking committed generated files are up to date"
-git diff --exit-code
-
 echo "==> Building jk"
 export GO111MODULE=on
+go generate ./pkg/__std/lib/
 go install
+
+echo "==> Checking committed generated files are up to date"
+git diff --exit-code
 
 # Tests, both unit tests and integration tests under /tests
 echo "==> Running jk tests"
