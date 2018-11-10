@@ -14,6 +14,9 @@ echo "==> Running std tests"
   npm test
 )
 
+echo "==> Checking committed generated files are up to date"
+git diff --exit-code
+
 echo "==> Building jk"
 export GO111MODULE=on
 go install
