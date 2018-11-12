@@ -19,7 +19,7 @@ func nilCloser() {}
 type writerFunc func(io.Writer, []byte)
 
 func writeJSON(w io.Writer, value []byte) {
-	var v map[string]interface{}
+	var v interface{}
 	if err := json.Unmarshal(value, &v); err != nil {
 		log.Fatalf("writeJSON: unmarshal: %s", err)
 	}

@@ -1,3 +1,6 @@
+1.2
+"foo"
+null
 {
   "foo": 1.2,
   "kind": "Bar"
