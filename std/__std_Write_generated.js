@@ -9,7 +9,7 @@ var __std = __std || {};
 /**
  * @enum
  */
-__std.OutputFormat = {
+__std.Format = {
   Auto: 0,
   JSON: 1,
   YAML: 2
@@ -69,11 +69,11 @@ __std.WriteArgs.prototype.value = function(optionalEncoding) {
 };
 
 /**
- * @returns {__std.OutputFormat}
+ * @returns {__std.Format}
  */
 __std.WriteArgs.prototype.type = function() {
   var offset = this.bb.__offset(this.bb_pos, 8);
-  return offset ? /** @type {__std.OutputFormat} */ (this.bb.readInt8(this.bb_pos + offset)) : __std.OutputFormat.Auto;
+  return offset ? /** @type {__std.Format} */ (this.bb.readInt8(this.bb_pos + offset)) : __std.Format.Auto;
 };
 
 /**
@@ -101,10 +101,10 @@ __std.WriteArgs.addValue = function(builder, valueOffset) {
 
 /**
  * @param {flatbuffers.Builder} builder
- * @param {__std.OutputFormat} type
+ * @param {__std.Format} type
  */
 __std.WriteArgs.addType = function(builder, type) {
-  builder.addFieldInt8(2, type, __std.OutputFormat.Auto);
+  builder.addFieldInt8(2, type, __std.Format.Auto);
 };
 
 /**
