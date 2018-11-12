@@ -17,6 +17,10 @@ ENV NODE_VERSION 8.12.0
 ENV ARCH x64
 RUN curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.xz" \
     && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner
+ENV GOMETALINTER_VERSION 2.0.11
+ENV ARCH amd64
+RUN curl -fsSLO --compressed "https://github.com/alecthomas/gometalinter/releases/download/v$GOMETALINTER_VERSION/gometalinter-$GOMETALINTER_VERSION-linux-$ARCH.tar.gz" \
+    && tar -xf "gometalinter-$GOMETALINTER_VERSION-linux-$ARCH.tar.gz" -C /usr/local/bin --strip-components=1 --no-same-owner
 
 FROM golang:1.11.1
 COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8.pc /usr/lib/pkgconfig/
