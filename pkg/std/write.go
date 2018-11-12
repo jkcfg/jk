@@ -71,16 +71,16 @@ func writerFuncFromPath(path string) writerFunc {
 	}
 }
 
-func write(value []byte, path string, format __std.OutputFormat) {
+func write(value []byte, path string, format __std.Format) {
 	w, close := writer(path)
 
 	var out writerFunc
 	switch format {
-	case __std.OutputFormatAuto:
+	case __std.FormatAuto:
 		out = writerFuncFromPath(path)
-	case __std.OutputFormatJSON:
+	case __std.FormatJSON:
 		out = writeJSON
-	case __std.OutputFormatYAML:
+	case __std.FormatYAML:
 		out = writeYAML
 	default:
 		log.Fatalf("write: unknown output format (%d)", int(format))
