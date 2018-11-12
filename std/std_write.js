@@ -4,7 +4,7 @@ import flatbuffers from 'flatbuffers';
 
 const Format = Object.freeze(w.Format);
 
-function write(value, path = '', format = Format.Auto) {
+function write(value, path = '', { format = Format.Auto } = {}) {
   const builder = new flatbuffers.Builder(1024);
   const json = JSON.stringify(value);
   const jsonStr = builder.createString(json);

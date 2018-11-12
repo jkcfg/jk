@@ -13,5 +13,5 @@ std.log({ kind: 'Bar', foo: 1.2 });
 std.log({ foo: 1.2, kind: 'Bar' });
 
 // Same, but in YAML
-std.log({ kind: 'Bar', foo: { number: 1.2, string: 'mystring' } }, std.Format.YAML);
-std.log({ foo: { number: 1.2, string: 'mystring' }, kind: 'Bar' }, std.Format.YAML);
+std.log({ kind: 'Bar', foo: { number: 1.2, string: 'mystring' } }, { format: std.Format.YAML });
+std.log({ foo: { number: 1.2, string: 'mystring' }, kind: 'Bar' }, { format: std.Format.YAML });
