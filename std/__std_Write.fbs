@@ -1,6 +1,6 @@
 namespace __std;
 
-enum OutputFormat : byte {
+enum Format : byte {
     Auto,
     JSON,
     YAML,
@@ -9,5 +9,5 @@ enum OutputFormat : byte {
 table WriteArgs {
     path: string;
     value: string;
-    type: OutputFormat;
+    type: Format;
 }

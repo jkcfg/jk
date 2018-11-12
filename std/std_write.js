@@ -2,9 +2,9 @@ import { __std as w } from '__std_Write_generated';
 import { __std as m } from '__std_generated';
 import flatbuffers from 'flatbuffers';
 
-const outputFormat = w.OutputFormat;
+const Format = Object.freeze(w.Format);
 
-function write(value, path = '', fmt = outputFormat.Auto) {
+function write(value, path = '', format = Format.Auto) {
   const builder = new flatbuffers.Builder(1024);
   const json = JSON.stringify(value);
   const jsonStr = builder.createString(json);
@@ -13,7 +13,7 @@ function write(value, path = '', fmt = outputFormat.Auto) {
   w.WriteArgs.startWriteArgs(builder);
   w.WriteArgs.addValue(builder, jsonStr);
   w.WriteArgs.addPath(builder, pathStr);
-  w.WriteArgs.addType(builder, fmt);
+  w.WriteArgs.addType(builder, format);
   const args = w.WriteArgs.endWriteArgs(builder);
 
   m.Message.startMessage(builder);
@@ -26,6 +26,6 @@ function write(value, path = '', fmt = outputFormat.Auto) {
 }
 
 export {
-  outputFormat,
+  Format,
   write,
 };

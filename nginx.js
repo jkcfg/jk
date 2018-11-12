@@ -3,4 +3,4 @@ import std from 'std';
 
 const container = k.Container('nginx', 'nginx:1.15.4');
 const deployment = k.Deployment('nginx', 3, [container]);
-std.log(deployment, std.outputFormat.YAML);
+std.log(deployment, std.Format.YAML);
