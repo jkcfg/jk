@@ -8,6 +8,12 @@ echo "==> Running std tests"
   npm test
 )
 
+echo "==> Running eslint on tests"
+(
+  cd std
+  npx eslint -c .eslintrc ../tests/*.js
+)
+
 echo "==> Running go linters"
 gometalinter --tests --vendor --disable-all --deadline=600s \
     --enable=misspell \
