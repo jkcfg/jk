@@ -28,7 +28,7 @@ func Execute(msg []byte) []byte {
 	case __std.ArgsWriteArgs:
 		args := __std.WriteArgs{}
 		args.Init(union.Bytes, union.Pos)
-		write(args.Value(), string(args.Path()), args.Type())
+		write(args.Value(), string(args.Path()), args.Type(), int(args.Indent()))
 		return nil
 	default:
 		log.Fatalf("unknown Message (%d)", message.ArgsType())

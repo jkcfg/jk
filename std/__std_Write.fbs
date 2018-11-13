@@ -10,4 +10,5 @@ table WriteArgs {
     path: string;
     value: string;
     type: Format;
+    indent: byte;
 }

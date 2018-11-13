@@ -54,8 +54,20 @@ func (rcv *WriteArgs) MutateType(n int8) bool {
 	return rcv._tab.MutateInt8Slot(8, n)
 }
 
+func (rcv *WriteArgs) Indent() int8 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *WriteArgs) MutateIndent(n int8) bool {
+	return rcv._tab.MutateInt8Slot(10, n)
+}
+
 func WriteArgsStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
+	builder.StartObject(4)
 }
 func WriteArgsAddPath(builder *flatbuffers.Builder, path flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(path), 0)
@@ -65,6 +77,9 @@ func WriteArgsAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT)
 }
 func WriteArgsAddType(builder *flatbuffers.Builder, type_ int8) {
 	builder.PrependInt8Slot(2, type_, 0)
+}
+func WriteArgsAddIndent(builder *flatbuffers.Builder, indent int8) {
+	builder.PrependInt8Slot(3, indent, 0)
 }
 func WriteArgsEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

@@ -77,10 +77,18 @@ __std.WriteArgs.prototype.type = function() {
 };
 
 /**
+ * @returns {number}
+ */
+__std.WriteArgs.prototype.indent = function() {
+  var offset = this.bb.__offset(this.bb_pos, 10);
+  return offset ? this.bb.readInt8(this.bb_pos + offset) : 0;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 __std.WriteArgs.startWriteArgs = function(builder) {
-  builder.startObject(3);
+  builder.startObject(4);
 };
 
 /**
@@ -105,6 +113,14 @@ __std.WriteArgs.addValue = function(builder, valueOffset) {
  */
 __std.WriteArgs.addType = function(builder, type) {
   builder.addFieldInt8(2, type, __std.Format.Auto);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {number} indent
+ */
+__std.WriteArgs.addIndent = function(builder, indent) {
+  builder.addFieldInt8(3, indent, 0);
 };
 
 /**

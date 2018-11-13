@@ -6,6 +6,10 @@ null
   "kind": "Bar"
 }
 {
+    "foo": 1.2,
+    "kind": "Bar"
+}
+{
   "foo": 1.2,
   "kind": "Bar"
 }

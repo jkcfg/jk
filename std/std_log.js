@@ -1,7 +1,7 @@
 import { write } from 'std_write';
 
-function log(value, format) {
-  write(value, '', format);
+function log(value, options) {
+  write(value, '', options);
 }
 
 export {
