@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/dlespiau/jk/pkg/__std"
 
@@ -16,14 +17,14 @@ type closer func()
 
 func nilCloser() {}
 
-type writerFunc func(io.Writer, []byte)
+type writerFunc func(io.Writer, []byte, int)
 
-func writeJSON(w io.Writer, value []byte) {
+func writeJSON(w io.Writer, value []byte, indent int) {
 	var v interface{}
 	if err := json.Unmarshal(value, &v); err != nil {
 		log.Fatalf("writeJSON: unmarshal: %s", err)
 	}
-	i, err := json.MarshalIndent(v, "", "  ")
+	i, err := json.MarshalIndent(v, "", strings.Repeat(" ", indent))
 	if err != nil {
 		log.Fatalf("writeJSON: marshal: %s", err)
 	}
@@ -31,7 +32,7 @@ func writeJSON(w io.Writer, value []byte) {
 	w.Write([]byte{'\n'})
 }
 
-func writeYAML(w io.Writer, value []byte) {
+func writeYAML(w io.Writer, value []byte, indent int) {
 	y, err := yaml.JSONToYAML([]byte(value))
 	if err != nil {
 		log.Fatalf("writeYAML: %s", err)
@@ -71,7 +72,7 @@ func writerFuncFromPath(path string) writerFunc {
 	}
 }
 
-func write(value []byte, path string, format __std.Format) {
+func write(value []byte, path string, format __std.Format, indent int) {
 	w, close := writer(path)
 
 	var out writerFunc
@@ -86,7 +87,7 @@ func write(value []byte, path string, format __std.Format) {
 		log.Fatalf("write: unknown output format (%d)", int(format))
 	}
 
-	out(w, value)
+	out(w, value, indent)
 
 	close()
 }

@@ -9,6 +9,9 @@ std.log(null);
 // We can print an object to stdout.
 std.log({ kind: 'Bar', foo: 1.2 });
 
+// And tune the output indentation
+std.log({ kind: 'Bar', foo: 1.2 }, { indent: 4 });
+
 // Key order is deterministic.
 std.log({ foo: 1.2, kind: 'Bar' });
 
