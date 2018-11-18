@@ -13,7 +13,7 @@ func runTest(t *testing.T, file string) {
 	expected, err := ioutil.ReadFile(file + ".expected")
 	assert.NoError(t, err)
 
-	cmd := exec.Command("jk", file)
+	cmd := exec.Command("jk", "run", file)
 	output, err := cmd.CombinedOutput()
 	assert.NoError(t, err)
 
