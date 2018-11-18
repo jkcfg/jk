@@ -19,7 +19,12 @@ var runCmd = &cobra.Command{
 	RunE:  run,
 }
 
+var runOptions struct {
+	outputDirectory string
+}
+
 func init() {
+	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	jk.AddCommand(runCmd)
 }
 
@@ -31,7 +36,9 @@ func runArgs(cmd *cobra.Command, args []string) error {
 }
 
 func onMessageReceived(msg []byte) []byte {
-	return std.Execute(msg)
+	return std.Execute(msg, std.ExecuteOptions{
+		OutputDirectory: runOptions.outputDirectory,
+	})
 }
 
 func run(cmd *cobra.Command, args []string) error {
