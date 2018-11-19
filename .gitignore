@@ -1,2 +1,3 @@
-/std/node_modules
 /jk
+/std/node_modules
+/tests/*.got
