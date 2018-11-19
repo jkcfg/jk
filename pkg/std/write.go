@@ -46,7 +46,7 @@ func writer(path string) (io.Writer, closer) {
 	}
 
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0666); err != nil {
+	if err := os.MkdirAll(dir, 0770); err != nil {
 		log.Fatal(err)
 	}
 

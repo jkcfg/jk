@@ -1,0 +1,7 @@
+{
+  "foo": {
+    "number": 1.2,
+    "string": "mystring"
+  },
+  "kind": "Bar"
+}

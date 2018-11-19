@@ -9,7 +9,7 @@ const container = k.Container('nginx', 'nginx:1.15.4');
 const deployment = k.Deployment('nginx', 3, [container]);
 std.log(deployment, { format: std.Format.YAML });
 
-$ jk nginx.js 
+$ jk run nginx.js
 apiVersion: apps/v1
 kind: Deployment
 metadata:
