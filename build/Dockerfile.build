@@ -23,12 +23,12 @@ RUN curl -fsSLO --compressed "https://github.com/alecthomas/gometalinter/release
     && tar -xf "gometalinter-$GOMETALINTER_VERSION-linux-$ARCH.tar.gz" -C /usr/local/bin --strip-components=1 --no-same-owner
 
 FROM golang:1.11.1
-COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8.pc /usr/lib/pkgconfig/
+COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8.pc /usr/local/lib/pkgconfig/
 RUN sed -i \
-     -e 's#Cflags: .*#Cflags: -I/usr/include/v8#' \
-     -e 's#Libs: .*#Libs: /usr/lib/v8/libv8_monolith.a#' \
-     /usr/lib/pkgconfig/v8.pc
-COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8/include /usr/include/v8/
-COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/out/v8build/obj/libv8_monolith.a /usr/lib/v8/
+     -e 's#Cflags: .*#Cflags: -I/usr/local/include/v8#' \
+     -e 's#Libs: .*#Libs: /usr/local/lib/v8/libv8_monolith.a#' \
+     /usr/local/lib/pkgconfig/v8.pc
+COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8/include /usr/local/include/v8/
+COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/out/v8build/obj/libv8_monolith.a /usr/local/lib/v8/
 COPY --from=fetcher /usr/local/bin/ /usr/local/bin/
 COPY --from=fetcher /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
