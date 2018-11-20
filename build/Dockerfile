@@ -10,6 +10,22 @@ RUN go get -d github.com/dlespiau/v8worker2
 RUN cd $GOPATH/src/github.com/dlespiau/v8worker2 \
     && ./build.py
 
+# Build flatbuffer compiler, flatc
+FROM golang:1.11.1 as flatc-builder
+RUN apt-get update && apt-get install -y \
+    cmake \
+  && rm -rf /var/lib/apt/lists/*
+ENV FLATBUFFERS_VERSION 1.10.0
+RUN curl -fsSLO --compressed "https://github.com/google/flatbuffers/archive/v${FLATBUFFERS_VERSION}.tar.gz" \
+    && tar -xf v${FLATBUFFERS_VERSION}.tar.gz \
+    && rm v${FLATBUFFERS_VERSION}.tar.gz \
+    && cd flatbuffers-${FLATBUFFERS_VERSION} \
+    && cmake -G "Unix Makefiles" \
+    && make \
+    && cp flatc /usr/local/bin \
+    && cd .. \
+    && rm -rf flatbuffers-${FLATBUFFERS_VERSION}
+
 FROM golang:1.11.1 as fetcher
 RUN apt-get update && apt-get install -y \
     xz-utils \
