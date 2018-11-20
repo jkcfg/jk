@@ -24,3 +24,7 @@ dep: std-install
 
 test:
 	./run-tests.sh
+
+clean:
+	@rm jk
+	@rm -rf .bash_history .cache/ .config/ .npm
