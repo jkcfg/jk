@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 if [ -z "$SRC_PATH" ]; then
     echo "error: \$SRC_PATH not set."

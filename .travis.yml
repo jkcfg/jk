@@ -2,7 +2,5 @@ language: minimal
 sudo: required
 services:
   - docker
-before_script:
-  - docker build -t quay.io/justkidding/ci -f build/Dockerfile.ci .
 script:
-  - docker run quay.io/justkidding/ci make dep install test
+  - ./run-in-docker.sh make dep install test

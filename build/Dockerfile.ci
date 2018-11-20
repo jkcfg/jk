@@ -1,5 +1,0 @@
-FROM quay.io/justkidding/build
-WORKDIR /go/src/github.com/dlespiau/jk
-COPY . .
-
-CMD ["/bin/bash"]
