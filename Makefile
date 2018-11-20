@@ -10,14 +10,14 @@ pkg/__std/lib/assets_vfsdata.go: std/build/std.js
 
 std/build/std.js: std/*.fbs std/*.js std/package.json
 	std/generate.sh
-	(cd std && npm run build)
+	cd std && npm run build
 
 install: jk
 	cp jk `go env GOPATH`/bin
 
 # Pulls the std/node_modules directory
 std-install:
-	(cd std && npm install)
+	cd std && npm install
 
 # This target install build dependencies
 dep: std-install
