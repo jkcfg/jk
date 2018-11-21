@@ -26,6 +26,12 @@ RUN curl -fsSLO --compressed "https://github.com/google/flatbuffers/archive/v${F
     && cd .. \
     && rm -rf flatbuffers-${FLATBUFFERS_VERSION}
 
+# Build github-release
+FROM golang:1.11.1 as github-release-builder
+RUN go get github.com/aktau/github-release \
+  && cp `go env GOPATH`/bin/github-release /usr/local/bin \
+  && rm -rf `go env GOPATH`/src/github.com/aktau/github-release
+
 FROM golang:1.11.1 as fetcher
 RUN apt-get update && apt-get install -y \
     xz-utils \
@@ -59,6 +65,7 @@ RUN sed -i \
 COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8/include /usr/local/include/v8/
 COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/out/v8build/obj/libv8_monolith.a /usr/local/lib/v8/
 COPY --from=flatc-builder /usr/local/bin/ /usr/local/bin/
+COPY --from=github-release-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=fetcher /usr/local/bin/ /usr/local/bin/
 COPY --from=fetcher /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
 
