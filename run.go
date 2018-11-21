@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"path"
 
 	"github.com/dlespiau/jk/pkg/resolve"
@@ -16,7 +17,7 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Execute a jk program",
 	Args:  runArgs,
-	RunE:  run,
+	Run:   run,
 }
 
 var runOptions struct {
@@ -41,17 +42,19 @@ func onMessageReceived(msg []byte) []byte {
 	})
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) {
 	worker := v8.New(onMessageReceived)
 	filename := args[0]
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	resolver := resolve.NewResolver(worker, path.Dir(filename),
 		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
 		&resolve.FileImporter{},
 	)
-	return worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule)
+	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
+		log.Fatal(err)
+	}
 }

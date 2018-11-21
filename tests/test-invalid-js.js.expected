@@ -1,0 +1,5 @@
+test-invalid-js.js:3
+std.logBlaaaah('foo');
+    ^
+TypeError: std.logBlaaaah is not a function
+    at test-invalid-js.js:3:5
