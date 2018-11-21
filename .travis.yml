@@ -5,6 +5,7 @@ services:
 script:
   - ./run-in-docker.sh make dep install test
 deploy:
+  skip_cleanup: true
   provider: script
   script: ./run-release.sh $TRAVIS_TAG
   on:
