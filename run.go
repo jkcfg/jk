@@ -49,7 +49,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	resolver := resolve.NewResolver(worker, ".",
+	resolver := resolve.NewResolver(worker, path.Dir(filename),
 		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
 		&resolve.FileImporter{},
 	)
