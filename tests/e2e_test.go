@@ -33,6 +33,11 @@ func basename(testFile string) string {
 	return testFile[:len(testFile)-len(ext)]
 }
 
+func shouldErrorOut(testFile string) bool {
+	_, err := os.Stat(testFile + ".error")
+	return err == nil
+}
+
 func runTest(t *testing.T, file string) {
 	base := basename(file)
 	expectedDir := base + ".expected"
@@ -40,7 +45,14 @@ func runTest(t *testing.T, file string) {
 
 	cmd := exec.Command("jk", "run", "-o", gotDir, file)
 	output, err := cmd.CombinedOutput()
-	assert.NoError(t, err)
+
+	// 0. Check process exit code.
+	if shouldErrorOut(file) {
+		_, ok := err.(*exec.ExitError)
+		assert.True(t, ok)
+	} else {
+		assert.NoError(t, err)
+	}
 
 	// 1. Compare stdout/err.
 	expected, _ := ioutil.ReadFile(file + ".expected")
