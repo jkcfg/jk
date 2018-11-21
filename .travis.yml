@@ -4,3 +4,8 @@ services:
   - docker
 script:
   - ./run-in-docker.sh make dep install test
+deploy:
+  provider: script
+  script: ./run-release.sh $TRAVIS_TAG
+  on:
+    tags: true
