@@ -15,10 +15,23 @@ run github-release release \
     --repo $repo \
     --tag $tag
 
-echo "==> Uploading jk-linux-amd64"
-run github-release upload \
-    --user $user \
-    --repo $repo \
-    --tag $tag \
-    --name "jk-linux-amd64" \
-    --file jk
+function upload() {
+    file=$1
+    run github-release upload \
+        --user $user \
+        --repo $repo \
+        --tag $tag \
+        --name $file \
+        --file $file
+
+}
+
+binary=jk-linux-amd64
+mv jk $binary
+
+echo "==> Uploading $binary"
+upload $binary
+
+echo "==> Uploading $binary.sha256"
+shasum -a 256 $binary > $binary.sha256
+upload $binary.sha256
