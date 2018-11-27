@@ -1,4 +1,4 @@
-.PHONY: std-install dep all jk install test
+.PHONY: build-image std-install dep all jk install test
 
 all: jk
 
@@ -14,6 +14,9 @@ std/build/std.js: std/*.fbs std/*.js std/package.json
 
 install: jk
 	cp jk `go env GOPATH`/bin
+
+build-image:
+	docker build -t quay.io/justkidding/build -f build/Dockerfile build/
 
 # Pulls the std/node_modules directory
 std-install:
