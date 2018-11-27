@@ -1,7 +1,7 @@
 #!/bin/bash
 
 tag=$1
-user=dlespiau
+user=justkidding-config
 repo=jk
 pkg=github.com/$user/$repo
 

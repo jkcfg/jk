@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dlespiau/v8worker2 v0.0.0-20181103131220-163e7fd126a2 h1:IJy7MPzVpCxbR+XvE28VllLHK105KXtPR04hbBageDw=
-github.com/dlespiau/v8worker2 v0.0.0-20181103131220-163e7fd126a2/go.mod h1:dO8CoeUb377Y1iCjDOhdMJwSuk6ahb75cdkS8LH6Q2U=
+github.com/justkidding-config/v8worker2 v0.0.0-20181103131220-163e7fd126a2 h1:IJy7MPzVpCxbR+XvE28VllLHK105KXtPR04hbBageDw=
+github.com/justkidding-config/v8worker2 v0.0.0-20181103131220-163e7fd126a2/go.mod h1:dO8CoeUb377Y1iCjDOhdMJwSuk6ahb75cdkS8LH6Q2U=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/google/flatbuffers v1.10.0 h1:oRiOciRvbejW4wxTr/DVVAczyQaxsEONq6NyxhDf3bY=

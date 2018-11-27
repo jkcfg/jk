@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dlespiau/jk/pkg/__std"
+	"github.com/justkidding-config/jk/pkg/__std"
 
 	"github.com/ghodss/yaml"
 )

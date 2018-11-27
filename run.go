@@ -6,8 +6,8 @@ import (
 	"log"
 	"path"
 
-	"github.com/dlespiau/jk/pkg/resolve"
-	"github.com/dlespiau/jk/pkg/std"
+	"github.com/justkidding-config/jk/pkg/resolve"
+	"github.com/justkidding-config/jk/pkg/std"
 
 	v8 "github.com/ry/v8worker2"
 	"github.com/spf13/cobra"
