@@ -4,8 +4,8 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/dlespiau/jk/pkg/__std"
-	"github.com/dlespiau/jk/pkg/__std/lib"
+	"github.com/justkidding-config/jk/pkg/__std"
+	"github.com/justkidding-config/jk/pkg/__std/lib"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 )

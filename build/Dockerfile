@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y \
     libxml2 \
     xz-utils \
   && rm -rf /var/lib/apt/lists/*
-RUN go get -d github.com/dlespiau/v8worker2
-RUN cd $GOPATH/src/github.com/dlespiau/v8worker2 \
+RUN go get -d github.com/justkidding-config/v8worker2
+RUN cd $GOPATH/src/github.com/justkidding-config/v8worker2 \
     && ./build.py
 
 # Build flatbuffer compiler, flatc
@@ -57,19 +57,19 @@ RUN curl -fsSLo /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/dow
 
 # Our final build image
 FROM golang:1.11.1
-COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8.pc /usr/local/lib/pkgconfig/
+COPY --from=v8builder /go/src/github.com/justkidding-config/v8worker2/v8.pc /usr/local/lib/pkgconfig/
 RUN sed -i \
      -e 's#Cflags: .*#Cflags: -I/usr/local/include/v8#' \
      -e 's#Libs: .*#Libs: /usr/local/lib/v8/libv8_monolith.a#' \
      /usr/local/lib/pkgconfig/v8.pc
-COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/v8/include /usr/local/include/v8/
-COPY --from=v8builder /go/src/github.com/dlespiau/v8worker2/out/v8build/obj/libv8_monolith.a /usr/local/lib/v8/
+COPY --from=v8builder /go/src/github.com/justkidding-config/v8worker2/v8/include /usr/local/include/v8/
+COPY --from=v8builder /go/src/github.com/justkidding-config/v8worker2/out/v8build/obj/libv8_monolith.a /usr/local/lib/v8/
 COPY --from=flatc-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=github-release-builder /usr/local/bin/ /usr/local/bin/
 COPY --from=fetcher /usr/local/bin/ /usr/local/bin/
 COPY --from=fetcher /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
 
-ENV SRC_PATH /go/src/github.com/dlespiau/jk
+ENV SRC_PATH /go/src/github.com/justkidding-config/jk
 WORKDIR $SRC_PATH
 COPY entrypoint.sh /usr/local/bin
 ENTRYPOINT ["entrypoint.sh"]

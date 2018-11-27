@@ -5,7 +5,7 @@ package main
 import (
 	"log"
 
-	"github.com/dlespiau/jk/pkg/__std/lib"
+	"github.com/justkidding-config/jk/pkg/__std/lib"
 
 	"github.com/shurcooL/vfsgen"
 )
