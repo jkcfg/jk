@@ -1,9 +1,13 @@
+include "__std_RPC.fbs";
 include "__std_Write.fbs";
+include "__std_Read.fbs";
 
 namespace __std;
 
 union Args {
     WriteArgs,
+    ReadArgs,
+    CancelArgs,
 }
 
 table Message {

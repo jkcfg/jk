@@ -1,0 +1,50 @@
+namespace __std;
+
+// Definitions for I/O requests/responses. These are kicked-off with a
+// specific call, e.g., Read, but then follow a standard protocol.
+
+/// CancelArgs encodes a message cancelling a deferred response.
+table CancelArgs {
+    serial: ulong;
+}
+
+/// Deferred encodes a ticket standing in for an asynchronous result.
+table Deferred {
+    serial: ulong;
+}
+
+/// Error encodes an error either in processing the request (sync), or in fulfilling it (async).
+table Error {
+    message: string;
+}
+
+union Retval {
+    Deferred,
+    Error
+}
+
+/// Response encodes the _synchronous_ response to a message expecting a deferred value or values.
+table Response {
+    retval: Retval;
+}
+
+/// Data is data. 
+table Data {
+    bytes: [byte];
+}
+
+/// EndOfStream signals that there will be no more values.
+table EndOfStream {
+}
+
+union ResolutionValue {
+    Data,
+    EndOfStream,
+    Error
+}
+
+/// Resolution represents the _asynchronous_ fulfilment of a deferred value (possibly one of many values).
+table Resolution {
+    serial: ulong;
+    value: ResolutionValue;
+}

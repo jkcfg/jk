@@ -1,0 +1,6 @@
+namespace __std;
+
+table ReadArgs {
+  url: string;
+  timeout: uint;
+}
