@@ -59,7 +59,9 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		// for now, treat everything as a file read from a local path
 		// (which will only fail in the resolution, and can't be
 		// cancelled).
-		ser := deferred.Register(func() ([]byte, error) { return read(string(args.Url())) }, sendFunc(res.SendBytes))
+		ser := deferred.Register(func() ([]byte, error) { return read(string(args.Url())) }, sendFunc(func(b []byte) error {
+			return res.SendBytes(b)
+		}))
 		return deferredResponse(ser)
 	default:
 		log.Fatalf("unknown Message (%d)", message.ArgsType())
@@ -94,7 +96,9 @@ func (fn sendFunc) Error(s deferred.Serial, err error) {
 	__std.ResolutionAddValue(b, off)
 	off = __std.ResolutionEnd(b)
 	b.Finish(off)
-	fn(b.FinishedBytes())
+	if err := fn(b.FinishedBytes()); err != nil {
+		panic(err)
+	}
 }
 
 func (fn sendFunc) Data(s deferred.Serial, data []byte) {
@@ -109,7 +113,9 @@ func (fn sendFunc) Data(s deferred.Serial, data []byte) {
 	__std.ResolutionAddValue(b, off)
 	off = __std.ResolutionEnd(b)
 	b.Finish(off)
-	fn(b.FinishedBytes())
+	if err := fn(b.FinishedBytes()); err != nil {
+		panic(err)
+	}
 }
 
 func (fn sendFunc) End(s deferred.Serial) {
@@ -122,5 +128,7 @@ func (fn sendFunc) End(s deferred.Serial) {
 	__std.ResolutionAddValue(b, off)
 	off = __std.ResolutionEnd(b)
 	b.Finish(off)
-	fn(b.FinishedBytes())
+	if err := fn(b.FinishedBytes()); err != nil {
+		panic(err)
+	}
 }

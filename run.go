@@ -6,6 +6,7 @@ import (
 	"log"
 	"path"
 
+	"github.com/justkidding-config/jk/pkg/deferred"
 	"github.com/justkidding-config/jk/pkg/resolve"
 	"github.com/justkidding-config/jk/pkg/std"
 
@@ -63,4 +64,5 @@ func run(cmd *cobra.Command, args []string) {
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		log.Fatal(err)
 	}
+	deferred.Wait() // TODO(michael): hide this in std?
 }
