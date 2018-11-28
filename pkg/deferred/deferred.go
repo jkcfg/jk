@@ -1,10 +1,10 @@
-// Package for dealing with deferred results. These arise because we
-// want to have library functions for JavaScript to request things
-// that will only later be supplied -- either because it will take
-// some time to get, and it's better if JavaScript doesn't have to
-// block (e.g., an HTTP request), or because we're waiting for
-// something elsewhere to happen (e.g., watching a resource for
-// changes).
+// Package deferred has machinery for providing JavaScript with
+// deferred values. These arise because we want to have library
+// functions for JavaScript to request things that will only later be
+// supplied -- either because it will take some time to get, and it's
+// better if JavaScript doesn't have to block (e.g., an HTTP request),
+// or because we're waiting for something elsewhere to happen (e.g.,
+// watching a resource for changes).
 //
 // In JavaScript, deferred values will often end up being represented
 // by promises; but the protocol allows other representations, and in
@@ -18,17 +18,23 @@ import (
 )
 
 var (
-	globalDeferreds *deferreds = &deferreds{}
+	globalDeferreds = &deferreds{}
 )
 
+// Register schedules an action to be performed later, with the result
+// sent to `resolver`, using the global deferred scheduler.
 func Register(p performFunc, r resolver) Serial {
 	return globalDeferreds.Register(p, r)
 }
 
+// Wait blocks until all outstanding deferred values in the global
+// scheduler are fulfilled.
 func Wait() {
 	globalDeferreds.Wait()
 }
 
+// Serial is a serial number used to identify deferreds between Go and
+// JavaScript.
 type Serial uint64
 
 type deferreds struct {
@@ -53,7 +59,7 @@ type performFunc func() ([]byte, error)
 func (d *deferreds) Register(perform performFunc, r resolver) Serial {
 	d.serialMu.Lock()
 	s := d.serial
-	d.serial += 1
+	d.serial++
 	d.serialMu.Unlock()
 	d.outstanding.Add(1)
 	go func(s Serial) {
