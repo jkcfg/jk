@@ -320,7 +320,7 @@ __std.Response.endResponse = function(builder) {
 };
 
 /**
- * Data is data. 
+ * Data is data.
  *
  * @constructor
  */
@@ -357,28 +357,12 @@ __std.Data.getRootAsData = function(bb, obj) {
 };
 
 /**
- * @param {number} index
- * @returns {number}
+ * @param {flatbuffers.Encoding=} optionalEncoding
+ * @returns {string|Uint8Array|null}
  */
-__std.Data.prototype.bytes = function(index) {
+__std.Data.prototype.bytes = function(optionalEncoding) {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.readInt8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
-};
-
-/**
- * @returns {number}
- */
-__std.Data.prototype.bytesLength = function() {
-  var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
-};
-
-/**
- * @returns {Int8Array}
- */
-__std.Data.prototype.bytesArray = function() {
-  var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? new Int8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+  return offset ? this.bb.__string(this.bb_pos + offset, optionalEncoding) : null;
 };
 
 /**
@@ -394,27 +378,6 @@ __std.Data.startData = function(builder) {
  */
 __std.Data.addBytes = function(builder, bytesOffset) {
   builder.addFieldOffset(0, bytesOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {Array.<number>} data
- * @returns {flatbuffers.Offset}
- */
-__std.Data.createBytesVector = function(builder, data) {
-  builder.startVector(1, data.length, 1);
-  for (var i = data.length - 1; i >= 0; i--) {
-    builder.addInt8(data[i]);
-  }
-  return builder.endVector();
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {number} numElems
- */
-__std.Data.startBytesVector = function(builder, numElems) {
-  builder.startVector(1, numElems, 1);
 };
 
 /**

@@ -28,9 +28,9 @@ table Response {
     retval: Retval;
 }
 
-/// Data is data. 
+/// Data is data.
 table Data {
-    bytes: [byte];
+    bytes: string;
 }
 
 /// EndOfStream signals that there will be no more values.

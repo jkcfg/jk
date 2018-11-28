@@ -36,14 +36,20 @@ func runArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func onMessageReceived(msg []byte) []byte {
-	return std.Execute(msg, std.ExecuteOptions{
+type exec struct {
+	worker *v8.Worker
+}
+
+func (e *exec) onMessageReceived(msg []byte) []byte {
+	return std.Execute(msg, e.worker, std.ExecuteOptions{
 		OutputDirectory: runOptions.outputDirectory,
 	})
 }
 
 func run(cmd *cobra.Command, args []string) {
-	worker := v8.New(onMessageReceived)
+	engine := &exec{}
+	worker := v8.New(engine.onMessageReceived)
+	engine.worker = worker
 	filename := args[0]
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
