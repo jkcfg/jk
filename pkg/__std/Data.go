@@ -6,7 +6,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-/// Data is data.
+/// Data is data sent as (possibly partial) fulfilment of a deferred result.
 type Data struct {
 	_tab flatbuffers.Table
 }

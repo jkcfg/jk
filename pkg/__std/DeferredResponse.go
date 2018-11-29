@@ -7,27 +7,27 @@ import (
 )
 
 /// Response encodes the _synchronous_ response to a message expecting a deferred value or values.
-type Response struct {
+type DeferredResponse struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsResponse(buf []byte, offset flatbuffers.UOffsetT) *Response {
+func GetRootAsDeferredResponse(buf []byte, offset flatbuffers.UOffsetT) *DeferredResponse {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &Response{}
+	x := &DeferredResponse{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func (rcv *Response) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *DeferredResponse) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *Response) Table() flatbuffers.Table {
+func (rcv *DeferredResponse) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Response) RetvalType() byte {
+func (rcv *DeferredResponse) RetvalType() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -35,11 +35,11 @@ func (rcv *Response) RetvalType() byte {
 	return 0
 }
 
-func (rcv *Response) MutateRetvalType(n byte) bool {
+func (rcv *DeferredResponse) MutateRetvalType(n byte) bool {
 	return rcv._tab.MutateByteSlot(4, n)
 }
 
-func (rcv *Response) Retval(obj *flatbuffers.Table) bool {
+func (rcv *DeferredResponse) Retval(obj *flatbuffers.Table) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
@@ -48,15 +48,15 @@ func (rcv *Response) Retval(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func ResponseStart(builder *flatbuffers.Builder) {
+func DeferredResponseStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func ResponseAddRetvalType(builder *flatbuffers.Builder, retvalType byte) {
+func DeferredResponseAddRetvalType(builder *flatbuffers.Builder, retvalType byte) {
 	builder.PrependByteSlot(0, retvalType, 0)
 }
-func ResponseAddRetval(builder *flatbuffers.Builder, retval flatbuffers.UOffsetT) {
+func DeferredResponseAddRetval(builder *flatbuffers.Builder, retval flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(retval), 0)
 }
-func ResponseEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func DeferredResponseEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }

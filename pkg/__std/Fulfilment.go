@@ -7,27 +7,27 @@ import (
 )
 
 /// Resolution represents the _asynchronous_ fulfilment of a deferred value (possibly one of many values).
-type Resolution struct {
+type Fulfilment struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsResolution(buf []byte, offset flatbuffers.UOffsetT) *Resolution {
+func GetRootAsFulfilment(buf []byte, offset flatbuffers.UOffsetT) *Fulfilment {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &Resolution{}
+	x := &Fulfilment{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func (rcv *Resolution) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *Fulfilment) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *Resolution) Table() flatbuffers.Table {
+func (rcv *Fulfilment) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Resolution) Serial() uint64 {
+func (rcv *Fulfilment) Serial() uint64 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.GetUint64(o + rcv._tab.Pos)
@@ -35,11 +35,11 @@ func (rcv *Resolution) Serial() uint64 {
 	return 0
 }
 
-func (rcv *Resolution) MutateSerial(n uint64) bool {
+func (rcv *Fulfilment) MutateSerial(n uint64) bool {
 	return rcv._tab.MutateUint64Slot(4, n)
 }
 
-func (rcv *Resolution) ValueType() byte {
+func (rcv *Fulfilment) ValueType() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
@@ -47,11 +47,11 @@ func (rcv *Resolution) ValueType() byte {
 	return 0
 }
 
-func (rcv *Resolution) MutateValueType(n byte) bool {
+func (rcv *Fulfilment) MutateValueType(n byte) bool {
 	return rcv._tab.MutateByteSlot(6, n)
 }
 
-func (rcv *Resolution) Value(obj *flatbuffers.Table) bool {
+func (rcv *Fulfilment) Value(obj *flatbuffers.Table) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
@@ -60,18 +60,18 @@ func (rcv *Resolution) Value(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func ResolutionStart(builder *flatbuffers.Builder) {
+func FulfilmentStart(builder *flatbuffers.Builder) {
 	builder.StartObject(3)
 }
-func ResolutionAddSerial(builder *flatbuffers.Builder, serial uint64) {
+func FulfilmentAddSerial(builder *flatbuffers.Builder, serial uint64) {
 	builder.PrependUint64Slot(0, serial, 0)
 }
-func ResolutionAddValueType(builder *flatbuffers.Builder, valueType byte) {
+func FulfilmentAddValueType(builder *flatbuffers.Builder, valueType byte) {
 	builder.PrependByteSlot(1, valueType, 0)
 }
-func ResolutionAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
+func FulfilmentAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(value), 0)
 }
-func ResolutionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func FulfilmentEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }

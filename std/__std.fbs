@@ -1,4 +1,4 @@
-include "__std_RPC.fbs";
+include "__std_Deferred.fbs";
 include "__std_Write.fbs";
 include "__std_Read.fbs";
 

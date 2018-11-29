@@ -9,7 +9,7 @@ var __std = __std || {};
 /**
  * @enum
  */
-__std.Retval = {
+__std.DeferredRetval = {
   NONE: 0,
   Deferred: 1,
   Error: 2
@@ -18,7 +18,7 @@ __std.Retval = {
 /**
  * @enum
  */
-__std.ResolutionValue = {
+__std.FulfilmentValue = {
   NONE: 0,
   Data: 1,
   EndOfStream: 2,
@@ -95,7 +95,7 @@ __std.CancelArgs.endCancelArgs = function(builder) {
 };
 
 /**
- * Deferred encodes a ticket standing in for an asynchronous result.
+ * Deferred encodes a serial number, standing in for an result or results to be fulfilled later.
  *
  * @constructor
  */
@@ -164,81 +164,11 @@ __std.Deferred.endDeferred = function(builder) {
 };
 
 /**
- * Error encodes an error either in processing the request (sync), or in fulfilling it (async).
- *
- * @constructor
- */
-__std.Error = function() {
-  /**
-   * @type {flatbuffers.ByteBuffer}
-   */
-  this.bb = null;
-
-  /**
-   * @type {number}
-   */
-  this.bb_pos = 0;
-};
-
-/**
- * @param {number} i
- * @param {flatbuffers.ByteBuffer} bb
- * @returns {__std.Error}
- */
-__std.Error.prototype.__init = function(i, bb) {
-  this.bb_pos = i;
-  this.bb = bb;
-  return this;
-};
-
-/**
- * @param {flatbuffers.ByteBuffer} bb
- * @param {__std.Error=} obj
- * @returns {__std.Error}
- */
-__std.Error.getRootAsError = function(bb, obj) {
-  return (obj || new __std.Error).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-};
-
-/**
- * @param {flatbuffers.Encoding=} optionalEncoding
- * @returns {string|Uint8Array|null}
- */
-__std.Error.prototype.message = function(optionalEncoding) {
-  var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? this.bb.__string(this.bb_pos + offset, optionalEncoding) : null;
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- */
-__std.Error.startError = function(builder) {
-  builder.startObject(1);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} messageOffset
- */
-__std.Error.addMessage = function(builder, messageOffset) {
-  builder.addFieldOffset(0, messageOffset, 0);
-};
-
-/**
- * @param {flatbuffers.Builder} builder
- * @returns {flatbuffers.Offset}
- */
-__std.Error.endError = function(builder) {
-  var offset = builder.endObject();
-  return offset;
-};
-
-/**
  * Response encodes the _synchronous_ response to a message expecting a deferred value or values.
  *
  * @constructor
  */
-__std.Response = function() {
+__std.DeferredResponse = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -253,9 +183,9 @@ __std.Response = function() {
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {__std.Response}
+ * @returns {__std.DeferredResponse}
  */
-__std.Response.prototype.__init = function(i, bb) {
+__std.DeferredResponse.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -263,26 +193,26 @@ __std.Response.prototype.__init = function(i, bb) {
 
 /**
  * @param {flatbuffers.ByteBuffer} bb
- * @param {__std.Response=} obj
- * @returns {__std.Response}
+ * @param {__std.DeferredResponse=} obj
+ * @returns {__std.DeferredResponse}
  */
-__std.Response.getRootAsResponse = function(bb, obj) {
-  return (obj || new __std.Response).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+__std.DeferredResponse.getRootAsDeferredResponse = function(bb, obj) {
+  return (obj || new __std.DeferredResponse).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
 /**
- * @returns {__std.Retval}
+ * @returns {__std.DeferredRetval}
  */
-__std.Response.prototype.retvalType = function() {
+__std.DeferredResponse.prototype.retvalType = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
-  return offset ? /** @type {__std.Retval} */ (this.bb.readUint8(this.bb_pos + offset)) : __std.Retval.NONE;
+  return offset ? /** @type {__std.DeferredRetval} */ (this.bb.readUint8(this.bb_pos + offset)) : __std.DeferredRetval.NONE;
 };
 
 /**
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
-__std.Response.prototype.retval = function(obj) {
+__std.DeferredResponse.prototype.retval = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 6);
   return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
@@ -290,23 +220,23 @@ __std.Response.prototype.retval = function(obj) {
 /**
  * @param {flatbuffers.Builder} builder
  */
-__std.Response.startResponse = function(builder) {
+__std.DeferredResponse.startDeferredResponse = function(builder) {
   builder.startObject(2);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
- * @param {__std.Retval} retvalType
+ * @param {__std.DeferredRetval} retvalType
  */
-__std.Response.addRetvalType = function(builder, retvalType) {
-  builder.addFieldInt8(0, retvalType, __std.Retval.NONE);
+__std.DeferredResponse.addRetvalType = function(builder, retvalType) {
+  builder.addFieldInt8(0, retvalType, __std.DeferredRetval.NONE);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} retvalOffset
  */
-__std.Response.addRetval = function(builder, retvalOffset) {
+__std.DeferredResponse.addRetval = function(builder, retvalOffset) {
   builder.addFieldOffset(1, retvalOffset, 0);
 };
 
@@ -314,13 +244,13 @@ __std.Response.addRetval = function(builder, retvalOffset) {
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-__std.Response.endResponse = function(builder) {
+__std.DeferredResponse.endDeferredResponse = function(builder) {
   var offset = builder.endObject();
   return offset;
 };
 
 /**
- * Data is data.
+ * Data is data sent as (possibly partial) fulfilment of a deferred result.
  *
  * @constructor
  */
@@ -390,7 +320,7 @@ __std.Data.endData = function(builder) {
 };
 
 /**
- * EndOfStream signals that there will be no more values.
+ * EndOfStream signals that there will be no more data.
  *
  * @constructor
  */
@@ -447,7 +377,7 @@ __std.EndOfStream.endEndOfStream = function(builder) {
  *
  * @constructor
  */
-__std.Resolution = function() {
+__std.Fulfilment = function() {
   /**
    * @type {flatbuffers.ByteBuffer}
    */
@@ -462,9 +392,9 @@ __std.Resolution = function() {
 /**
  * @param {number} i
  * @param {flatbuffers.ByteBuffer} bb
- * @returns {__std.Resolution}
+ * @returns {__std.Fulfilment}
  */
-__std.Resolution.prototype.__init = function(i, bb) {
+__std.Fulfilment.prototype.__init = function(i, bb) {
   this.bb_pos = i;
   this.bb = bb;
   return this;
@@ -472,34 +402,34 @@ __std.Resolution.prototype.__init = function(i, bb) {
 
 /**
  * @param {flatbuffers.ByteBuffer} bb
- * @param {__std.Resolution=} obj
- * @returns {__std.Resolution}
+ * @param {__std.Fulfilment=} obj
+ * @returns {__std.Fulfilment}
  */
-__std.Resolution.getRootAsResolution = function(bb, obj) {
-  return (obj || new __std.Resolution).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+__std.Fulfilment.getRootAsFulfilment = function(bb, obj) {
+  return (obj || new __std.Fulfilment).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 };
 
 /**
  * @returns {flatbuffers.Long}
  */
-__std.Resolution.prototype.serial = function() {
+__std.Fulfilment.prototype.serial = function() {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.readUint64(this.bb_pos + offset) : this.bb.createLong(0, 0);
 };
 
 /**
- * @returns {__std.ResolutionValue}
+ * @returns {__std.FulfilmentValue}
  */
-__std.Resolution.prototype.valueType = function() {
+__std.Fulfilment.prototype.valueType = function() {
   var offset = this.bb.__offset(this.bb_pos, 6);
-  return offset ? /** @type {__std.ResolutionValue} */ (this.bb.readUint8(this.bb_pos + offset)) : __std.ResolutionValue.NONE;
+  return offset ? /** @type {__std.FulfilmentValue} */ (this.bb.readUint8(this.bb_pos + offset)) : __std.FulfilmentValue.NONE;
 };
 
 /**
  * @param {flatbuffers.Table} obj
  * @returns {?flatbuffers.Table}
  */
-__std.Resolution.prototype.value = function(obj) {
+__std.Fulfilment.prototype.value = function(obj) {
   var offset = this.bb.__offset(this.bb_pos, 8);
   return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
 };
@@ -507,7 +437,7 @@ __std.Resolution.prototype.value = function(obj) {
 /**
  * @param {flatbuffers.Builder} builder
  */
-__std.Resolution.startResolution = function(builder) {
+__std.Fulfilment.startFulfilment = function(builder) {
   builder.startObject(3);
 };
 
@@ -515,23 +445,23 @@ __std.Resolution.startResolution = function(builder) {
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Long} serial
  */
-__std.Resolution.addSerial = function(builder, serial) {
+__std.Fulfilment.addSerial = function(builder, serial) {
   builder.addFieldInt64(0, serial, builder.createLong(0, 0));
 };
 
 /**
  * @param {flatbuffers.Builder} builder
- * @param {__std.ResolutionValue} valueType
+ * @param {__std.FulfilmentValue} valueType
  */
-__std.Resolution.addValueType = function(builder, valueType) {
-  builder.addFieldInt8(1, valueType, __std.ResolutionValue.NONE);
+__std.Fulfilment.addValueType = function(builder, valueType) {
+  builder.addFieldInt8(1, valueType, __std.FulfilmentValue.NONE);
 };
 
 /**
  * @param {flatbuffers.Builder} builder
  * @param {flatbuffers.Offset} valueOffset
  */
-__std.Resolution.addValue = function(builder, valueOffset) {
+__std.Fulfilment.addValue = function(builder, valueOffset) {
   builder.addFieldOffset(2, valueOffset, 0);
 };
 
@@ -539,7 +469,7 @@ __std.Resolution.addValue = function(builder, valueOffset) {
  * @param {flatbuffers.Builder} builder
  * @returns {flatbuffers.Offset}
  */
-__std.Resolution.endResolution = function(builder) {
+__std.Fulfilment.endFulfilment = function(builder) {
   var offset = builder.endObject();
   return offset;
 };

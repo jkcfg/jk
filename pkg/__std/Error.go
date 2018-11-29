@@ -6,7 +6,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-/// Error encodes an error either in processing the request (sync), or in fulfilling it (async).
+/// Error encodes an error either in accepting a request, or in fulfilling it (in deferreds).
 type Error struct {
 	_tab flatbuffers.Table
 }

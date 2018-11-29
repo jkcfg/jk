@@ -6,7 +6,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-/// EndOfStream signals that there will be no more values.
+/// EndOfStream signals that there will be no more data.
 type EndOfStream struct {
 	_tab flatbuffers.Table
 }

@@ -1,27 +1,27 @@
-import { __std as rpc } from '__std_RPC_generated';
+import { __std as def } from '__std_Deferred_generated';
 import flatbuffers from 'flatbuffers';
 
 var deferreds = {};
 
 function recv(buf) {
     const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
-    const reso = rpc.Resolution.getRootAsResolution(data);
+    const reso = def.Fulfilment.getRootAsFulfilment(data);
     const ser = reso.serial().toFloat64();
     var callback, value;
     switch (reso.valueType()) {
-    case rpc.ResolutionValue.Data:
+    case def.FulfilmentValue.Data:
         ({data: callback} = deferreds[ser]);
-        const val = new rpc.Data();
+        const val = new def.Data();
         reso.value(val);
         value = val.bytes();
         break
-    case rpc.ResolutionValue.Error:
+    case def.FulfuiilmentValue.Error:
         ({error: callback} = deferreds[ser]);
-        const err = new rpc.Error()
+        const err = new def.Error()
         reso.value(err);
         value = new Error(err.error());
         break
-    case rpc.ResolutionValue.EndOfStream:
+    case def.FulfilmentValue.EndOfStream:
         ({end: callback} = deferreds[ser]);
         break
     default:
@@ -58,14 +58,14 @@ function panic(msg) {
 function requestAsPromise(fn) {
     const buf = fn();
     const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
-    const resp = rpc.Response.getRootAsResponse(data);
+    const resp = def.DeferredResponse.getRootAsDeferredResponse(data);
     switch (resp.retvalType()) {
-    case rpc.Retval.Error:
-        const err = new rpc.Error();
+    case def.DeferredRetval.Error:
+        const err = new def.Error();
         resp.retval(err);
         return Promise.reject(new Error(err.error()))
-    case rpc.Retval.Deferred:
-        const defer = new rpc.Deferred();
+    case def.DeferredRetval.Deferred:
+        const defer = new def.Deferred();
         resp.retval(defer);
         const ser = defer.serial().toFloat64(); 
         return new Promise(function(resolve, reject) {

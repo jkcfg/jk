@@ -6,7 +6,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-/// Deferred encodes a ticket standing in for an asynchronous result.
+/// Deferred encodes a serial number, standing in for an result or results to be fulfilled later.
 type Deferred struct {
 	_tab flatbuffers.Table
 }
