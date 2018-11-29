@@ -40,6 +40,10 @@ func writeYAML(w io.Writer, value []byte, indent int) {
 	w.Write(y)
 }
 
+func writeRaw(w io.Writer, value []byte, _ int) {
+	w.Write(value)
+}
+
 func writer(path string) (io.Writer, closer) {
 	if path == "" {
 		return os.Stdout, nilCloser
@@ -83,6 +87,8 @@ func write(value []byte, path string, format __std.Format, indent int) {
 		out = writeJSON
 	case __std.FormatYAML:
 		out = writeYAML
+	case __std.FormatRaw:
+		out = writeRaw
 	default:
 		log.Fatalf("write: unknown output format (%d)", int(format))
 	}

@@ -12,7 +12,8 @@ var __std = __std || {};
 __std.Format = {
   Auto: 0,
   JSON: 1,
-  YAML: 2
+  YAML: 2,
+  Raw: 3
 };
 
 /**

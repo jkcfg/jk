@@ -4,6 +4,7 @@ enum Format : byte {
     Auto,
     JSON,
     YAML,
+    Raw,
 }
 
 table WriteArgs {
