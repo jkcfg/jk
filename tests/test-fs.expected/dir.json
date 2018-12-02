@@ -1,0 +1,9 @@
+{
+  "files": [
+    {
+      "isdir": false,
+      "path": "testfs/foo.txt"
+    }
+  ],
+  "path": "testfs"
+}

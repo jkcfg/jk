@@ -8,6 +8,8 @@ const (
 	ArgsWriteArgs Args = 1
 	ArgsReadArgs Args = 2
 	ArgsCancelArgs Args = 3
+	ArgsFileInfoArgs Args = 4
+	ArgsListArgs Args = 5
 )
 
 var EnumNamesArgs = map[Args]string{
@@ -15,5 +17,7 @@ var EnumNamesArgs = map[Args]string{
 	ArgsWriteArgs:"WriteArgs",
 	ArgsReadArgs:"ReadArgs",
 	ArgsCancelArgs:"CancelArgs",
+	ArgsFileInfoArgs:"FileInfoArgs",
+	ArgsListArgs:"ListArgs",
 }
 

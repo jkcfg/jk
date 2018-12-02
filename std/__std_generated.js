@@ -13,7 +13,9 @@ __std.Args = {
   NONE: 0,
   WriteArgs: 1,
   ReadArgs: 2,
-  CancelArgs: 3
+  CancelArgs: 3,
+  FileInfoArgs: 4,
+  ListArgs: 5
 };
 
 /**

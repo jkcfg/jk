@@ -1,0 +1,33 @@
+include "__std_Error.fbs";
+
+namespace __std;
+
+table FileInfo {
+    basename: string;
+    path: string;
+    isdir: bool;
+}
+
+table Directory {
+    basename: string;
+    path: string;
+    files: [FileInfo];
+}
+
+table FileInfoArgs {
+    path: string;
+}
+
+table ListArgs {
+    path: string;
+}
+
+union FileSystemRetval {
+    FileInfo,
+    Directory,
+    Error,
+}
+
+table FileSystemResponse {
+    retval: FileSystemRetval;
+}

@@ -33,7 +33,8 @@ function recv(buf) {
   }
 
   if (callback === undefined) {
-    // for now, drop it, on the basis that cancelling may be racey.
+    // for now, drop it, on the presumption that cancelation is
+    // underway.
     return;
   }
   callback(value);
@@ -65,7 +66,7 @@ function requestAsPromise(fn) {
   case def.DeferredRetval.Error: {
     const err = new def.Error();
     resp.retval(err);
-    return Promise.reject(new Error(err.error()));
+    return Promise.reject(new Error(err.message()));
   }
   case def.DeferredRetval.Deferred: {
     const defer = new def.Deferred();

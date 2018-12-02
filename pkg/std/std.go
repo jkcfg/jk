@@ -59,10 +59,16 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		// for now, treat everything as a file read from a local path
 		// (which will only fail in the resolution, and can't be
 		// cancelled).
-		ser := deferred.Register(func() ([]byte, error) { return read(string(args.Url())) }, sendFunc(func(b []byte) error {
-			return res.SendBytes(b)
-		}))
+		ser := deferred.Register(func() ([]byte, error) { return read(string(args.Url())) }, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
+	case __std.ArgsFileInfoArgs:
+		args := __std.FileInfoArgs{}
+		args.Init(union.Bytes, union.Pos)
+		return fileInfo(string(args.Path()))
+	case __std.ArgsListArgs:
+		args := __std.ListArgs{}
+		args.Init(union.Bytes, union.Pos)
+		return directoryListing(string(args.Path()))
 	default:
 		log.Fatalf("unknown Message (%d)", message.ArgsType())
 		return nil
