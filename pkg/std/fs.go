@@ -70,9 +70,11 @@ func directoryListing(path string) []byte {
 	}
 
 	b := flatbuffers.NewBuilder(1024)
-	offsets := make([]flatbuffers.UOffsetT, len(infos), len(infos))
+	offsets := make([]flatbuffers.UOffsetT, 0, len(infos))
 	for i := range infos {
-		offsets[i] = buildFileInfo(b, infos[i].Name(), filepath.Join(path, infos[i].Name()), infos[i].IsDir())
+		if infos[i].IsDir() || infos[i].Mode().IsRegular() {
+			offsets = append(offsets, buildFileInfo(b, infos[i].Name(), filepath.Join(path, infos[i].Name()), infos[i].IsDir()))
+		}
 	}
 
 	__std.DirectoryStartFilesVector(b, len(offsets))
