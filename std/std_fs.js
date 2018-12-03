@@ -4,14 +4,16 @@ import { __std as error } from '__std_Error_generated';
 import { __std as std } from '__std_generated';
 
 class FileInfo {
-  constructor(p, d) {
+  constructor(n, p, d) {
+    this.name = n;
     this.path = p;
     this.isdir = d;
   }
 }
 
 class Directory {
-  constructor(p, files) {
+  constructor(n, p, files) {
+    this.name = n;
     this.path = p;
     this.files = files;
   }
@@ -37,7 +39,7 @@ function info(path) {
   case fs.FileSystemRetval.FileInfo: {
     const f = new fs.FileInfo();
     resp.retval(f);
-    return new FileInfo(f.path(), f.isdir());
+    return new FileInfo(f.name(), f.path(), f.isdir());
   }
   case fs.FileSystemRetval.Error: {
     const err = new error.Error();
@@ -72,9 +74,9 @@ function dir(path) {
     const files = new Array(d.filesLength());
     for (let i = 0; i < files.length; i += 1) {
       const f = d.files(i);
-      files[i] = new FileInfo(f.path(), f.isdir());
+      files[i] = new FileInfo(f.name(), f.path(), f.isdir());
     }
-    return new Directory(d.path(), files);
+    return new Directory(d.name(), d.path(), files);
   }
   case fs.FileSystemRetval.Error: {
     const err = new error.Error();

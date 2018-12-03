@@ -26,7 +26,7 @@ func (rcv *FileInfo) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *FileInfo) Basename() []byte {
+func (rcv *FileInfo) Name() []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
@@ -57,8 +57,8 @@ func (rcv *FileInfo) MutateIsdir(n byte) bool {
 func FileInfoStart(builder *flatbuffers.Builder) {
 	builder.StartObject(3)
 }
-func FileInfoAddBasename(builder *flatbuffers.Builder, basename flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(basename), 0)
+func FileInfoAddName(builder *flatbuffers.Builder, name flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(name), 0)
 }
 func FileInfoAddPath(builder *flatbuffers.Builder, path flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(path), 0)

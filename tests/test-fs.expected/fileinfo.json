@@ -1,4 +1,5 @@
 {
   "isdir": false,
+  "name": "foo.txt",
   "path": "testfs/foo.txt"
 }

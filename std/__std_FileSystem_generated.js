@@ -55,7 +55,7 @@ __std.FileInfo.getRootAsFileInfo = function(bb, obj) {
  * @param {flatbuffers.Encoding=} optionalEncoding
  * @returns {string|Uint8Array|null}
  */
-__std.FileInfo.prototype.basename = function(optionalEncoding) {
+__std.FileInfo.prototype.name = function(optionalEncoding) {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.__string(this.bb_pos + offset, optionalEncoding) : null;
 };
@@ -86,10 +86,10 @@ __std.FileInfo.startFileInfo = function(builder) {
 
 /**
  * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} basenameOffset
+ * @param {flatbuffers.Offset} nameOffset
  */
-__std.FileInfo.addBasename = function(builder, basenameOffset) {
-  builder.addFieldOffset(0, basenameOffset, 0);
+__std.FileInfo.addName = function(builder, nameOffset) {
+  builder.addFieldOffset(0, nameOffset, 0);
 };
 
 /**
@@ -156,7 +156,7 @@ __std.Directory.getRootAsDirectory = function(bb, obj) {
  * @param {flatbuffers.Encoding=} optionalEncoding
  * @returns {string|Uint8Array|null}
  */
-__std.Directory.prototype.basename = function(optionalEncoding) {
+__std.Directory.prototype.name = function(optionalEncoding) {
   var offset = this.bb.__offset(this.bb_pos, 4);
   return offset ? this.bb.__string(this.bb_pos + offset, optionalEncoding) : null;
 };
@@ -197,10 +197,10 @@ __std.Directory.startDirectory = function(builder) {
 
 /**
  * @param {flatbuffers.Builder} builder
- * @param {flatbuffers.Offset} basenameOffset
+ * @param {flatbuffers.Offset} nameOffset
  */
-__std.Directory.addBasename = function(builder, basenameOffset) {
-  builder.addFieldOffset(0, basenameOffset, 0);
+__std.Directory.addName = function(builder, nameOffset) {
+  builder.addFieldOffset(0, nameOffset, 0);
 };
 
 /**
