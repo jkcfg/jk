@@ -89,7 +89,8 @@ function requestAsPromise(fn) {
   }
 }
 
-// TODO
+// cancel sends a message to the runtime to indicate that the deferred
+// value is no longer wanted.
 function cancel(serial) {
   const builder = new flatbuffers.Builder(512);
   def.ReadArgs.startCancelArgs(builder);

@@ -1,6 +1,7 @@
 package std
 
 import (
+	"context"
 	"log"
 	"path/filepath"
 
@@ -50,6 +51,12 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 
 		write(args.Value(), path, args.Type(), int(args.Indent()))
 		return nil
+	case __std.ArgsCancelArgs:
+		args := __std.CancelArgs{}
+		args.Init(union.Bytes, union.Pos)
+		serial := args.Serial()
+		deferred.Cancel(deferred.Serial(serial))
+		return nil
 	case __std.ArgsReadArgs:
 		args := __std.ReadArgs{}
 		args.Init(union.Bytes, union.Pos)
@@ -59,7 +66,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		// for now, treat everything as a file read from a local path
 		// (which will only fail in the resolution, and can't be
 		// cancelled).
-		ser := deferred.Register(func() ([]byte, error) { return read(string(args.Url())) }, sendFunc(res.SendBytes))
+		ser := deferred.Register(func(_ context.Context) ([]byte, error) { return read(string(args.Url())) }, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 	case __std.ArgsFileInfoArgs:
 		args := __std.FileInfoArgs{}
