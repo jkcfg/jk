@@ -1,0 +1,47 @@
+include "__std_Error.fbs";
+
+namespace __std;
+
+// Definitions for deferred results. These are kicked-off with a
+// specific call, e.g., Read, but then follow a standard protocol.
+
+/// CancelArgs encodes a message cancelling a deferred response.
+table CancelArgs {
+    serial: ulong;
+}
+
+/// Deferred encodes a serial number, standing in for an result or results to be fulfilled later.
+table Deferred {
+    serial: ulong;
+}
+
+union DeferredRetval {
+    Deferred,
+    Error,
+}
+
+/// Response encodes the _synchronous_ response to a message expecting a deferred value or values.
+table DeferredResponse {
+    retval: DeferredRetval;
+}
+
+/// Data is data sent as (possibly partial) fulfilment of a deferred result.
+table Data {
+    bytes: [ubyte];
+}
+
+/// EndOfStream signals that there will be no more data.
+table EndOfStream {
+}
+
+union FulfilmentValue {
+    Data,
+    EndOfStream,
+    Error
+}
+
+/// Resolution represents the _asynchronous_ fulfilment of a deferred value (possibly one of many values).
+table Fulfilment {
+    serial: ulong;
+    value: FulfilmentValue;
+}

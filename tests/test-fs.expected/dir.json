@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "isdir": true,
+      "name": "bar",
+      "path": "testfs/bar"
+    },
+    {
+      "isdir": false,
+      "name": "foo.txt",
+      "path": "testfs/foo.txt"
+    }
+  ],
+  "name": "testfs",
+  "path": "testfs"
+}

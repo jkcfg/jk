@@ -1,0 +1,6 @@
+namespace __std;
+
+/// Error encodes an error either in accepting a request, or in fulfilling it (in deferreds).
+table Error {
+    message: string;
+}

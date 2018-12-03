@@ -6,10 +6,18 @@ type Args = byte
 const (
 	ArgsNONE Args = 0
 	ArgsWriteArgs Args = 1
+	ArgsReadArgs Args = 2
+	ArgsCancelArgs Args = 3
+	ArgsFileInfoArgs Args = 4
+	ArgsListArgs Args = 5
 )
 
 var EnumNamesArgs = map[Args]string{
 	ArgsNONE:"NONE",
 	ArgsWriteArgs:"WriteArgs",
+	ArgsReadArgs:"ReadArgs",
+	ArgsCancelArgs:"CancelArgs",
+	ArgsFileInfoArgs:"FileInfoArgs",
+	ArgsListArgs:"ListArgs",
 }
 

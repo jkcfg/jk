@@ -63,7 +63,9 @@ func runTest(t *testing.T, file string) {
 	gotFiles, _ := find(gotDir)
 
 	// 2. a) Compare the list of files.
-	assert.Equal(t, expectedFiles, gotFiles)
+	if !assert.Equal(t, expectedFiles, gotFiles) {
+		assert.FailNow(t, "generated files not equivalent; bail")
+	}
 
 	// 2. b) Compare file content.
 	for i := range expectedFiles {

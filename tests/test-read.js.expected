@@ -1,0 +1,4 @@
+Read should get the contents of a file; if we write out that file, we
+should expect that the output matches the file.
+
+Therefore, we can read this file and write it out as the test.

@@ -6,13 +6,13 @@ const Format = Object.freeze(w.Format);
 
 function write(value, path = '', { format = Format.Auto, indent = 2 } = {}) {
   const builder = new flatbuffers.Builder(1024);
-  const json = JSON.stringify(value);
-  const jsonStr = builder.createString(json);
-  const pathStr = builder.createString(path);
+  const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
+  const strOff = builder.createString(str);
+  const pathOff = builder.createString(path);
 
   w.WriteArgs.startWriteArgs(builder);
-  w.WriteArgs.addValue(builder, jsonStr);
-  w.WriteArgs.addPath(builder, pathStr);
+  w.WriteArgs.addValue(builder, strOff);
+  w.WriteArgs.addPath(builder, pathOff);
   w.WriteArgs.addType(builder, format);
   w.WriteArgs.addIndent(builder, indent);
   const args = w.WriteArgs.endWriteArgs(builder);
