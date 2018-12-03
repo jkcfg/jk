@@ -3,6 +3,7 @@ package std
 import (
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/justkidding-config/jk/pkg/__std"
 
@@ -68,6 +69,11 @@ func directoryListing(path string) []byte {
 	if err != nil {
 		return fsError(err.Error())
 	}
+
+	// Sort the fileinfos by name, to avoid
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].Name() < infos[j].Name()
+	})
 
 	b := flatbuffers.NewBuilder(1024)
 	offsets := make([]flatbuffers.UOffsetT, 0, len(infos))
