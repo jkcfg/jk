@@ -6,7 +6,7 @@ const Format = Object.freeze(w.Format);
 
 function write(value, path = '', { format = Format.Auto, indent = 2 } = {}) {
   const builder = new flatbuffers.Builder(1024);
-  const str = (format == Format.Raw) ? value.toString(): JSON.stringify(value);
+  const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
   const strOff = builder.createString(str);
   const pathOff = builder.createString(path);
 
