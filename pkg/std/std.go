@@ -109,7 +109,7 @@ func (fn sendFunc) Error(s deferred.Serial, err error) {
 
 func (fn sendFunc) Data(s deferred.Serial, data []byte) {
 	b := flatbuffers.NewBuilder(1024)
-	off := b.CreateByteString(data)
+	off := b.CreateByteVector(data)
 	__std.DataStart(b)
 	__std.DataAddBytes(b, off)
 	off = __std.DataEnd(b)

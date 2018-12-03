@@ -1,5 +1,6 @@
 import { __std as def } from '__std_Deferred_generated';
 import { __std as m } from '__std_generated';
+import { __std as error } from '__std_Error_generated';
 import flatbuffers from 'flatbuffers';
 
 const deferreds = {};
@@ -15,14 +16,14 @@ function recv(buf) {
     ({ data: callback } = deferreds[ser]);
     const val = new def.Data();
     reso.value(val);
-    value = val.bytes();
+    value = val.bytesArray();
     break;
   }
-  case def.FulfuiilmentValue.Error: {
+  case def.FulfilmentValue.Error: {
     ({ error: callback } = deferreds[ser]);
-    const err = new def.Error();
+    const err = new error.Error();
     reso.value(err);
-    value = new Error(err.error());
+    value = new Error(err.message());
     break;
   }
   case def.FulfilmentValue.EndOfStream:

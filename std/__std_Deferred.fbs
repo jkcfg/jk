@@ -27,7 +27,7 @@ table DeferredResponse {
 
 /// Data is data sent as (possibly partial) fulfilment of a deferred result.
 table Data {
-    bytes: string;
+    bytes: [ubyte];
 }
 
 /// EndOfStream signals that there will be no more data.
