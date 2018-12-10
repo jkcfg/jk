@@ -12,8 +12,10 @@ std/build/std.js: std/*.fbs std/*.js std/package.json
 	std/generate.sh
 	cd std && npm run build
 
+D := $(shell go env GOPATH)/bin
 install: jk
-	cp jk `go env GOPATH`/bin
+	mkdir -p $(D)
+	cp jk $(D)
 
 build-image:
 	docker build -t quay.io/justkidding/build -f build/Dockerfile build/
