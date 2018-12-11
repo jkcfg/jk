@@ -17,11 +17,11 @@ addons:
       - node
 
 before_install:
-  - [[ "$TRAVIS_OS_NAME" == "osx" ]] ./build/macos-install-deps.sh
+  - [[ "$TRAVIS_OS_NAME" == "osx" ]] && ./build/macos-install-deps.sh
 
 script:
-  - [[ "$TRAVIS_OS_NAME" == "osx" ]] make install test
-  - [[ "$TRAVIS_OS_NAME" == "linux" ]] ./run-in-docker.sh make dep install test
+  - [[ "$TRAVIS_OS_NAME" == "osx" ]] && make install test
+  - [[ "$TRAVIS_OS_NAME" == "linux" ]] && ./run-in-docker.sh make dep install test
 
 deploy:
   skip_cleanup: true
