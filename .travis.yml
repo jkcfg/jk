@@ -1,9 +1,27 @@
 language: minimal
-sudo: required
-services:
-  - docker
+
+matrix:
+  include:
+    - os: linux
+      services:
+        - docker
+      sudo: required
+    - os: osx
+      osx_image: xcode10.1
+
+addons:
+  homebrew:
+    packages:
+      - pkg-config
+      - node
+
+before_install:
+  - [[ "$TRAVIS_OS_NAME" == "osx" ]] ./build/macos-install-deps.sh
+
 script:
-  - ./run-in-docker.sh make dep install test
+  - [[ "$TRAVIS_OS_NAME" == "osx" ]] make install test
+  - [[ "$TRAVIS_OS_NAME" == "linux" ]] ./run-in-docker.sh make dep install test
+
 deploy:
   skip_cleanup: true
   provider: script
