@@ -1,20 +1,7 @@
 language: minimal
-
-matrix:
-  include:
-    - os: linux
-    - os: osx
-      osx_image: xcode10.1
-
-services:
-- docker
 sudo: required
-
-addons:
-  homebrew:
-    packages:
-      - pkg-config
-      - node
+services:
+  - docker
 
 before_install:
   - [[ "$TRAVIS_OS_NAME" == "osx" ]] && ./build/macos-install-deps.sh
