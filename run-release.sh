@@ -26,7 +26,7 @@ function upload() {
 
 }
 
-binary=jk-linux-amd64
+binary=jk-`go env GOOS`-`go env GOARCH`
 mv jk $binary
 
 echo "==> Uploading $binary"
