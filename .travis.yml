@@ -3,11 +3,12 @@ language: minimal
 matrix:
   include:
     - os: linux
-      services:
-        - docker
-      sudo: required
     - os: osx
       osx_image: xcode10.1
+
+services:
+- docker
+sudo: required
 
 addons:
   homebrew:
