@@ -2,6 +2,11 @@ language: minimal
 sudo: required
 services:
   - docker
+matrix:
+  include:
+    - os: linux
+    - os: osx
+      osx_image: xcode10.1
 script:
   - ./run-in-docker.sh make dep install test
 deploy:
