@@ -5,6 +5,7 @@ env:
   global:
     - GOVERSION=1.11.2
     - GOMETALINTER_VERSION=2.0.11
+    - GITHUB_RELEASE_VERSION=0.7.2
 
 matrix:
   include:
@@ -27,6 +28,9 @@ matrix:
         # gometalinter
         - (cd ~ && curl -fsSLO https://github.com/alecthomas/gometalinter/releases/download/v${GOMETALINTER_VERSION}/gometalinter-${GOMETALINTER_VERSION}-darwin-amd64.tar.gz)
         - tar -xf ~/gometalinter-${GOMETALINTER_VERSION}-darwin-amd64.tar.gz -C /usr/local/bin --strip-components 1
+        # github-release
+        - (cd ~ && curl -fsSLO https://github.com/aktau/github-release/releases/download/v${GITHUB_RELEASE_VERSION}/darwin-amd64-github-release.tar.bz2)
+        - tar -xf ~/darwin-amd64-github-release.tar.bz2 -C /usr/local/bin --strip-components 3
       script:
         - export PATH=~/go-${GOVERSION}/bin:~/go/bin:$PATH
         - make dep install test
