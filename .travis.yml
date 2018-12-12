@@ -1,9 +1,15 @@
-language: minimal
 sudo: required
-services:
-  - docker
-script:
-  - ./run-in-docker.sh make dep install test
+language: minimal
+
+matrix:
+  include:
+
+    - os: linux
+      services:
+        - docker
+      script:
+        - ./run-in-docker.sh make dep install test
+
 deploy:
   skip_cleanup: true
   provider: script
