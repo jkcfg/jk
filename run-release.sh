@@ -6,7 +6,11 @@ repo=jk
 pkg=github.com/$user/$repo
 
 function run() {
-    docker run -e GITHUB_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build "$@"
+    if command -v github-release; then
+        github-release "$@"
+    else
+        docker run -e GITHUB_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build "$@"
+    fi
 }
 
 echo "==> Creating $tag release"
