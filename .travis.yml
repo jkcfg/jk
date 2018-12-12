@@ -1,6 +1,11 @@
 sudo: required
 language: minimal
 
+env:
+  global:
+    - GOVERSION=1.11.2
+    - GOMETALINTER_VERSION=2.0.11
+
 matrix:
   include:
 
@@ -9,6 +14,22 @@ matrix:
         - docker
       script:
         - ./run-in-docker.sh make dep install test
+
+    - os: osx
+      osx_image: xcode10.1
+      before_install:
+        # v8 prebuilt library
+        - git clone https://github.com/justkidding-config/prebuilt.git
+        - make -C prebuilt install
+        # go
+        - (cd ~ && curl -fsSLO https://dl.google.com/go/go${GOVERSION}.darwin-amd64.tar.gz)
+        - mkdir ~/go-${GOVERSION} && tar xf ~/go${GOVERSION}.darwin-amd64.tar.gz -C ~/go-${GOVERSION} --strip-components 1
+        # gometalinter
+        - (cd ~ && curl -fsSLO https://github.com/alecthomas/gometalinter/releases/download/v${GOMETALINTER_VERSION}/gometalinter-${GOMETALINTER_VERSION}-darwin-amd64.tar.gz)
+        - tar -xf ~/gometalinter-${GOMETALINTER_VERSION}-darwin-amd64.tar.gz -C /usr/local/bin --strip-components 1
+      script:
+        - export PATH=~/go-${GOVERSION}/bin:~/go/bin:$PATH
+        - make dep install test
 
 deploy:
   skip_cleanup: true
