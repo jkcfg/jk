@@ -9,19 +9,19 @@ function run() {
     if command -v github-release; then
         github-release "$@"
     else
-        docker run -e GITHUB_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build "$@"
+        docker run -e GITHUB_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build github-release "$@"
     fi
 }
 
 echo "==> Creating $tag release"
-run github-release release \
+run release \
     --user $user \
     --repo $repo \
     --tag $tag
 
 function upload() {
     file=$1
-    run github-release upload \
+    run upload \
         --user $user \
         --repo $repo \
         --tag $tag \
