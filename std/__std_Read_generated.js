@@ -7,6 +7,15 @@
 var __std = __std || {};
 
 /**
+ * @enum
+ */
+__std.Encoding = {
+  Bytes: 0,
+  UTF16: 1,
+  JSON: 2
+};
+
+/**
  * @constructor
  */
 __std.ReadArgs = function() {
@@ -59,10 +68,18 @@ __std.ReadArgs.prototype.timeout = function() {
 };
 
 /**
+ * @returns {__std.Encoding}
+ */
+__std.ReadArgs.prototype.encoding = function() {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+  return offset ? /** @type {__std.Encoding} */ (this.bb.readInt8(this.bb_pos + offset)) : __std.Encoding.Bytes;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 __std.ReadArgs.startReadArgs = function(builder) {
-  builder.startObject(2);
+  builder.startObject(3);
 };
 
 /**
@@ -79,6 +96,14 @@ __std.ReadArgs.addUrl = function(builder, urlOffset) {
  */
 __std.ReadArgs.addTimeout = function(builder, timeout) {
   builder.addFieldInt32(1, timeout, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {__std.Encoding} encoding
+ */
+__std.ReadArgs.addEncoding = function(builder, encoding) {
+  builder.addFieldInt8(2, encoding, __std.Encoding.Bytes);
 };
 
 /**

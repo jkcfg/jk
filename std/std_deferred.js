@@ -59,8 +59,8 @@ function panic(msg) {
 // result in a promise. If the request provokes an error, the Promise
 // is rejected immediately; otherwise, the Promise will later be
 // resolved or rejected depending on what is sent by the runtime.
-function requestAsPromise(fn) {
-  const buf = fn();
+function requestAsPromise(req, tx) {
+  const buf = req();
   const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
   const resp = def.DeferredResponse.getRootAsDeferredResponse(data);
   switch (resp.retvalType()) {
@@ -78,10 +78,13 @@ function requestAsPromise(fn) {
         delete deferreds[ser];
         return this(v);
       }
-      registerCallbacks(ser,
-        removeThenCall.bind(resolve),
+      const ondata = bytes => resolve(tx(bytes));
+      registerCallbacks(
+        ser,
+        removeThenCall.bind(ondata),
         removeThenCall.bind(reject),
-        removeThenCall.bind(panic('Unexpected EndOfStream for promisified deferred')));
+        removeThenCall.bind(panic('Unexpected EndOfStream for promisified deferred')),
+      );
     });
   }
   default:
