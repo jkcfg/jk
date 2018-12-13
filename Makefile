@@ -2,8 +2,10 @@
 
 all: jk
 
+VERSION := $(shell git describe)
+
 jk: pkg/__std/lib/assets_vfsdata.go
-	GO111MODULE=on go build -o $@
+	GO111MODULE=on go build -o $@ -ldflags "-X main.Version=$(VERSION)"
 
 pkg/__std/lib/assets_vfsdata.go: std/build/std.js
 	GO111MODULE=on go generate ./pkg/__std/lib
