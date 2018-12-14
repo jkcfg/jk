@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/justkidding-config/jk.svg?branch=master)](https://travis-ci.org/justkidding-config/jk)
+[![Build Status](https://travis-ci.org/jkcfg/jk.svg?branch=master)](https://travis-ci.org/jkcfg/jk)
 
 ```shell
 $ cat nginx.js

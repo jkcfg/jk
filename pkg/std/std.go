@@ -4,9 +4,9 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/justkidding-config/jk/pkg/__std"
-	"github.com/justkidding-config/jk/pkg/__std/lib"
-	"github.com/justkidding-config/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/__std"
+	"github.com/jkcfg/jk/pkg/__std/lib"
+	"github.com/jkcfg/jk/pkg/deferred"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 )

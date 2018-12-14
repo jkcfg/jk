@@ -6,9 +6,9 @@ import (
 	"log"
 	"path"
 
-	"github.com/justkidding-config/jk/pkg/deferred"
-	"github.com/justkidding-config/jk/pkg/resolve"
-	"github.com/justkidding-config/jk/pkg/std"
+	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/resolve"
+	"github.com/jkcfg/jk/pkg/std"
 
 	v8 "github.com/ry/v8worker2"
 	"github.com/spf13/cobra"
