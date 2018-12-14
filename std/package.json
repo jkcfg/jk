@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/justkidding-config/jk.git"
+    "url": "git+https://github.com/jkcfg/jk.git"
   },
   "keywords": [
     "configuration",
@@ -20,9 +20,9 @@
   "author": "Damien Lespiau",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/justkidding-config/jk/issues"
+    "url": "https://github.com/jkcfg/jk/issues"
   },
-  "homepage": "https://github.com/justkidding-config/jk#readme",
+  "homepage": "https://github.com/jkcfg/jk#readme",
   "devDependencies": {
     "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^13.1.0",

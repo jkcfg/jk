@@ -5,7 +5,7 @@ package main
 import (
 	"log"
 
-	"github.com/justkidding-config/jk/pkg/__std/lib"
+	"github.com/jkcfg/jk/pkg/__std/lib"
 
 	"github.com/shurcooL/vfsgen"
 )

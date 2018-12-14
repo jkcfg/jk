@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/justkidding-config/jk/pkg/__std"
+	"github.com/jkcfg/jk/pkg/__std"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 )

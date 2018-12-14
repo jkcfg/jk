@@ -1,7 +1,7 @@
 #!/bin/bash
 
 tag=$1
-user=justkidding-config
+user=jkcfg
 repo=jk
 pkg=github.com/$user/$repo
 

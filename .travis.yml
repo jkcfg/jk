@@ -20,7 +20,7 @@ matrix:
       osx_image: xcode10.1
       before_install:
         # v8 prebuilt library
-        - git clone https://github.com/justkidding-config/prebuilt.git
+        - git clone https://github.com/jkcfg/prebuilt.git
         - make -C prebuilt install
         # go
         - (cd ~ && curl -fsSLO https://dl.google.com/go/go${GOVERSION}.darwin-amd64.tar.gz)
