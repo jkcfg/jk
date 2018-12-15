@@ -58,8 +58,20 @@ func (rcv *ReadArgs) MutateEncoding(n int8) bool {
 	return rcv._tab.MutateInt8Slot(8, n)
 }
 
+func (rcv *ReadArgs) Format() int8 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ReadArgs) MutateFormat(n int8) bool {
+	return rcv._tab.MutateInt8Slot(10, n)
+}
+
 func ReadArgsStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
+	builder.StartObject(4)
 }
 func ReadArgsAddUrl(builder *flatbuffers.Builder, url flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(url), 0)
@@ -69,6 +81,9 @@ func ReadArgsAddTimeout(builder *flatbuffers.Builder, timeout uint32) {
 }
 func ReadArgsAddEncoding(builder *flatbuffers.Builder, encoding int8) {
 	builder.PrependInt8Slot(2, encoding, 0)
+}
+func ReadArgsAddFormat(builder *flatbuffers.Builder, format int8) {
+	builder.PrependInt8Slot(3, format, 0)
 }
 func ReadArgsEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

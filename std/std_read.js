@@ -1,9 +1,8 @@
 import { requestAsPromise } from 'std_deferred';
 import flatbuffers from 'flatbuffers';
-import { __std as r } from '__std_Read_generated';
-import { __std as m } from '__std_generated';
+import { __std } from '__std_generated';
 
-const Encoding = Object.freeze(r.Encoding);
+const Encoding = Object.freeze(__std.Encoding);
 
 function uint8ToUint16Array(bytes) {
   return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
@@ -17,26 +16,26 @@ const stringify = bytes => String.fromCodePoint(...uint8ToUint16Array(bytes));
 function read(url, { encoding = Encoding.Bytes } = {}) {
   const builder = new flatbuffers.Builder(512);
   const urlOffset = builder.createString(url);
-  r.ReadArgs.startReadArgs(builder);
-  r.ReadArgs.addUrl(builder, urlOffset);
+  __std.ReadArgs.startReadArgs(builder);
+  __std.ReadArgs.addUrl(builder, urlOffset);
   let tx = bytes => bytes;
   switch (encoding) {
   case Encoding.UTF16:
-    r.ReadArgs.addEncoding(builder, encoding);
+    __std.ReadArgs.addEncoding(builder, encoding);
     tx = stringify;
     break;
   case Encoding.JSON:
-    r.ReadArgs.addEncoding(builder, encoding);
+    __std.ReadArgs.addEncoding(builder, encoding);
     tx = compose(JSON.parse, stringify);
     break;
   default:
   }
-  const argsOffset = r.ReadArgs.endReadArgs(builder);
+  const argsOffset = __std.ReadArgs.endReadArgs(builder);
 
-  m.Message.startMessage(builder);
-  m.Message.addArgsType(builder, m.Args.ReadArgs);
-  m.Message.addArgs(builder, argsOffset);
-  const messageOffset = m.Message.endMessage(builder);
+  __std.Message.startMessage(builder);
+  __std.Message.addArgsType(builder, __std.Args.ReadArgs);
+  __std.Message.addArgs(builder, argsOffset);
+  const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
   return requestAsPromise(() => V8Worker2.send(builder.asArrayBuffer()), tx);
 }

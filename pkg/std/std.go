@@ -48,7 +48,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 			path = filepath.Join(options.OutputDirectory, path)
 		}
 
-		write(args.Value(), path, args.Type(), int(args.Indent()))
+		write(args.Value(), path, args.Format(), int(args.Indent()))
 		return nil
 	case __std.ArgsReadArgs:
 		args := __std.ReadArgs{}

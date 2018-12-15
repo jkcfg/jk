@@ -1,32 +1,30 @@
-import { __std as def } from '__std_Deferred_generated';
-import { __std as m } from '__std_generated';
-import { __std as error } from '__std_Error_generated';
+import { __std } from '__std_generated';
 import flatbuffers from 'flatbuffers';
 
 const deferreds = {};
 
 function recv(buf) {
   const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
-  const reso = def.Fulfilment.getRootAsFulfilment(data);
+  const reso = __std.Fulfilment.getRootAsFulfilment(data);
   const ser = reso.serial().toFloat64();
   let callback;
   let value;
   switch (reso.valueType()) {
-  case def.FulfilmentValue.Data: {
+  case __std.FulfilmentValue.Data: {
     ({ data: callback } = deferreds[ser]);
-    const val = new def.Data();
+    const val = new __std.Data();
     reso.value(val);
     value = val.bytesArray();
     break;
   }
-  case def.FulfilmentValue.Error: {
+  case __std.FulfilmentValue.Error: {
     ({ error: callback } = deferreds[ser]);
-    const err = new error.Error();
+    const err = new __std.Error();
     reso.value(err);
     value = new Error(err.message());
     break;
   }
-  case def.FulfilmentValue.EndOfStream:
+  case __std.FulfilmentValue.EndOfStream:
     ({ end: callback } = deferreds[ser]);
     break;
   default:
@@ -62,15 +60,15 @@ function panic(msg) {
 function requestAsPromise(req, tx) {
   const buf = req();
   const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
-  const resp = def.DeferredResponse.getRootAsDeferredResponse(data);
+  const resp = __std.DeferredResponse.getRootAsDeferredResponse(data);
   switch (resp.retvalType()) {
-  case def.DeferredRetval.Error: {
-    const err = new def.Error();
+  case __std.DeferredRetval.Error: {
+    const err = new __std.Error();
     resp.retval(err);
     return Promise.reject(new Error(err.message()));
   }
-  case def.DeferredRetval.Deferred: {
-    const defer = new def.Deferred();
+  case __std.DeferredRetval.Deferred: {
+    const defer = new __std.Deferred();
     resp.retval(defer);
     const ser = defer.serial().toFloat64();
     return new Promise((resolve, reject) => {
@@ -95,14 +93,14 @@ function requestAsPromise(req, tx) {
 // TODO
 function cancel(serial) {
   const builder = new flatbuffers.Builder(512);
-  def.ReadArgs.startCancelArgs(builder);
-  def.ReadArgs.addSerial(builder, serial);
-  const argsOffset = def.CancelArgs.endCancelArgs(builder);
+  __std.ReadArgs.startCancelArgs(builder);
+  __std.ReadArgs.addSerial(builder, serial);
+  const argsOffset = __std.CancelArgs.endCancelArgs(builder);
 
-  m.Message.startMessage(builder);
-  m.Message.addArgsType(builder, m.Args.CancelArgs);
-  m.Message.addArgs(builder, argsOffset);
-  const messageOffset = m.Message.endMessage(builder);
+  __std.Message.startMessage(builder);
+  __std.Message.addArgsType(builder, __std.Args.CancelArgs);
+  __std.Message.addArgs(builder, argsOffset);
+  const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
   return V8Worker2.send(builder.asArrayBuffer());
 }

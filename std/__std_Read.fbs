@@ -1,3 +1,5 @@
+include "__std_Format.fbs";
+
 namespace __std;
 
 // Encoding specifies the requested encoding; either just the raw
@@ -7,13 +9,14 @@ namespace __std;
 // UTF-16. Similarly, JSON is there as a means of sending structured
 // data, e.g., YAML, in a way that JavaScript can digest easily.
 enum Encoding : byte {
-  Bytes,
-  UTF16,
-  JSON,
+  Bytes, // just send the bytes you got
+  UTF16, // assume it's a string, and encode as UTF16
+  JSON,  // JSON stringify and send that as UTF16
 }
 
 table ReadArgs {
   url: string;
   timeout: uint;
-  encoding: Encoding = Bytes;
+  encoding: Encoding;
+  format: Format;
 }
