@@ -15,10 +15,12 @@ func find(dir string) ([]string, error) {
 	var files []string
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+		switch {
+		case err != nil:
 			return err
-		}
-		if info.IsDir() {
+		case info.IsDir():
+			return nil
+		case strings.HasSuffix(path, "~"):
 			return nil
 		}
 		files = append(files, strings.TrimPrefix(path, dir))
