@@ -28,6 +28,13 @@ type ExecuteOptions struct {
 	OutputDirectory string
 }
 
+func toBool(b byte) bool {
+	if b == 0 {
+		return false
+	}
+	return true
+}
+
 // Execute parses a message from v8 and execute the corresponding function.
 func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	message := __std.GetRootAsMessage(msg, 0)
@@ -48,7 +55,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 			path = filepath.Join(options.OutputDirectory, path)
 		}
 
-		write(args.Value(), path, args.Format(), int(args.Indent()))
+		write(args.Value(), path, args.Format(), int(args.Indent()), toBool(args.Override()))
 		return nil
 	case __std.ArgsReadArgs:
 		args := __std.ReadArgs{}

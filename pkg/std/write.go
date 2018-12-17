@@ -76,7 +76,18 @@ func writerFuncFromPath(path string) writerFunc {
 	}
 }
 
-func write(value []byte, path string, format __std.Format, indent int) {
+func exists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+func write(value []byte, path string, format __std.Format, indent int, override bool) {
+	if !override && exists(path) {
+		return
+	}
+
 	w, close := writer(path)
 
 	var out writerFunc
