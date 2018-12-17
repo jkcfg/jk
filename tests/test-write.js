@@ -7,4 +7,4 @@ const o = { kind: 'Bar', foo: { number: 1.2, string: 'mystring' } };
 std.write(o, 'test-write.json');
 std.write(o, 'test-write.yaml');
 std.write(o, 'test-write.yml');
-std.write(o, 'test-write-override.yaml', { format: std.Format.JSON });
+std.write(o, 'test-write-format-override.yaml', { format: std.Format.JSON });
