@@ -8,6 +8,10 @@ env:
     - GITHUB_RELEASE_VERSION=0.7.2
 
 matrix:
+  # temporary until we get flatc in the macOS build
+  allow_failures:
+    - os: osx
+
   include:
 
     - os: linux
