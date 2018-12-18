@@ -10,7 +10,7 @@ jk: pkg/__std/lib/assets_vfsdata.go
 pkg/__std/lib/assets_vfsdata.go: std/build/std.js
 	GO111MODULE=on go generate ./pkg/__std/lib
 
-std/build/std.js: std/*.fbs std/*.js std/package.json
+std/build/std.js: std/*.fbs std/*.js std/package.json std/generate.sh
 	std/generate.sh
 	cd std && npm run build
 

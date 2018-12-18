@@ -1,0 +1,12 @@
+This is some text that must be handled correctly, because it contains
+non-ASCII text -- € -- that will encode to bytes differently in UTF8
+(where it's E2 82 AC) than in UTF16 (where it's 20 AC).
+
+If treated as just bytes, it will be in UTF8 when sent to JavaScript,
+which will then decode it as UTF16 and get the € character wrong.
+
+If explicitly encoded as UTF16 when sent to JavaScript, it will decode
+it correctly, and write it correctly.
+
+We also need to test characters that encode to more than one UTF16
+word, like 𐐷 (01 D8 37 DC).

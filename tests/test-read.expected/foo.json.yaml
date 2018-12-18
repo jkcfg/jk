@@ -1,0 +1,3 @@
+config:
+  baz: 7
+  foo: bar

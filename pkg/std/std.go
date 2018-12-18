@@ -48,7 +48,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 			path = filepath.Join(options.OutputDirectory, path)
 		}
 
-		write(args.Value(), path, args.Type(), int(args.Indent()))
+		write(args.Value(), path, args.Format(), int(args.Indent()))
 		return nil
 	case __std.ArgsReadArgs:
 		args := __std.ReadArgs{}
@@ -59,7 +59,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		// for now, treat everything as a file read from a local path
 		// (which will only fail in the resolution, and can't be
 		// cancelled).
-		ser := deferred.Register(func() ([]byte, error) { return read(string(args.Url())) }, sendFunc(res.SendBytes))
+		ser := deferred.Register(func() ([]byte, error) { return read(string(args.Url()), args.Format(), args.Encoding()) }, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 	case __std.ArgsFileInfoArgs:
 		args := __std.FileInfoArgs{}

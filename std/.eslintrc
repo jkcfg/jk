@@ -12,6 +12,6 @@
   },
   "rules": {
     "import/prefer-default-export": 0,
-    "indent": ["error", 2, {"SwitchCase": 0}],
+    "indent": ["error", 2, {"SwitchCase": 0, "CallExpression": {"arguments": "first"}}],
   }
 }

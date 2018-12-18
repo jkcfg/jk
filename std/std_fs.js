@@ -1,7 +1,5 @@
 import flatbuffers from 'flatbuffers';
-import { __std as fs } from '__std_FileSystem_generated';
-import { __std as error } from '__std_Error_generated';
-import { __std as std } from '__std_generated';
+import { __std } from '__std_generated';
 
 class FileInfo {
   constructor(n, p, d) {
@@ -22,27 +20,27 @@ class Directory {
 function info(path) {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
-  fs.FileInfoArgs.startFileInfoArgs(builder);
-  fs.FileInfoArgs.addPath(builder, pathOffset);
-  const argsOffset = fs.FileInfoArgs.endFileInfoArgs(builder);
+  __std.FileInfoArgs.startFileInfoArgs(builder);
+  __std.FileInfoArgs.addPath(builder, pathOffset);
+  const argsOffset = __std.FileInfoArgs.endFileInfoArgs(builder);
 
-  std.Message.startMessage(builder);
-  std.Message.addArgsType(builder, std.Args.FileInfoArgs);
-  std.Message.addArgs(builder, argsOffset);
-  const messageOffset = std.Message.endMessage(builder);
+  __std.Message.startMessage(builder);
+  __std.Message.addArgsType(builder, __std.Args.FileInfoArgs);
+  __std.Message.addArgs(builder, argsOffset);
+  const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
   const bytes = V8Worker2.send(builder.asArrayBuffer());
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
-  const resp = fs.FileSystemResponse.getRootAsFileSystemResponse(buf);
+  const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
   switch (resp.retvalType()) {
-  case fs.FileSystemRetval.FileInfo: {
-    const f = new fs.FileInfo();
+  case __std.FileSystemRetval.FileInfo: {
+    const f = new __std.FileInfo();
     resp.retval(f);
     return new FileInfo(f.name(), f.path(), f.isdir());
   }
-  case fs.FileSystemRetval.Error: {
-    const err = new error.Error();
+  case __std.FileSystemRetval.Error: {
+    const err = new __std.Error();
     resp.retval(err);
     throw new Error(err.message());
   }
@@ -54,22 +52,22 @@ function info(path) {
 function dir(path) {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
-  fs.ListArgs.startListArgs(builder);
-  fs.ListArgs.addPath(builder, pathOffset);
-  const argsOffset = fs.ListArgs.endListArgs(builder);
+  __std.ListArgs.startListArgs(builder);
+  __std.ListArgs.addPath(builder, pathOffset);
+  const argsOffset = __std.ListArgs.endListArgs(builder);
 
-  std.Message.startMessage(builder);
-  std.Message.addArgsType(builder, std.Args.ListArgs);
-  std.Message.addArgs(builder, argsOffset);
-  const messageOffset = std.Message.endMessage(builder);
+  __std.Message.startMessage(builder);
+  __std.Message.addArgsType(builder, __std.Args.ListArgs);
+  __std.Message.addArgs(builder, argsOffset);
+  const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
   const bytes = V8Worker2.send(builder.asArrayBuffer());
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
-  const resp = fs.FileSystemResponse.getRootAsFileSystemResponse(buf);
+  const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
   switch (resp.retvalType()) {
-  case fs.FileSystemRetval.Directory: {
-    const d = new fs.Directory();
+  case __std.FileSystemRetval.Directory: {
+    const d = new __std.Directory();
     resp.retval(d);
     const files = new Array(d.filesLength());
     for (let i = 0; i < files.length; i += 1) {
@@ -78,8 +76,8 @@ function dir(path) {
     }
     return new Directory(d.name(), d.path(), files);
   }
-  case fs.FileSystemRetval.Error: {
-    const err = new error.Error();
+  case __std.FileSystemRetval.Error: {
+    const err = new __std.Error();
     resp.retval(err);
     throw new Error(err.message());
   }

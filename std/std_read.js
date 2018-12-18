@@ -1,27 +1,49 @@
 import { requestAsPromise } from 'std_deferred';
 import flatbuffers from 'flatbuffers';
-import { __std as r } from '__std_Read_generated';
-import { __std as m } from '__std_generated';
+import { __std } from '__std_generated';
+import { Format } from 'std_write';
 
-// read requests a URL and returns a promise that will be resolved
-// with the contents at the URL, or rejected.
-function read(url) {
-  const builder = new flatbuffers.Builder(512);
-  const urlOffset = builder.createString(url);
-  r.ReadArgs.startReadArgs(builder);
-  r.ReadArgs.addUrl(builder, urlOffset);
-  const argsOffset = r.ReadArgs.endReadArgs(builder);
+const Encoding = Object.freeze(__std.Encoding);
 
-  m.Message.startMessage(builder);
-  m.Message.addArgsType(builder, m.Args.ReadArgs);
-  m.Message.addArgs(builder, argsOffset);
-  const messageOffset = m.Message.endMessage(builder);
-  builder.finish(messageOffset);
-  return requestAsPromise(() => V8Worker2.send(builder.asArrayBuffer()));
+function uint8ToUint16Array(bytes) {
+  return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
 }
 
-// TODO(michael): read with format?
+const compose = (f, g) => x => f(g(x));
+const stringify = bytes => String.fromCodePoint(...uint8ToUint16Array(bytes));
+
+// read requests the path and returns a promise that will be resolved
+// with the contents at the path, or rejected.
+function read(path, { encoding = Encoding.JSON, format = Format.Auto } = {}) {
+  const builder = new flatbuffers.Builder(512);
+  const urlOffset = builder.createString(path);
+  __std.ReadArgs.startReadArgs(builder);
+  __std.ReadArgs.addUrl(builder, urlOffset);
+  __std.ReadArgs.addEncoding(builder, encoding);
+  __std.ReadArgs.addFormat(builder, format);
+  const argsOffset = __std.ReadArgs.endReadArgs(builder);
+  __std.Message.startMessage(builder);
+  __std.Message.addArgsType(builder, __std.Args.ReadArgs);
+  __std.Message.addArgs(builder, argsOffset);
+  const messageOffset = __std.Message.endMessage(builder);
+  builder.finish(messageOffset);
+
+  let tx = bytes => bytes;
+  switch (encoding) {
+  case Encoding.String:
+    tx = stringify;
+    break;
+  case Encoding.JSON:
+    tx = compose(JSON.parse, stringify);
+    break;
+  default:
+    break;
+  }
+
+  return requestAsPromise(() => V8Worker2.send(builder.asArrayBuffer()), tx);
+}
 
 export {
+  Encoding,
   read,
 };

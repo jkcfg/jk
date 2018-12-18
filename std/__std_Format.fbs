@@ -1,0 +1,8 @@
+namespace __std;
+
+enum Format : byte {
+    Auto,
+    JSON,
+    YAML,
+    Raw,
+}

@@ -1,15 +1,10 @@
-namespace __std;
+include "__std_Format.fbs";
 
-enum Format : byte {
-    Auto,
-    JSON,
-    YAML,
-    Raw,
-}
+namespace __std;
 
 table WriteArgs {
     path: string;
     value: string;
-    type: Format;
+    format: Format;
     indent: byte;
 }
