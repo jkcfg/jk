@@ -14,7 +14,7 @@ const stringify = bytes => String.fromCodePoint(...uint8ToUint16Array(bytes));
 
 // read requests the path and returns a promise that will be resolved
 // with the contents at the path, or rejected.
-function read(path, { encoding = Encoding.UTF16, format = Format.Auto } = {}) {
+function read(path, { encoding = Encoding.JSON, format = Format.Auto } = {}) {
   const builder = new flatbuffers.Builder(512);
   const urlOffset = builder.createString(path);
   __std.ReadArgs.startReadArgs(builder);
@@ -30,7 +30,7 @@ function read(path, { encoding = Encoding.UTF16, format = Format.Auto } = {}) {
 
   let tx = bytes => bytes;
   switch (encoding) {
-  case Encoding.UTF16:
+  case Encoding.String:
     tx = stringify;
     break;
   case Encoding.JSON:

@@ -10,12 +10,13 @@ raw.then(s => std.write(String.fromCharCode(...s), 'raw.txt', { format: std.Form
          writeErr);
 
 // Read a UTF8 file into a JS string, and write it back.
-const utf16 = std.read('test-read.expected/utf16.txt', { encoding: std.Encoding.UTF16 });
+const utf16 = std.read('test-read.expected/utf16.txt', { encoding: std.Encoding.String });
 utf16.then(s => std.write(s, 'utf16.txt', { format: std.Format.Raw }),
            writeErr);
 
-// Read a JSON file as an object, modify it, then write it as a YAML file.
-const json = std.read('foo.json', { encoding: std.Encoding.JSON });
+// Read a JSON file, implicitly as an object, modify it, then write it
+// as a YAML file.
+const json = std.read('foo.json');
 json.then((s) => {
   if (typeof s !== 'object') {
     std.write(`[ERROR] value of read({ encoding: JSON }) is ${typeof s} instead of expected 'object'`);
@@ -28,10 +29,7 @@ json.then((s) => {
 }, writeErr);
 
 // Read a YAML file as an object, and write modified objects back as JSON and YAML.
-const yaml = std.read('foo.yaml', {
-  encoding: std.Encoding.JSON,
-  format: std.Format.YAML,
-});
+const yaml = std.read('foo.yaml');
 yaml.then((s) => {
   if (typeof s !== 'object') {
     std.write(`[ERROR] value of read({ encoding: YAML }) is ${typeof s} instead of expected 'object'`);

@@ -79,7 +79,7 @@ func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, er
 	switch encoding {
 	case __std.EncodingBytes:
 		break
-	case __std.EncodingUTF16, __std.EncodingJSON:
+	case __std.EncodingString, __std.EncodingJSON:
 		encoder := unicode.UTF16(NativeEndian, unicode.IgnoreBOM).NewEncoder()
 		bytes, err = encoder.Bytes(bytes)
 	}

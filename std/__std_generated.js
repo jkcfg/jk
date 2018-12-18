@@ -46,11 +46,19 @@ __std.Format = {
 };
 
 /**
+ * Encoding specifies the requested form of the contents to read;
+ * either just the raw bytes, or as a UTF-16 string. Distinguishing
+ * String (a UTF16-encoded string) is desirable because JavaScript
+ * natively supports UTF-16, so if you want to be able
+ * to decode a string value conveniently, it is best to ship it as
+ * UTF-16. Similarly, JSON is there as a means of sending structured
+ * data, e.g., YAML, in a way that JavaScript can digest easily.
+ *
  * @enum
  */
 __std.Encoding = {
   Bytes: 0,
-  UTF16: 1,
+  String: 1,
   JSON: 2
 };
 
