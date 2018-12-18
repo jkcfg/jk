@@ -1,3 +1,7 @@
 /jk
+/pkg/__std/*.go
+/pkg/__std/lib/assets_vfsdata.go
+/std/__std_generated.js
 /std/node_modules
+/std/build
 /tests/*.got
