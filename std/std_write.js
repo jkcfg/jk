@@ -3,7 +3,7 @@ import flatbuffers from 'flatbuffers';
 
 const Format = Object.freeze(__std.Format);
 
-function write(value, path = '', { format = Format.Auto, indent = 2 } = {}) {
+function write(value, path = '', { format = Format.Auto, indent = 2, override = true } = {}) {
   const builder = new flatbuffers.Builder(1024);
   const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
   const strOff = builder.createString(str);
@@ -14,6 +14,7 @@ function write(value, path = '', { format = Format.Auto, indent = 2 } = {}) {
   __std.WriteArgs.addPath(builder, pathOff);
   __std.WriteArgs.addFormat(builder, format);
   __std.WriteArgs.addIndent(builder, indent);
+  __std.WriteArgs.addOverride(builder, override);
   const args = __std.WriteArgs.endWriteArgs(builder);
 
   __std.Message.startMessage(builder);

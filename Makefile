@@ -32,6 +32,9 @@ dep: std-install
 test:
 	./run-tests.sh
 
-clean:
+clean-tests:
+	@rm -rf tests/*.got
+
+clean: clean-tests
 	@rm jk
 	@rm -rf .bash_history .cache/ .config/ .npm
