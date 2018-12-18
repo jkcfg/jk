@@ -3,4 +3,5 @@ namespace __std;
 table ReadArgs {
   url: string;
   timeout: uint;
+  cancelable: bool = false;
 }

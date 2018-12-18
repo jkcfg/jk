@@ -29,10 +29,16 @@ func New() *Deferreds {
 	}
 }
 
-// Register schedules an action to be performed later, with the result
-// sent to `resolver`, using the global deferred scheduler.
+// Register makes a record of a result which will be supplied later,
+// with the result sent to `resolver`.
 func Register(p performFunc, r resolver) Serial {
 	return globalDeferreds.Register(p, r)
+}
+
+// RegisterWithContext makes a record of a result to be supplied
+// later, with a specific context.
+func RegisterWithContext(ctx context.Context, p performFunc, r resolver) Serial {
+	return globalDeferreds.RegisterWithContext(ctx, p, r)
 }
 
 // Cancel cancels the fulfilment of a deferred value; see
@@ -80,7 +86,31 @@ func (d *Deferreds) Register(perform performFunc, r resolver) Serial {
 	d.serialMu.Unlock()
 	d.outstanding.Add(1)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	go func(s Serial) {
+		defer func() {
+			d.outstanding.Done()
+		}()
+		b, err := perform(context.Background())
+		if err != nil {
+			r.Error(s, err)
+			return
+		}
+		r.Data(s, b)
+	}(s)
+	return s
+}
+
+// RegisterWithContext adds a request to those being tracked, with a
+// particular context (as well as the ability to cancel the request),
+// and returns the serial number to give back to the runtime.
+func (d *Deferreds) RegisterWithContext(ctx context.Context, perform performFunc, r resolver) Serial {
+	d.serialMu.Lock()
+	s := d.serial
+	d.serial++
+	d.serialMu.Unlock()
+	d.outstanding.Add(1)
+
+	ctx, cancel := context.WithCancel(ctx)
 	d.cancelsMu.Lock()
 	d.cancels[s] = cancel
 	d.cancelsMu.Unlock()

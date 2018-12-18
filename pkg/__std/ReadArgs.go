@@ -46,14 +46,29 @@ func (rcv *ReadArgs) MutateTimeout(n uint32) bool {
 	return rcv._tab.MutateUint32Slot(6, n)
 }
 
+func (rcv *ReadArgs) Cancelable() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ReadArgs) MutateCancelable(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
 func ReadArgsStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(3)
 }
 func ReadArgsAddUrl(builder *flatbuffers.Builder, url flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(url), 0)
 }
 func ReadArgsAddTimeout(builder *flatbuffers.Builder, timeout uint32) {
 	builder.PrependUint32Slot(1, timeout, 0)
+}
+func ReadArgsAddCancelable(builder *flatbuffers.Builder, cancelable byte) {
+	builder.PrependByteSlot(2, cancelable, 0)
 }
 func ReadArgsEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

@@ -59,10 +59,18 @@ __std.ReadArgs.prototype.timeout = function() {
 };
 
 /**
+ * @returns {boolean}
+ */
+__std.ReadArgs.prototype.cancelable = function() {
+  var offset = this.bb.__offset(this.bb_pos, 8);
+  return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+};
+
+/**
  * @param {flatbuffers.Builder} builder
  */
 __std.ReadArgs.startReadArgs = function(builder) {
-  builder.startObject(2);
+  builder.startObject(3);
 };
 
 /**
@@ -79,6 +87,14 @@ __std.ReadArgs.addUrl = function(builder, urlOffset) {
  */
 __std.ReadArgs.addTimeout = function(builder, timeout) {
   builder.addFieldInt32(1, timeout, 0);
+};
+
+/**
+ * @param {flatbuffers.Builder} builder
+ * @param {boolean} cancelable
+ */
+__std.ReadArgs.addCancelable = function(builder, cancelable) {
+  builder.addFieldInt8(2, +cancelable, +false);
 };
 
 /**
