@@ -18,6 +18,9 @@ to the results we expect.
 $ jk run -o test-$testname.expected test-$testname.js
 ```
 
+- If the file `test-$testname.js.skip` exists, the test is skipped. This is
+  useful to commit failing tests but not make them part of the test suite.
+
 - If the file `test-$testname.js.error` exists, we'll check that `jk` exits
   with an error. Otherwise, we expect `jk` to exit with 0.
 

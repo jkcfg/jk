@@ -35,15 +35,27 @@ func basename(testFile string) string {
 	return testFile[:len(testFile)-len(ext)]
 }
 
-func shouldErrorOut(testFile string) bool {
-	_, err := os.Stat(testFile + ".error")
+func exists(filename string) bool {
+	_, err := os.Stat(filename)
 	return err == nil
+}
+
+func shouldErrorOut(testFile string) bool {
+	return exists(testFile + ".error")
+}
+
+func shouldSkip(testFile string) bool {
+	return exists(testFile + ".skip")
 }
 
 func runTest(t *testing.T, file string) {
 	base := basename(file)
 	expectedDir := base + ".expected"
 	gotDir := base + ".got"
+
+	if shouldSkip(file) {
+		return
+	}
 
 	cmd := exec.Command("jk", "run", "-o", gotDir, file)
 	output, err := cmd.CombinedOutput()
