@@ -97,7 +97,7 @@ func TestEndToEnd(t *testing.T) {
 	assert.NoError(t, err)
 
 	for _, file := range files {
-		t.Run(file, func(t *testing.T) {
+		t.Run(file[:len(file)-3], func(t *testing.T) {
 			runTest(t, file)
 		})
 	}
