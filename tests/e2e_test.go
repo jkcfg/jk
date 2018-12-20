@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -48,6 +49,34 @@ func shouldSkip(testFile string) bool {
 	return exists(testFile + ".skip")
 }
 
+func invocation(testFile, outputDir string) []string {
+	data, err := ioutil.ReadFile(testFile + ".cmd")
+	if err != nil {
+		return nil
+	}
+	content := strings.TrimSuffix(string(data), "\n")
+
+	parts := strings.Split(content, " ")
+	// Strip jk from the cmd line, it's added later
+	if len(parts) > 0 && parts[0] == "jk" {
+		parts = parts[1:]
+	}
+	if len(parts) == 0 {
+		return nil
+	}
+
+	replacer := strings.NewReplacer(
+		"%d", outputDir,
+		"%t", testFile[:len(testFile)-3],
+	)
+	// Replace special strings
+	for i := range parts {
+		parts[i] = replacer.Replace(parts[i])
+	}
+
+	return parts
+}
+
 func runTest(t *testing.T, file string) {
 	base := basename(file)
 	expectedDir := base + ".expected"
@@ -57,7 +86,11 @@ func runTest(t *testing.T, file string) {
 		return
 	}
 
-	cmd := exec.Command("jk", "run", "-o", gotDir, file)
+	cmdline := invocation(file, gotDir)
+	if cmdline == nil {
+		cmdline = []string{"run", "-o", gotDir, file}
+	}
+	cmd := exec.Command("jk", cmdline...)
 	output, err := cmd.CombinedOutput()
 
 	// 0. Check process exit code.
@@ -92,9 +125,38 @@ func runTest(t *testing.T, file string) {
 	}
 }
 
-func TestEndToEnd(t *testing.T) {
+func listTestFiles(t *testing.T) []string {
+	// Some tests aren't actually in this directory, but a .cmd file is used to
+	// tune how jk is run. We need to account for those, making sure tests with
+	// both a test-*.js file and a .cmd file aren't run twice.
+	cmds, err := filepath.Glob("test-*.js.cmd")
+	assert.NoError(t, err)
+
 	files, err := filepath.Glob("test-*.js")
 	assert.NoError(t, err)
+
+	for _, cmd := range cmds {
+		// Remove .cmd extension
+		files = append(files, cmd[:len(cmd)-4])
+	}
+
+	// Deduplicate test files
+	unique := make(map[string]struct{})
+	for _, key := range files {
+		unique[key] = struct{}{}
+	}
+
+	files = make([]string, 0, len(unique))
+	for key := range unique {
+		files = append(files, key)
+	}
+
+	sort.Strings(files)
+	return files
+}
+
+func TestEndToEnd(t *testing.T) {
+	files := listTestFiles(t)
 
 	for _, file := range files {
 		t.Run(file[:len(file)-3], func(t *testing.T) {
