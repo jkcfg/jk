@@ -65,6 +65,7 @@ type NodeModulesImporter struct {
 	ModuleBase string
 }
 
+// Import is the entry point into the module resolution algorithm.
 func (n *NodeModulesImporter) Import(basePath, specifier, referrer string) ([]byte, []string) {
 	if filepath.IsAbs(specifier) {
 		log.Fatalf("absolute import path %q not allowed in %q", specifier, referrer)
@@ -149,10 +150,10 @@ func loadIndex(path string) ([]byte, []string) {
 func loadAsDir(path string) ([]byte, []string) {
 	var candidates []string
 
-	packageJson, _ := ioutil.ReadFile(filepath.Join(path, "package.json"))
-	if packageJson != nil {
+	packageJSON, _ := ioutil.ReadFile(filepath.Join(path, "package.json"))
+	if packageJSON != nil {
 		var pkg struct{ Module string }
-		if err := json.Unmarshal(packageJson, &pkg); err == nil && pkg.Module != "" {
+		if err := json.Unmarshal(packageJSON, &pkg); err == nil && pkg.Module != "" {
 			module := filepath.Join(path, pkg.Module)
 			// .module is treated as through it were a file (but not a directory)
 			bytes, pkgCandidates := loadAsFile(module)
