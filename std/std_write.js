@@ -1,7 +1,9 @@
 import { __std } from '__std_generated';
 import flatbuffers from 'flatbuffers';
 
-const Format = Object.freeze(__std.Format);
+const formatNoAuto = Object.assign({}, __std.Format);
+delete formatNoAuto.Auto;
+const Format = Object.freeze(formatNoAuto);
 
 function write(value, path = '', { format = Format.Auto, indent = 2, override = true } = {}) {
   const builder = new flatbuffers.Builder(1024);
