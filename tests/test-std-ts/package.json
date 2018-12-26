@@ -1,0 +1,27 @@
+{
+  "name": "test",
+  "version": "0.1.0",
+  "description": "test case",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkcfg/jk.git"
+  },
+  "keywords": [
+    "configuration",
+    "code",
+    "generation"
+  ],
+  "author": "The jk Authors",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jkcfg/jk/issues"
+  },
+  "homepage": "https://github.com/jkcfg/jk#readme",
+  "devDependencies": {
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {}
+}
