@@ -12,7 +12,7 @@ interface WriteOptions {
   override?: boolean,
 }
 
-function write(value: any, path: string, options: WriteOptions): void { };
+function write(value: any, path: string, options?: WriteOptions): void { };
 
 enum Encoding {
   Bytes,
@@ -25,7 +25,7 @@ interface ReadOptions {
   encoding: Encoding,
 }
 
-function read(path: string, options: ReadOptions): Promise<ArrayBuffer | string | object> { return Promise.resolve({}) };
+function read(path: string, options?: ReadOptions): Promise<any> { return Promise.resolve({}) };
 
 export default {
   log, Format, write, read,

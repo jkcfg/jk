@@ -24,15 +24,18 @@ $ jk run -o test-$testname.expected test-$testname.js
 - If the file `test-$testname.js.error` exists, we'll check that `jk` exits
   with an error. Otherwise, we expect `jk` to exit with 0.
 
-- If the file `test-$testname.js.cmd` exists, it's content is used as the
-  command line to execute jk. This allows to:
+- If the file `test-$testname.js.cmd` exists, its content is used as the
+  commands to excute for that tests. This allows to:
 
-    1. Use custom jk commands or options.
-    2. Run js files that aren't in the `tests/` directory.
+    1. Run several commands. Only the output of the jk command is compared to
+       the `.expected` file.
+    2. Use custom jk commands or options.
+    3. Run js files that aren't in the `tests/` directory.
 
   `.cmd` files look like:
 
   ```text
+  npm install
   jk run %t/test.js
   ```
 
