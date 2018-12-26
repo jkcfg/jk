@@ -41,6 +41,10 @@ type test struct {
 	file string // name of the test-*.js test file
 }
 
+func (t *test) name() string {
+	return t.file[:len(t.file)-3]
+}
+
 func exists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
@@ -72,7 +76,7 @@ func (t *test) invocation(outputDir string) []string {
 
 	replacer := strings.NewReplacer(
 		"%d", outputDir,
-		"%t", t.file[:len(t.file)-3],
+		"%t", t.name(),
 	)
 	// Replace special strings
 	for i := range parts {
@@ -165,7 +169,7 @@ func TestEndToEnd(t *testing.T) {
 
 	for _, file := range files {
 		test := &test{file}
-		t.Run(file[:len(file)-3], func(t *testing.T) {
+		t.Run(test.name(), func(t *testing.T) {
 			runTest(t, test)
 		})
 	}
