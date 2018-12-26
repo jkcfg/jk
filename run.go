@@ -59,6 +59,7 @@ func run(cmd *cobra.Command, args []string) {
 
 	resolver := resolve.NewResolver(worker, path.Dir(filename),
 		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
+		&resolve.StaticImporter{Specifier: "@jkcfg/std", Source: std.Module()},
 		&resolve.FileImporter{},
 	)
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {

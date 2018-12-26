@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"bufio"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -58,24 +60,14 @@ func (t *test) shouldSkip() bool {
 	return exists(t.file + ".skip")
 }
 
-func (t *test) invocation(outputDir string) []string {
-	data, err := ioutil.ReadFile(t.file + ".cmd")
-	if err != nil {
-		return nil
-	}
-	content := strings.TrimSuffix(string(data), "\n")
+func (t *test) outputDir() string {
+	return basename(t.file) + ".got"
+}
 
-	parts := strings.Split(content, " ")
-	// Strip jk from the cmd line, it's added later
-	if len(parts) > 0 && parts[0] == "jk" {
-		parts = parts[1:]
-	}
-	if len(parts) == 0 {
-		return nil
-	}
-
+func (t *test) parseCmd(line string) []string {
+	parts := strings.Split(line, " ")
 	replacer := strings.NewReplacer(
-		"%d", outputDir,
+		"%d", t.outputDir(),
 		"%t", t.name(),
 	)
 	// Replace special strings
@@ -84,6 +76,57 @@ func (t *test) invocation(outputDir string) []string {
 	}
 
 	return parts
+
+}
+
+func (t *test) runWithCmd() (string, error) {
+	jkOutput := ""
+
+	f, err := os.Open(t.file + ".cmd")
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		args := t.parseCmd(scanner.Text())
+		cmd := exec.Command(args[0], args[1:]...)
+		if args[0] == "jk" {
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				// Display the output of jk in case of failure.
+				fmt.Print(string(output))
+				return "", err
+			}
+			jkOutput = string(output)
+		} else {
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				return "", err
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	return jkOutput, nil
+}
+
+func (t *test) runDefault() (string, error) {
+	cmd := exec.Command("jk", "run", "-o", t.outputDir(), t.file)
+	output, err := cmd.CombinedOutput()
+	return string(output), err
+}
+
+func (t *test) run() (string, error) {
+	if exists(t.file + ".cmd") {
+		return t.runWithCmd()
+	}
+	return t.runDefault()
 }
 
 func runTest(t *testing.T, test *test) {
@@ -95,12 +138,7 @@ func runTest(t *testing.T, test *test) {
 		return
 	}
 
-	cmdline := test.invocation(gotDir)
-	if cmdline == nil {
-		cmdline = []string{"run", "-o", gotDir, test.file}
-	}
-	cmd := exec.Command("jk", cmdline...)
-	output, err := cmd.CombinedOutput()
+	output, err := test.run()
 
 	// 0. Check process exit code.
 	if test.shouldErrorOut() {
