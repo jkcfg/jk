@@ -36,21 +36,26 @@ func basename(testFile string) string {
 	return testFile[:len(testFile)-len(ext)]
 }
 
+// test is a end to end test, corresponding to one test-$testname.js file.
+type test struct {
+	file string // name of the test-*.js test file
+}
+
 func exists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
 }
 
-func shouldErrorOut(testFile string) bool {
-	return exists(testFile + ".error")
+func (t *test) shouldErrorOut() bool {
+	return exists(t.file + ".error")
 }
 
-func shouldSkip(testFile string) bool {
-	return exists(testFile + ".skip")
+func (t *test) shouldSkip() bool {
+	return exists(t.file + ".skip")
 }
 
-func invocation(testFile, outputDir string) []string {
-	data, err := ioutil.ReadFile(testFile + ".cmd")
+func (t *test) invocation(outputDir string) []string {
+	data, err := ioutil.ReadFile(t.file + ".cmd")
 	if err != nil {
 		return nil
 	}
@@ -67,7 +72,7 @@ func invocation(testFile, outputDir string) []string {
 
 	replacer := strings.NewReplacer(
 		"%d", outputDir,
-		"%t", testFile[:len(testFile)-3],
+		"%t", t.file[:len(t.file)-3],
 	)
 	// Replace special strings
 	for i := range parts {
@@ -77,24 +82,24 @@ func invocation(testFile, outputDir string) []string {
 	return parts
 }
 
-func runTest(t *testing.T, file string) {
-	base := basename(file)
+func runTest(t *testing.T, test *test) {
+	base := basename(test.file)
 	expectedDir := base + ".expected"
 	gotDir := base + ".got"
 
-	if shouldSkip(file) {
+	if test.shouldSkip() {
 		return
 	}
 
-	cmdline := invocation(file, gotDir)
+	cmdline := test.invocation(gotDir)
 	if cmdline == nil {
-		cmdline = []string{"run", "-o", gotDir, file}
+		cmdline = []string{"run", "-o", gotDir, test.file}
 	}
 	cmd := exec.Command("jk", cmdline...)
 	output, err := cmd.CombinedOutput()
 
 	// 0. Check process exit code.
-	if shouldErrorOut(file) {
+	if test.shouldErrorOut() {
 		_, ok := err.(*exec.ExitError)
 		assert.True(t, ok)
 	} else {
@@ -102,7 +107,7 @@ func runTest(t *testing.T, file string) {
 	}
 
 	// 1. Compare stdout/err.
-	expected, _ := ioutil.ReadFile(file + ".expected")
+	expected, _ := ioutil.ReadFile(test.file + ".expected")
 	assert.Equal(t, string(expected), string(output))
 
 	// 2. Compare produced files.
@@ -159,8 +164,9 @@ func TestEndToEnd(t *testing.T) {
 	files := listTestFiles(t)
 
 	for _, file := range files {
+		test := &test{file}
 		t.Run(file[:len(file)-3], func(t *testing.T) {
-			runTest(t, file)
+			runTest(t, test)
 		})
 	}
 }
