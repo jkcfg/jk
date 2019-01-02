@@ -1,0 +1,11 @@
+{
+  "myBoolean": true,
+  "myNumber": 12,
+  "myObject": {
+    "message": "success",
+    "o": {
+      "foo": "bar"
+    }
+  },
+  "myString": "success"
+}
