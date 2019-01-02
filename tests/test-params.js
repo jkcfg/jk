@@ -1,7 +1,7 @@
 import std from 'std';
 
 const b = std.param.Boolean('myBoolean', false);
-const n = std.param.Number('myNumber', 2.0);
+const n = std.param.Number('myNumber', 3.14);
 const s = std.param.String('myString', 'foo');
 const o = std.param.Object('myObject', {
   s: 'bar',
