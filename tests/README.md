@@ -41,6 +41,8 @@ $ jk run -o test-$testname.expected test-$testname.js
 
   In that file, special variables can be used for convenience:
 
+  **%f**: the name of test js file
+
   **%t**: the name of the test
 
   **%d**: the name of the recommended output directory (ie. `test-%testname.got`)
