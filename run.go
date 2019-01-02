@@ -90,7 +90,9 @@ func (p *paramsOption) setFromCommandline(s string) error {
 		if err != nil {
 			return fmt.Errorf("could not parse JSON '%s': %v", v, err)
 		}
-		p.params.SetObject(path, o)
+		params := std.NewParams()
+		params.SetObject(path, o)
+		p.params.Merge(params)
 	}
 
 	return nil
