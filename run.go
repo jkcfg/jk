@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -28,7 +29,8 @@ var runCmd = &cobra.Command{
 type paramKind int
 
 const (
-	paramKindBoolean paramKind = iota
+	paramKindFromFile paramKind = iota
+	paramKindBoolean
 	paramKindNumber
 	paramKindString
 	paramKindObject
@@ -43,7 +45,24 @@ func (p *paramsOption) String() string {
 	return ""
 }
 
-func (p *paramsOption) Set(s string) error {
+func (p *paramsOption) setFromFile(s string) error {
+	f, err := os.Open(s)
+	if err != nil {
+		return err
+	}
+
+	params, err := std.NewParamsFromJSON(f)
+	if err != nil {
+		return fmt.Errorf("%s isn't valid JSON: %v", s, err)
+	}
+
+	p.params.Merge(params)
+
+	f.Close()
+	return nil
+}
+
+func (p *paramsOption) setFromCommandline(s string) error {
 	parts := strings.Split(s, "=")
 	if len(parts) != 2 {
 		return errors.New("input parameters are of the form name=value")
@@ -77,7 +96,17 @@ func (p *paramsOption) Set(s string) error {
 	return nil
 }
 
+func (p *paramsOption) Set(s string) error {
+	if p.kind == paramKindFromFile {
+		return p.setFromFile(s)
+	}
+	return p.setFromCommandline(s)
+}
+
 func (p *paramsOption) Type() string {
+	if p.kind == paramKindFromFile {
+		return "filename"
+	}
 	return "name=value"
 }
 
@@ -96,6 +125,7 @@ func parameters(kind paramKind) pflag.Value {
 func init() {
 	runOptions.parameters = std.NewParams()
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
+	runCmd.PersistentFlags().VarP(parameters(paramKindFromFile), "parameters", "p", "load parameters from a JSON file")
 	runCmd.PersistentFlags().Var(parameters(paramKindBoolean), "pb", "boolean input parameter")
 	runCmd.PersistentFlags().Var(parameters(paramKindNumber), "pn", "number input parameter")
 	runCmd.PersistentFlags().Var(parameters(paramKindString), "ps", "string input parameter")
