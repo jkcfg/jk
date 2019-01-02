@@ -150,6 +150,9 @@ func runTest(t *testing.T, test *test) {
 		_, ok := err.(*exec.ExitError)
 		assert.True(t, ok)
 	} else {
+		if err != nil {
+			fmt.Print(string(output))
+		}
 		assert.NoError(t, err)
 	}
 
