@@ -25,9 +25,18 @@ var runCmd = &cobra.Command{
 	Run:   run,
 }
 
+type paramKind int
+
+const (
+	paramKindBoolean paramKind = iota
+	paramKindNumber
+	paramKindString
+	paramKindObject
+)
+
 type paramsOption struct {
 	params *std.Params
-	kind   std.ParamKind
+	kind   paramKind
 }
 
 func (p *paramsOption) String() string {
@@ -43,21 +52,21 @@ func (p *paramsOption) Set(s string) error {
 	v := parts[1]
 
 	switch p.kind {
-	case std.ParamKindBoolean:
+	case paramKindBoolean:
 		b, err := strconv.ParseBool(v)
 		if err != nil {
 			return fmt.Errorf("could not parse '%s' as a boolean", v)
 		}
 		p.params.SetBool(path, b)
-	case std.ParamKindNumber:
+	case paramKindNumber:
 		n, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			return fmt.Errorf("could not parse '%s' as a float64", v)
 		}
 		p.params.SetNumber(path, n)
-	case std.ParamKindString:
+	case paramKindString:
 		p.params.SetString(path, v)
-	case std.ParamKindObject:
+	case paramKindObject:
 		o, err := std.NewParamsFromJSON(strings.NewReader(v))
 		if err != nil {
 			return fmt.Errorf("could not parse JSON '%s': %v", v, err)
@@ -77,7 +86,7 @@ var runOptions struct {
 	parameters      std.Params
 }
 
-func parameters(kind std.ParamKind) pflag.Value {
+func parameters(kind paramKind) pflag.Value {
 	return &paramsOption{
 		params: &runOptions.parameters,
 		kind:   kind,
@@ -87,10 +96,10 @@ func parameters(kind std.ParamKind) pflag.Value {
 func init() {
 	runOptions.parameters = std.NewParams()
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
-	runCmd.PersistentFlags().Var(parameters(std.ParamKindBoolean), "pb", "boolean input parameter")
-	runCmd.PersistentFlags().Var(parameters(std.ParamKindNumber), "pn", "number input parameter")
-	runCmd.PersistentFlags().Var(parameters(std.ParamKindString), "ps", "string input parameter")
-	runCmd.PersistentFlags().Var(parameters(std.ParamKindObject), "po", "object input parameter")
+	runCmd.PersistentFlags().Var(parameters(paramKindBoolean), "pb", "boolean input parameter")
+	runCmd.PersistentFlags().Var(parameters(paramKindNumber), "pn", "number input parameter")
+	runCmd.PersistentFlags().Var(parameters(paramKindString), "ps", "string input parameter")
+	runCmd.PersistentFlags().Var(parameters(paramKindObject), "po", "object input parameter")
 	jk.AddCommand(runCmd)
 }
 

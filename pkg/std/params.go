@@ -7,20 +7,6 @@ import (
 	"strings"
 )
 
-// ParamKind is the type of a parameter
-type ParamKind int
-
-const (
-	// ParamKindBoolean is the type of a boolean parameter.
-	ParamKindBoolean ParamKind = iota
-	// ParamKindNumber is the type of a number parameter.
-	ParamKindNumber
-	// ParamKindString is the type of a string parameter.
-	ParamKindString
-	// ParamKindObject is the type of an object parameter.
-	ParamKindObject
-)
-
 // Params is a paramater store akin to a JSON object.
 type Params map[string]interface{}
 
