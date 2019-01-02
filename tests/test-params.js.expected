@@ -9,3 +9,15 @@
   },
   "myString": "success"
 }
+{
+  "myBoolean": false,
+  "myNumber": 3.14,
+  "myObject": {
+    "b": true,
+    "o": {
+      "xxx": "yyy"
+    },
+    "s": "bar"
+  },
+  "myString": "foo"
+}
