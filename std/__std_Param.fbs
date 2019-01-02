@@ -1,0 +1,17 @@
+namespace __std;
+
+enum ParamType : byte {
+    Boolean,
+    Number,
+    String,
+    Object,
+}
+
+table ParamArgs {
+  path: string;
+  type: ParamType;
+}
+
+table ParamResponse {
+  json: string;
+}
