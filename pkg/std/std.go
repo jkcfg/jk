@@ -83,7 +83,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		args := __std.ParamArgs{}
 		args.Init(union.Bytes, union.Pos)
 
-		json := param(options.Parameters, __std.ParamType(args.Type()), string(args.Path()))
+		json := param(options.Parameters, __std.ParamType(args.Type()), string(args.Path()), string(args.DefaultValue()))
 
 		b := flatbuffers.NewBuilder(512)
 		jsonOffset := b.CreateString(string(json))

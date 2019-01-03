@@ -2,10 +2,13 @@
   "myBoolean": true,
   "myNumber": 12,
   "myObject": {
+    "b": true,
     "message": "success",
     "o": {
-      "foo": "bar"
-    }
+      "foo": "bar",
+      "xxx": "yyy"
+    },
+    "s": "bar"
   },
   "myString": "success"
 }

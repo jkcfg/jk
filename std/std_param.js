@@ -4,10 +4,15 @@ import { __std } from '__std_generated';
 function getParameter(type, path, defaultValue) {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
+  const isObject = type === __std.ParamType.Object;
+  const defaultValueOffset = isObject && builder.createString(JSON.stringify(defaultValue));
 
   __std.ParamArgs.startParamArgs(builder);
   __std.ParamArgs.addPath(builder, pathOffset);
   __std.ParamArgs.addType(builder, type);
+  if (isObject) {
+    __std.ParamArgs.addDefaultValue(builder, defaultValueOffset);
+  }
   const argsOffset = __std.ParamArgs.endParamArgs(builder);
 
   __std.Message.startMessage(builder);

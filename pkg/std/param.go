@@ -9,7 +9,7 @@ import (
 	"github.com/jkcfg/jk/pkg/__std"
 )
 
-func param(params Params, kind __std.ParamType, path string) []byte {
+func param(params Params, kind __std.ParamType, path string, defaultValue string) []byte {
 	var v interface{}
 	var err error
 
@@ -21,7 +21,17 @@ func param(params Params, kind __std.ParamType, path string) []byte {
 	case __std.ParamTypeString:
 		v, err = params.GetString(path)
 	case __std.ParamTypeObject:
+		// For object parameters, we merge the default value with what the user has
+		// given us, which could be only a part of the default value.
 		v, err = params.GetObject(path)
+		if err != nil {
+			break
+		}
+		r := strings.NewReader(defaultValue)
+		// The JS side sends us JSON.
+		base, _ := NewParamsFromJSON(r)
+		base.Merge(v.(Params))
+		v = base
 	default:
 		panic("param: unexpected kind")
 	}
