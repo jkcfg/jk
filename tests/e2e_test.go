@@ -43,6 +43,10 @@ type test struct {
 	file string // name of the test-*.js test file
 }
 
+func (t *test) jsFile() string {
+	return t.file
+}
+
 func (t *test) name() string {
 	return t.file[:len(t.file)-3]
 }
@@ -69,6 +73,7 @@ func (t *test) parseCmd(line string) []string {
 	replacer := strings.NewReplacer(
 		"%d", t.outputDir(),
 		"%t", t.name(),
+		"%f", t.jsFile(),
 	)
 	// Replace special strings
 	for i := range parts {
@@ -145,6 +150,9 @@ func runTest(t *testing.T, test *test) {
 		_, ok := err.(*exec.ExitError)
 		assert.True(t, ok)
 	} else {
+		if err != nil {
+			fmt.Print(string(output))
+		}
 		assert.NoError(t, err)
 	}
 

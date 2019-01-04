@@ -2,6 +2,7 @@ include "__std_Deferred.fbs";
 include "__std_FileSystem.fbs";
 include "__std_Write.fbs";
 include "__std_Read.fbs";
+include "__std_Param.fbs";
 
 namespace __std;
 
@@ -13,6 +14,7 @@ union Args {
     // FileSystem
     FileInfoArgs,
     ListArgs,
+    ParamArgs,
 }
 
 table Message {

@@ -1,0 +1,26 @@
+{
+  "myBoolean": true,
+  "myNumber": 2,
+  "myObject": {
+    "b": true,
+    "message": "success",
+    "o": {
+      "foo": "bar",
+      "xxx": "yyy"
+    },
+    "s": "bar"
+  },
+  "myString": "success"
+}
+{
+  "myBoolean": false,
+  "myNumber": 3.14,
+  "myObject": {
+    "b": true,
+    "o": {
+      "xxx": "yyy"
+    },
+    "s": "bar"
+  },
+  "myString": "foo"
+}

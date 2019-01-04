@@ -23,6 +23,8 @@ type sender interface {
 
 // ExecuteOptions global input parameters to the standards library.
 type ExecuteOptions struct {
+	// Parameters is a structured set of input parameters.
+	Parameters Params
 	// OutputDirectory is a directory used by any file producing functions as the
 	// base directory to output files to.
 	OutputDirectory string
@@ -76,6 +78,21 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		args := __std.ListArgs{}
 		args.Init(union.Bytes, union.Pos)
 		return directoryListing(string(args.Path()))
+
+	case __std.ArgsParamArgs:
+		args := __std.ParamArgs{}
+		args.Init(union.Bytes, union.Pos)
+
+		json := param(options.Parameters, __std.ParamType(args.Type()), string(args.Path()), string(args.DefaultValue()))
+
+		b := flatbuffers.NewBuilder(512)
+		jsonOffset := b.CreateString(string(json))
+		__std.ParamResponseStart(b)
+		__std.ParamResponseAddJson(b, jsonOffset)
+		responseOffset := __std.ParamResponseEnd(b)
+		b.Finish(responseOffset)
+		return b.FinishedBytes()
+
 	default:
 		log.Fatalf("unknown Message (%d)", message.ArgsType())
 		return nil

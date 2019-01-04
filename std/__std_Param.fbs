@@ -1,0 +1,21 @@
+namespace __std;
+
+enum ParamType : byte {
+    Boolean,
+    Number,
+    String,
+    Object,
+}
+
+table ParamArgs {
+  path: string;
+  type: ParamType;
+  // defaultValue is the JSON representation of the default value. This is
+  // currently used for object parameters only so we can merge the provided
+  // parameters with the default object.
+  defaultValue: string;
+}
+
+table ParamResponse {
+  json: string;
+}
