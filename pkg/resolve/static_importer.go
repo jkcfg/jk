@@ -7,9 +7,9 @@ type StaticImporter struct {
 }
 
 // Import implements importer.
-func (si *StaticImporter) Import(basePath, specifier, referrer string) ([]byte, []string) {
+func (si *StaticImporter) Import(basePath, specifier, referrer string) ([]byte, string, []string) {
 	if si.Specifier == specifier {
-		return si.Source, nil
+		return si.Source, specifier, []string{specifier}
 	}
-	return nil, nil
+	return nil, "", []string{specifier}
 }

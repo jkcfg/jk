@@ -11,5 +11,8 @@ type Loader interface {
 
 // Importer is a object resolving a import to actual JS code.
 type Importer interface {
-	Import(basePath, specifier, referrer string) (data []byte, candidates []string)
+	// Resolve a specifier (e.g., `my-module/foo') to a specific path
+	// and file contents. Also returns a list of the interpretations
+	// of the specifier attempted, including that returned.
+	Import(basePath, specifier, referrer string) (data []byte, path string, candidates []string)
 }

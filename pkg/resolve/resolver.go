@@ -30,7 +30,8 @@ import (
 //  means you need to carry any directory context around with you,
 //  since relative imports will otherwise lose the full path.
 
-// Resolver implements ES 2015 module resolving.
+// Resolver implements module resolution by deferring to the set of
+// importers that it's given.
 type Resolver struct {
 	loader    Loader
 	base      string
@@ -49,15 +50,16 @@ func NewResolver(loader Loader, basePath string, importers ...Importer) *Resolve
 // ResolveModule imports the specifier from an import statement located in the
 // referrer module.
 func (r Resolver) ResolveModule(specifier, referrer string) int {
-	// The first importer that resolver the specifier wins.
-	var source string
+	// The first importer that resolves the specifier wins.
+	var resolvedPath, source string
 	var candidates []string
 
 	for _, importer := range r.importers {
-		data, considered := importer.Import(r.base, specifier, referrer)
+		data, path, considered := importer.Import(r.base, specifier, referrer)
 		candidates = append(candidates, considered...)
 		if data != nil {
 			source = string(data)
+			resolvedPath = path
 			break
 		}
 	}
@@ -74,7 +76,7 @@ func (r Resolver) ResolveModule(specifier, referrer string) int {
 	}
 
 	resolver := r
-	resolver.base = filepath.Dir(filepath.Join(r.base, specifier))
+	resolver.base = filepath.Dir(resolvedPath)
 	if err := r.loader.LoadModule(specifier, source, resolver.ResolveModule); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return 1

@@ -12,7 +12,7 @@ type FileImporter struct {
 }
 
 // Import implements importer.
-func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, []string) {
+func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, string, []string) {
 	var candidates []string
 
 	path := specifier
@@ -27,7 +27,7 @@ func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, []
 			candidates = append(candidates, path+".js")
 			path = filepath.Join(path, "index.js")
 		case err != nil:
-			return nil, candidates
+			return nil, "", candidates
 		default:
 			path = path + ".js"
 		}
@@ -37,11 +37,11 @@ func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, []
 
 	// TODO don't allow climbing out of the base directory with '../../...'
 	if _, err := os.Stat(path); err != nil {
-		return nil, candidates
+		return nil, "", candidates
 	}
 	codeBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return codeBytes, candidates
+	return codeBytes, path, candidates
 }

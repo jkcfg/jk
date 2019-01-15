@@ -14,7 +14,7 @@ func TestNodeModuleImport(t *testing.T) {
 
 	test := func(name, base, path string) {
 		t.Run(name, func(t *testing.T) {
-			bytes, candidates := node.Import(base, path, "stdin")
+			bytes, path, candidates := node.Import(base, path, "stdin")
 			if bytes == nil {
 				t.Error("did not resolve", path)
 				println("candidates:")
