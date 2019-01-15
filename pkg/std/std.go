@@ -1,6 +1,7 @@
 package std
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 
@@ -23,6 +24,9 @@ type sender interface {
 
 // ExecuteOptions global input parameters to the standards library.
 type ExecuteOptions struct {
+	// Verbose indicates if some operations, such as write, should print out what
+	// they are doing.
+	Verbose bool
 	// Parameters is a structured set of input parameters.
 	Parameters Params
 	// OutputDirectory is a directory used by any file producing functions as the
@@ -57,6 +61,9 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 			path = filepath.Join(options.OutputDirectory, path)
 		}
 
+		if path != "" && options.Verbose {
+			fmt.Printf("wrote %s\n", path)
+		}
 		write(args.Value(), path, args.Format(), int(args.Indent()), toBool(args.Override()))
 		return nil
 	case __std.ArgsReadArgs:

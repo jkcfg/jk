@@ -113,6 +113,7 @@ func (p *paramsOption) Type() string {
 }
 
 var runOptions struct {
+	verbose         bool
 	outputDirectory string
 	parameters      std.Params
 }
@@ -126,6 +127,7 @@ func parameters(kind paramKind) pflag.Value {
 
 func init() {
 	runOptions.parameters = std.NewParams()
+	runCmd.PersistentFlags().BoolVarP(&runOptions.verbose, "verbose", "v", false, "verbose output")
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	runCmd.PersistentFlags().VarP(parameters(paramKindFromFile), "parameters", "p", "load parameters from a JSON file")
 	runCmd.PersistentFlags().Var(parameters(paramKindBoolean), "pb", "boolean input parameter")
@@ -148,6 +150,7 @@ type exec struct {
 
 func (e *exec) onMessageReceived(msg []byte) []byte {
 	return std.Execute(msg, e.worker, std.ExecuteOptions{
+		Verbose:         runOptions.verbose,
 		Parameters:      runOptions.parameters,
 		OutputDirectory: runOptions.outputDirectory,
 	})
