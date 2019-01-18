@@ -6,6 +6,8 @@ github.com/google/flatbuffers v1.10.0 h1:oRiOciRvbejW4wxTr/DVVAczyQaxsEONq6NyxhD
 github.com/google/flatbuffers v1.10.0/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv5+zNeJKJCa8=
 github.com/jkcfg/v8worker2 v0.0.0-20181103131220-163e7fd126a2 h1:SsNwIj868+EIEnwSJT02K5Y3GtGWL64/5Ipy9O0cYXY=
 github.com/jkcfg/v8worker2 v0.0.0-20181103131220-163e7fd126a2/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
+github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099 h1:CKxqDomswaJteVLxmp5Lo02zy3+33QGSs3J0eh+Po3U=
+github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371 h1:SWV2fHctRpRrp49VXJ6UZja7gU9QLHwRpIPBN89SKEo=
