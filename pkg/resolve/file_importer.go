@@ -11,9 +11,18 @@ import (
 type FileImporter struct {
 }
 
+const (
+	expectedExtension   = ".js"
+	extensionRulePrefix = "<path> -> <path>"
+	extensionRule       = extensionRulePrefix + expectedExtension
+	indexRulePrefix     = "<path> -> <path>/index"
+	indexRule           = indexRulePrefix + expectedExtension
+	verbatimRule        = "verbatim"
+)
+
 // Import implements importer.
-func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, string, []string) {
-	var candidates []string
+func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, string, []Candidate) {
+	var candidates []Candidate
 
 	path := specifier
 	if !filepath.IsAbs(path) {
@@ -21,19 +30,20 @@ func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, st
 	}
 
 	if filepath.Ext(path) == "" {
+		candidates = append(candidates, Candidate{path + ".js", extensionRule})
 		_, err := os.Stat(path + ".js")
 		switch {
 		case os.IsNotExist(err):
-			candidates = append(candidates, path+".js")
 			path = filepath.Join(path, "index.js")
+			candidates = append(candidates, Candidate{path, indexRule})
 		case err != nil:
 			return nil, "", candidates
 		default:
 			path = path + ".js"
 		}
+	} else {
+		candidates = append(candidates, Candidate{path, verbatimRule})
 	}
-
-	candidates = append(candidates, path)
 
 	// TODO don't allow climbing out of the base directory with '../../...'
 	if _, err := os.Stat(path); err != nil {

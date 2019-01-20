@@ -52,7 +52,7 @@ func NewResolver(loader Loader, basePath string, importers ...Importer) *Resolve
 func (r Resolver) ResolveModule(specifier, referrer string) int {
 	// The first importer that resolves the specifier wins.
 	var resolvedPath, source string
-	var candidates []string
+	var candidates []Candidate
 
 	for _, importer := range r.importers {
 		data, path, considered := importer.Import(r.base, specifier, referrer)
@@ -69,7 +69,7 @@ func (r Resolver) ResolveModule(specifier, referrer string) int {
 		if len(candidates) > 0 {
 			fmt.Fprintf(os.Stderr, "candidates considered:\n")
 			for _, candidate := range candidates {
-				fmt.Fprintf(os.Stderr, "    %s\n", candidate)
+				fmt.Fprintf(os.Stderr, "    %s (%s)\n", candidate.Path, candidate.Rule)
 			}
 		}
 		return 1

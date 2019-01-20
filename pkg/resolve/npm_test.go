@@ -19,7 +19,7 @@ func TestNodeModuleImport(t *testing.T) {
 				t.Error("did not resolve", path)
 				println("candidates:")
 				for _, c := range candidates {
-					println("  ", c)
+					println("  ", c.Path, c.Rule)
 				}
 			}
 		})
