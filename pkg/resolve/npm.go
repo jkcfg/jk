@@ -66,7 +66,7 @@ type NodeModulesImporter struct {
 }
 
 // Import is the entry point into the module resolution algorithm.
-func (n *NodeModulesImporter) Import(basePath, specifier, referrer string) ([]byte, []string) {
+func (n *NodeModulesImporter) Import(basePath, specifier, referrer string) ([]byte, string, []Candidate) {
 	if filepath.IsAbs(specifier) {
 		log.Fatalf("absolute import path %q not allowed in %q", specifier, referrer)
 	}
@@ -80,34 +80,34 @@ var moduleExtensions = []string{".mjs", ".js"}
 
 // loadAsFile tries to load a path as though it referred to a file. No
 // bytes returned means failure.
-func loadAsFile(path string) ([]byte, []string) {
-	candidates := []string{path}
+func loadAsFile(path string) ([]byte, string, []Candidate) {
+	candidates := []Candidate{{path, verbatimRule}}
 	bytes, err := ioutil.ReadFile(path)
 	if err == nil {
-		return bytes, candidates
+		return bytes, path, candidates
 	}
 
-	bytes, extCandidates := loadGuessedFile(path)
-	return bytes, append(candidates, extCandidates...)
+	bytes, path, extCandidates := loadGuessedFile(path)
+	return bytes, path, append(candidates, extCandidates...)
 }
 
-func loadGuessedFile(path string) ([]byte, []string) {
-	var candidates []string
+func loadGuessedFile(path string) ([]byte, string, []Candidate) {
+	var candidates []Candidate
 	for _, ext := range moduleExtensions {
 		p := path + ext
-		candidates = append(candidates, p)
+		candidates = append(candidates, Candidate{p, extensionRulePrefix + ext})
 		bytes, err := ioutil.ReadFile(p)
 		if err == nil {
-			return bytes, candidates
+			return bytes, p, candidates
 		}
 	}
-	return nil, candidates
+	return nil, "", candidates
 }
 
 // loadAsPath attempts to load a path when it's unknown whether it
 // refers to a file or a directory.
-func loadAsPath(path string) ([]byte, []string) {
-	candidates := []string{path}
+func loadAsPath(path string) ([]byte, string, []Candidate) {
+	candidates := []Candidate{{path, verbatimRule}}
 	info, err := os.Stat(path)
 	switch {
 	default: // file exists and is not a directory
@@ -115,79 +115,94 @@ func loadAsPath(path string) ([]byte, []string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		return bytes, candidates
+		return bytes, path, candidates
 
 	case os.IsNotExist(err):
-		bytes, guessedCandidates := loadGuessedFile(path)
-		return bytes, append(candidates, guessedCandidates...)
+		bytes, path, guessedCandidates := loadGuessedFile(path)
+		return bytes, path, append(candidates, guessedCandidates...)
 
 	case err != nil:
 		log.Fatal(err)
 
 	case info.IsDir():
-		bytes, dirCandidates := loadAsDir(path)
-		return bytes, append(candidates, dirCandidates...)
+		bytes, path, dirCandidates := loadAsDir(path)
+		return bytes, path, append(candidates, dirCandidates...)
 	}
-	return nil, candidates
+	return nil, "", candidates
 }
 
 // loadIndex tries to load the default index files, assuming the path
 // is a directory.
-func loadIndex(path string) ([]byte, []string) {
-	var candidates []string
+func loadIndex(path string) ([]byte, string, []Candidate) {
+	var candidates []Candidate
 	for _, ext := range moduleExtensions {
 		p := filepath.Join(path, "index"+ext)
-		candidates = append(candidates, p)
+		candidates = append(candidates, Candidate{p, indexRulePrefix + ext})
 		bytes, err := ioutil.ReadFile(p)
 		if err == nil {
-			return bytes, candidates
+			return bytes, p, candidates
 		}
 	}
-	return nil, candidates
+	return nil, "", candidates
 }
 
 // loadAsDir attempts to load a path which is known to be a directory.
-func loadAsDir(path string) ([]byte, []string) {
-	var candidates []string
+func loadAsDir(path string) ([]byte, string, []Candidate) {
+	var candidates []Candidate
 
-	packageJSON, _ := ioutil.ReadFile(filepath.Join(path, "package.json"))
+	packageJSONPath := filepath.Join(path, "package.json")
+	packageJSON, _ := ioutil.ReadFile(packageJSONPath)
 	if packageJSON != nil {
 		var pkg struct{ Module string }
 		if err := json.Unmarshal(packageJSON, &pkg); err == nil && pkg.Module != "" {
 			module := filepath.Join(path, pkg.Module)
 			// .module is treated as through it were a file (but not a directory)
-			bytes, pkgCandidates := loadAsFile(module)
+			bytes, path, pkgCandidates := loadAsFile(module)
+			// TODO(michael) consider transformating these candidates
+			// (and below) to reflect the indirection through
+			// package.json
+			qualifyCandidates(pkgCandidates, "via .module in "+packageJSONPath)
 			candidates = append(candidates, pkgCandidates...)
 			if bytes != nil {
-				return bytes, candidates
+				return bytes, path, candidates
 			}
 			// .. or a directory with an index (but not another package.json)
-			bytes, modIndexCandidates := loadIndex(module)
+			bytes, path, modIndexCandidates := loadIndex(module)
+			qualifyCandidates(modIndexCandidates, "via .module in "+packageJSONPath)
 			candidates = append(candidates, modIndexCandidates...)
 			if bytes != nil {
-				return bytes, candidates
+				return bytes, path, candidates
 			}
 		}
 	}
-	bytes, indexCandidates := loadIndex(path)
-	return bytes, append(candidates, indexCandidates...)
+	bytes, path, indexCandidates := loadIndex(path)
+	return bytes, path, append(candidates, indexCandidates...)
 }
 
 // loadAsModule attempts to load a specifier as though it referred to
 // a package in (potentially nested) node_modules directories.
-func loadAsModule(specifier, base string) ([]byte, []string) {
-	var candidates []string
+func loadAsModule(specifier, base string) (_ []byte, _ string, candidates []Candidate) {
+	defer func() {
+		qualifyCandidates(candidates, "via NPM resolution")
+	}()
+
 	bits := strings.Split(base, "/")
 	for i := len(bits) - 1; i >= 0; i-- {
 		if bits[i] == "node_modules" {
 			continue
 		}
 		path := strings.Join(append(bits[:i+1], "node_modules", specifier), "/")
-		bytes, pathCandidates := loadAsPath(path)
+		bytes, path, pathCandidates := loadAsPath(path)
 		candidates = append(candidates, pathCandidates...)
 		if bytes != nil {
-			return bytes, candidates
+			return bytes, path, candidates
 		}
 	}
-	return nil, candidates
+	return nil, "", candidates
+}
+
+func qualifyCandidates(cs []Candidate, extra string) {
+	for i := range cs {
+		cs[i].Rule = cs[i].Rule + ", " + extra
+	}
 }
