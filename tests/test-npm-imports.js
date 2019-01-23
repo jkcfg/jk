@@ -1,3 +1,7 @@
+/* eslint "import/no-unresolved": [2, { ignore: ['.*'] }] */
+// ^ switch this rule in eslint off, since module resolution is what's under test here.
+/* eslint "import/first": [0] */
+/* eslint "import/newline-after-import": [0] */
 import std from '@jkcfg/std';
 
 import msg1 from 'testcase'; // node_modules/testcase/index.js
