@@ -36,6 +36,13 @@ const (
 	paramKindObject
 )
 
+const errorHandler = `
+function onerror(msg, src, line, col, err) {
+  V8Worker2.print("Promise rejected at", src, line + ":" + col);
+  V8Worker2.print(err.stack);
+}
+`
+
 type paramsOption struct {
 	params *std.Params
 	kind   paramKind
@@ -163,6 +170,10 @@ func run(cmd *cobra.Command, args []string) {
 	filename := args[0]
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := worker.Load("errorHandler", errorHandler); err != nil {
 		log.Fatal(err)
 	}
 

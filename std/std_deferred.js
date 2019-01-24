@@ -68,6 +68,7 @@ function requestAsPromise(req, tx) {
     return Promise.reject(new Error(err.message()));
   }
   case __std.DeferredRetval.Deferred: {
+    const stackCapture = new Error();
     const defer = new __std.Deferred();
     resp.retval(defer);
     const ser = defer.serial().toFloat64();
@@ -76,11 +77,17 @@ function requestAsPromise(req, tx) {
         delete deferreds[ser];
         return this(v);
       }
+      function rejectWithStack(err) {
+        /* eslint-disable no-param-reassign */
+        err.stack += stackCapture.stack.substring(stackCapture.stack.indexOf('\n'));
+        /* eslint-enable */
+        reject(err);
+      }
       const ondata = bytes => resolve(tx(bytes));
       registerCallbacks(
         ser,
         removeThenCall.bind(ondata),
-        removeThenCall.bind(reject),
+        removeThenCall.bind(rejectWithStack),
         removeThenCall.bind(panic('Unexpected EndOfStream for promisified deferred')),
       );
     });
