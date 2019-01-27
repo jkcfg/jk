@@ -15,3 +15,6 @@ std.write(o, 'test-write-override.json');
 std.write(o, 'test-write-override-no-file.json', { override: false });
 std.write({ ...o, foo: { ...o.foo, number: 1.3 } }, 'test-write-override.json', { override: false });
 std.write({ ...o, foo: { ...o.foo, string: 'yourstring' } }, 'test-write-override.json', { override: true });
+
+// Test writing a string in a JSON file does print the string as a JSON document.
+std.write('success', 'test-write-json-string.json');
