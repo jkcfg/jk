@@ -19,17 +19,40 @@ func nilCloser() {}
 
 type writerFunc func(io.Writer, []byte, int)
 
-func writeJSON(w io.Writer, value []byte, indent int) {
+type writeString bool
+
+const (
+	rawString  writeString = true
+	jsonString writeString = false
+)
+
+// We have a special case: when we're asked to print a string, we just write it
+// instead of writing the json value of a string.
+//   std.log('foo') -> foo (not "foo")
+// However, when explicitly asked to write JSON, we still need to honour that:
+//   std.write('foo', 'file.json') -> "foo"
+func writeJSONFull(w io.Writer, value []byte, indent int, str writeString) {
 	var v interface{}
 	if err := json.Unmarshal(value, &v); err != nil {
 		log.Fatalf("writeJSON: unmarshal: %s", err)
 	}
-	i, err := json.MarshalIndent(v, "", strings.Repeat(" ", indent))
-	if err != nil {
-		log.Fatalf("writeJSON: marshal: %s", err)
+	// Special case strings: we don't want to print them as JSON values.
+	if s, ok := v.(string); str == rawString && ok {
+		w.Write([]byte(s))
+	} else {
+		i, err := json.MarshalIndent(v, "", strings.Repeat(" ", indent))
+		if err != nil {
+			log.Fatalf("writeJSON: marshal: %s", err)
+		}
+		w.Write(i)
 	}
-	w.Write(i)
 	w.Write([]byte{'\n'})
+}
+
+func writeJSON(str writeString) writerFunc {
+	return func(w io.Writer, value []byte, indent int) {
+		writeJSONFull(w, value, indent, str)
+	}
 }
 
 func writeYAML(w io.Writer, value []byte, indent int) {
@@ -70,9 +93,9 @@ func writerFuncFromPath(path string) writerFunc {
 	case ".yml":
 		return writeYAML
 	case ".json":
-		fallthrough
+		return writeJSON(jsonString)
 	default:
-		return writeJSON
+		return writeJSON(rawString)
 	}
 }
 
@@ -95,7 +118,7 @@ func write(value []byte, path string, format __std.Format, indent int, override 
 	case __std.FormatAuto:
 		out = writerFuncFromPath(path)
 	case __std.FormatJSON:
-		out = writeJSON
+		out = writeJSON(jsonString)
 	case __std.FormatYAML:
 		out = writeYAML
 	case __std.FormatRaw:
