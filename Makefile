@@ -2,7 +2,7 @@
 
 all: jk
 
-VERSION := $(shell git describe)
+VERSION := $(shell git describe --tags)
 
 jk: pkg/__std/lib/assets_vfsdata.go
 	GO111MODULE=on go build -o $@ -ldflags "-X main.Version=$(VERSION)"
