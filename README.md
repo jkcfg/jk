@@ -20,10 +20,10 @@ tutorial][quick-start].
 
 While a general purpose language is great, configuration code can be made
 more maintainable by restricting what it can do. A nice property we can offer
-is being "hermetic" that we define with: if you clone a git repository and
-execute a `jk` script, the result should be the same on any machine. To give
-concrete examples, this means the `jk` standard library doesn't support
-environment variables nor has any networking capability.
+is being "hermetic", which we define as: if you clone a git repository and
+execute a `jk` script, the resulting files should be the same on any machine.
+To give concrete examples, this means the `jk` standard library doesn't
+support environment variables nor has any networking capability.
 
 On top of the `jk` runtime, we are building libraries to help people write
 configuration.
