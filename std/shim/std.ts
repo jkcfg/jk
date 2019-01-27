@@ -1,4 +1,3 @@
-function print(...args: any[]): void { };
 function log(value: any): void { };
 
 enum Format {
@@ -29,5 +28,5 @@ interface ReadOptions {
 function read(path: string, options?: ReadOptions): Promise<any> { return Promise.resolve({}) };
 
 export default {
-  print, log, Format, write, read,
+  log, Format, write, read,
 };
