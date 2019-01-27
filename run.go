@@ -152,7 +152,8 @@ func runArgs(cmd *cobra.Command, args []string) error {
 }
 
 type exec struct {
-	worker *v8.Worker
+	worker     *v8.Worker
+	workingDir string
 }
 
 func (e *exec) onMessageReceived(msg []byte) []byte {
@@ -160,11 +161,16 @@ func (e *exec) onMessageReceived(msg []byte) []byte {
 		Verbose:         runOptions.verbose,
 		Parameters:      runOptions.parameters,
 		OutputDirectory: runOptions.outputDirectory,
+		Root:            std.ReadBase{e.workingDir},
 	})
 }
 
 func run(cmd *cobra.Command, args []string) {
-	engine := &exec{}
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	engine := &exec{workingDir: cwd}
 	worker := v8.New(engine.onMessageReceived)
 	engine.worker = worker
 	filename := args[0]
