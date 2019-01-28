@@ -68,7 +68,6 @@ func (r ReadBase) Read(path string, format __std.Format, encoding __std.Encoding
 }
 
 func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, error) {
-	// TODO(michael): optionally (by default) check that the file is "here or down"
 	var reader readFunc = readRaw
 
 	if encoding == __std.EncodingJSON {
