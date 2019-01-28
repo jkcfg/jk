@@ -15,3 +15,7 @@ std.write(msg3, 'test3.json');
 
 import msg4 from 'testcase/subdir'; // node_modules/testcase/subdir/package.json specifies test4.js in its `module` field
 std.write(msg4, 'test4.json');
+
+import msg5 from 'testcase/vendor';
+// node_modules/testcase/vendor.js imports from 'vendor', which is to be found at node_modules/testcase/node_modules/vendored/index.js
+std.write(msg5, 'test5.json');
