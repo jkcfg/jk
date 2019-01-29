@@ -124,7 +124,6 @@ var runOptions struct {
 	verbose         bool
 	outputDirectory string
 	inputDirectory  string
-	useScriptDir    bool
 	parameters      std.Params
 }
 
@@ -139,8 +138,7 @@ func init() {
 	runOptions.parameters = std.NewParams()
 	runCmd.PersistentFlags().BoolVarP(&runOptions.verbose, "verbose", "v", false, "verbose output")
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
-	runCmd.PersistentFlags().StringVarP(&runOptions.inputDirectory, "directory", "C", "", "where to find files read in the script")
-	runCmd.PersistentFlags().BoolVar(&runOptions.useScriptDir, "use-script-dir", false, "use the directory of the given script as the input directory")
+	runCmd.PersistentFlags().StringVarP(&runOptions.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
 	runCmd.PersistentFlags().VarP(parameters(paramKindFromFile), "parameters", "p", "load parameters from a JSON file")
 	runCmd.PersistentFlags().Var(parameters(paramKindBoolean), "pb", "boolean input parameter")
 	runCmd.PersistentFlags().Var(parameters(paramKindNumber), "pn", "number input parameter")
@@ -176,22 +174,15 @@ func run(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var inputDir string
-	switch {
-	case runOptions.useScriptDir:
-		// this overrides --directory
-		inputDir = scriptDir
-	case runOptions.inputDirectory != "":
+
+	inputDir := scriptDir
+	if runOptions.inputDirectory != "" {
 		inputDir, err = filepath.Abs(runOptions.inputDirectory)
 		if err != nil {
 			log.Fatal(err)
 		}
-	default:
-		inputDir, err = os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
+
 	engine := &exec{workingDir: inputDir}
 	worker := v8.New(engine.onMessageReceived)
 	engine.worker = worker
