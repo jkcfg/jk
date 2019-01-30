@@ -49,8 +49,25 @@ func readerByPath(path string) readFunc {
 	return readJSON
 }
 
+// ReadBase represents the base directory for paths; it also serves
+// the purpose of being the top-most directory for reads, in the case
+// of paths including '..', or absolute paths.
+type ReadBase struct {
+	Path string
+}
+
+func (r ReadBase) Read(path string, format __std.Format, encoding __std.Encoding) ([]byte, error) {
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(r.Path, path)
+	}
+	_, err := filepath.Rel(r.Path, path)
+	if err != nil {
+		return nil, err
+	}
+	return read(path, format, encoding)
+}
+
 func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, error) {
-	// TODO(michael): optionally (by default) check that the file is "here or down"
 	var reader readFunc = readRaw
 
 	if encoding == __std.EncodingJSON {

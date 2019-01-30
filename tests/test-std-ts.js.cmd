@@ -1,3 +1,3 @@
 npm install --prefix %t
 npm run build --prefix %t
-jk run %t/test.js
+jk run -i . %t/test.js

@@ -73,7 +73,7 @@ func (n *NodeModulesImporter) Import(basePath, specifier, referrer string) ([]by
 	if strings.HasPrefix(specifier, "./") || strings.HasPrefix(specifier, "../") {
 		return loadAsPath(filepath.Join(basePath, specifier))
 	}
-	return loadAsModule(specifier, filepath.Dir(basePath))
+	return loadAsModule(specifier, basePath)
 }
 
 var moduleExtensions = []string{".mjs", ".js"}

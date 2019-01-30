@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -122,6 +123,7 @@ func (p *paramsOption) Type() string {
 var runOptions struct {
 	verbose         bool
 	outputDirectory string
+	inputDirectory  string
 	parameters      std.Params
 }
 
@@ -136,6 +138,7 @@ func init() {
 	runOptions.parameters = std.NewParams()
 	runCmd.PersistentFlags().BoolVarP(&runOptions.verbose, "verbose", "v", false, "verbose output")
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
+	runCmd.PersistentFlags().StringVarP(&runOptions.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
 	runCmd.PersistentFlags().VarP(parameters(paramKindFromFile), "parameters", "p", "load parameters from a JSON file")
 	runCmd.PersistentFlags().Var(parameters(paramKindBoolean), "pb", "boolean input parameter")
 	runCmd.PersistentFlags().Var(parameters(paramKindNumber), "pn", "number input parameter")
@@ -152,7 +155,8 @@ func runArgs(cmd *cobra.Command, args []string) error {
 }
 
 type exec struct {
-	worker *v8.Worker
+	worker     *v8.Worker
+	workingDir string
 }
 
 func (e *exec) onMessageReceived(msg []byte) []byte {
@@ -160,14 +164,28 @@ func (e *exec) onMessageReceived(msg []byte) []byte {
 		Verbose:         runOptions.verbose,
 		Parameters:      runOptions.parameters,
 		OutputDirectory: runOptions.outputDirectory,
+		Root:            std.ReadBase{Path: e.workingDir},
 	})
 }
 
 func run(cmd *cobra.Command, args []string) {
-	engine := &exec{}
+	filename := args[0]
+	scriptDir, err := filepath.Abs(filepath.Dir(filename))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	inputDir := scriptDir
+	if runOptions.inputDirectory != "" {
+		inputDir, err = filepath.Abs(runOptions.inputDirectory)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	engine := &exec{workingDir: inputDir}
 	worker := v8.New(engine.onMessageReceived)
 	engine.worker = worker
-	filename := args[0]
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -177,11 +195,11 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	resolver := resolve.NewResolver(worker, path.Dir(filename),
+	resolver := resolve.NewResolver(worker, scriptDir,
 		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
 		&resolve.StaticImporter{Specifier: "@jkcfg/std", Source: std.Module()},
 		&resolve.FileImporter{},
-		&resolve.NodeModulesImporter{},
+		&resolve.NodeModulesImporter{ModuleBase: scriptDir},
 	)
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		log.Fatal(err)
