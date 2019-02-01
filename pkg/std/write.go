@@ -106,8 +106,8 @@ func exists(path string) bool {
 	return true
 }
 
-func write(value []byte, path string, format __std.Format, indent int, override bool) {
-	if !override && exists(path) {
+func write(value []byte, path string, format __std.Format, indent int, overwrite bool) {
+	if !overwrite && exists(path) {
 		return
 	}
 
