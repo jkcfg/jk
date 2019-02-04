@@ -9,7 +9,7 @@ enum Format {
 interface WriteOptions {
   format?: Format,
   indent?: number,
-  override?: boolean,
+  overwrite?: boolean,
 }
 
 function write(value: any, path: string, options?: WriteOptions): void { };

@@ -5,7 +5,7 @@ const formatNoAuto = Object.assign({}, __std.Format);
 delete formatNoAuto.Auto;
 const Format = Object.freeze(formatNoAuto);
 
-function write(value, path = '', { format = Format.Auto, indent = 2, override = true } = {}) {
+function write(value, path = '', { format = Format.Auto, indent = 2, overwrite = true } = {}) {
   const builder = new flatbuffers.Builder(1024);
   const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
   const strOff = builder.createString(str);
@@ -16,7 +16,7 @@ function write(value, path = '', { format = Format.Auto, indent = 2, override = 
   __std.WriteArgs.addPath(builder, pathOff);
   __std.WriteArgs.addFormat(builder, format);
   __std.WriteArgs.addIndent(builder, indent);
-  __std.WriteArgs.addOverride(builder, override);
+  __std.WriteArgs.addOverwrite(builder, overwrite);
   const args = __std.WriteArgs.endWriteArgs(builder);
 
   __std.Message.startMessage(builder);

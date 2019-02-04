@@ -7,5 +7,5 @@ table WriteArgs {
     value: string;
     format: Format;
     indent: byte;
-    override: bool;
+    overwrite: bool;
 }

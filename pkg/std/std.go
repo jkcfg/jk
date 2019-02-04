@@ -66,7 +66,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		if path != "" && options.Verbose {
 			fmt.Printf("wrote %s\n", path)
 		}
-		write(args.Value(), path, args.Format(), int(args.Indent()), toBool(args.Override()))
+		write(args.Value(), path, args.Format(), int(args.Indent()), toBool(args.Overwrite()))
 		return nil
 	case __std.ArgsReadArgs:
 		args := __std.ReadArgs{}
