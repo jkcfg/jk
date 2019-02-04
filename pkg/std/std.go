@@ -100,12 +100,28 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		args := __std.ParamArgs{}
 		args.Init(union.Bytes, union.Pos)
 
-		json := param(options.Parameters, __std.ParamType(args.Type()), string(args.Path()), string(args.DefaultValue()))
-
+		// return buffer.
 		b := flatbuffers.NewBuilder(512)
-		jsonOffset := b.CreateString(string(json))
+		var (
+			off  flatbuffers.UOffsetT
+			kind byte
+		)
+
+		json, err := param(options.Parameters, __std.ParamType(args.Type()), string(args.Path()), string(args.DefaultValue()))
+		if err != nil {
+			kind = __std.ParamRetvalError
+			off = stdError(b, err)
+		} else {
+			kind = __std.ParamRetvalParamValue
+			jsonOffset := b.CreateString(string(json))
+			__std.ParamValueStart(b)
+			__std.ParamValueAddJson(b, jsonOffset)
+			off = __std.ParamValueEnd(b)
+		}
+
 		__std.ParamResponseStart(b)
-		__std.ParamResponseAddJson(b, jsonOffset)
+		__std.ParamResponseAddRetvalType(b, kind)
+		__std.ParamResponseAddRetval(b, off)
 		responseOffset := __std.ParamResponseEnd(b)
 		b.Finish(responseOffset)
 		return b.FinishedBytes()

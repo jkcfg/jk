@@ -25,11 +25,28 @@ function getParameter(type, path, defaultValue) {
 
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
   const resp = __std.ParamResponse.getRootAsParamResponse(buf);
-  const v = JSON.parse(resp.json());
-  if (v == null) {
-    return defaultValue;
+
+  switch (resp.retvalType()) {
+  case __std.ParamRetval.ParamValue: {
+    // The runtime has returned the parameter value (or null).
+    const ret = new __std.ParamValue();
+    resp.retval(ret);
+
+    const v = JSON.parse(ret.json());
+    if (v == null) {
+      return defaultValue;
+    }
+    return v;
   }
-  return v;
+  case __std.ParamRetval.Error: {
+    // The runtime has returned an error.
+    const err = new __std.Error();
+    resp.retval(err);
+    throw new Error(err.message());
+  }
+  default:
+    throw new Error('Unexpected response to param');
+  }
 }
 
 function getBoolean(path, defaultValue) {
