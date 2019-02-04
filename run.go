@@ -58,6 +58,7 @@ func (p *paramsOption) setFromFile(s string) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	params, err := std.NewParamsFromJSON(f)
 	if err != nil {
@@ -66,7 +67,6 @@ func (p *paramsOption) setFromFile(s string) error {
 
 	p.params.Merge(params)
 
-	f.Close()
 	return nil
 }
 
