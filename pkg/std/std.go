@@ -43,6 +43,14 @@ func toBool(b byte) bool {
 	return true
 }
 
+// stdError builds an Error flatbuffer we can return to the javascript side.
+func stdError(b *flatbuffers.Builder, err error) flatbuffers.UOffsetT {
+	off := b.CreateString(err.Error())
+	__std.ErrorStart(b)
+	__std.ErrorAddMessage(b, off)
+	return __std.ErrorEnd(b)
+}
+
 // Execute parses a message from v8 and execute the corresponding function.
 func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	message := __std.GetRootAsMessage(msg, 0)
@@ -125,10 +133,7 @@ type sendFunc func([]byte) error
 
 func (fn sendFunc) Error(s deferred.Serial, err error) {
 	b := flatbuffers.NewBuilder(512)
-	off := b.CreateString(err.Error())
-	__std.ErrorStart(b)
-	__std.ErrorAddMessage(b, off)
-	off = __std.ErrorEnd(b)
+	off := stdError(b, err)
 	__std.FulfilmentStart(b)
 	__std.FulfilmentAddSerial(b, uint64(s))
 	__std.FulfilmentAddValueType(b, __std.FulfilmentValueError)
