@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/jkcfg/jk/pkg/deferred"
@@ -27,14 +26,11 @@ var runCmd = &cobra.Command{
 	Run:   run,
 }
 
-type paramKind int
+type paramSource int
 
 const (
-	paramKindFromFile paramKind = iota
-	paramKindBoolean
-	paramKindNumber
-	paramKindString
-	paramKindObject
+	paramSourceFile paramSource = iota
+	paramSourceCommandLine
 )
 
 const errorHandler = `
@@ -46,7 +42,7 @@ function onerror(msg, src, line, col, err) {
 
 type paramsOption struct {
 	params *std.Params
-	kind   paramKind
+	source paramSource
 }
 
 func (p *paramsOption) String() string {
@@ -78,43 +74,19 @@ func (p *paramsOption) setFromCommandline(s string) error {
 	path := parts[0]
 	v := parts[1]
 
-	switch p.kind {
-	case paramKindBoolean:
-		b, err := strconv.ParseBool(v)
-		if err != nil {
-			return fmt.Errorf("could not parse '%s' as a boolean", v)
-		}
-		p.params.SetBool(path, b)
-	case paramKindNumber:
-		n, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return fmt.Errorf("could not parse '%s' as a float64", v)
-		}
-		p.params.SetNumber(path, n)
-	case paramKindString:
-		p.params.SetString(path, v)
-	case paramKindObject:
-		o, err := std.NewParamsFromJSON(strings.NewReader(v))
-		if err != nil {
-			return fmt.Errorf("could not parse JSON '%s': %v", v, err)
-		}
-		params := std.NewParams()
-		params.SetObject(path, o)
-		p.params.Merge(params)
-	}
-
+	p.params.SetString(path, v)
 	return nil
 }
 
 func (p *paramsOption) Set(s string) error {
-	if p.kind == paramKindFromFile {
+	if p.source == paramSourceFile {
 		return p.setFromFile(s)
 	}
 	return p.setFromCommandline(s)
 }
 
 func (p *paramsOption) Type() string {
-	if p.kind == paramKindFromFile {
+	if p.source == paramSourceFile {
 		return "filename"
 	}
 	return "name=value"
@@ -127,10 +99,10 @@ var runOptions struct {
 	parameters      std.Params
 }
 
-func parameters(kind paramKind) pflag.Value {
+func parameters(source paramSource) pflag.Value {
 	return &paramsOption{
 		params: &runOptions.parameters,
-		kind:   kind,
+		source: source,
 	}
 }
 
@@ -139,11 +111,8 @@ func init() {
 	runCmd.PersistentFlags().BoolVarP(&runOptions.verbose, "verbose", "v", false, "verbose output")
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	runCmd.PersistentFlags().StringVarP(&runOptions.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
-	runCmd.PersistentFlags().VarP(parameters(paramKindFromFile), "parameters", "p", "load parameters from a JSON file")
-	runCmd.PersistentFlags().Var(parameters(paramKindBoolean), "pb", "boolean input parameter")
-	runCmd.PersistentFlags().Var(parameters(paramKindNumber), "pn", "number input parameter")
-	runCmd.PersistentFlags().Var(parameters(paramKindString), "ps", "string input parameter")
-	runCmd.PersistentFlags().Var(parameters(paramKindObject), "po", "object input parameter")
+	runCmd.PersistentFlags().VarP(parameters(paramSourceFile), "parameters", "f", "load parameters from a JSON file")
+	runCmd.PersistentFlags().VarP(parameters(paramSourceCommandLine), "parameter", "p", "boolean input parameter")
 	jk.AddCommand(runCmd)
 }
 
