@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -63,6 +64,12 @@ func (p Params) GetBool(path string) (bool, error) {
 	if b, ok := v.(bool); ok {
 		return b, nil
 	}
+	// string -> bool coercion
+	if s, ok := v.(string); ok {
+		if b, err := strconv.ParseBool(s); err == nil {
+			return b, nil
+		}
+	}
 	return false, fmt.Errorf("cannot convert %v to bool", v)
 }
 
@@ -74,6 +81,12 @@ func (p Params) GetNumber(path string) (float64, error) {
 	}
 	if f, ok := v.(float64); ok {
 		return f, nil
+	}
+	// string -> number coercion.
+	if s, ok := v.(string); ok {
+		if f, err := strconv.ParseFloat(s, 64); err == nil {
+			return f, nil
+		}
 	}
 	return 0, fmt.Errorf("cannot convert %v to float64", v)
 }
