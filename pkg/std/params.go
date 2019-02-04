@@ -70,7 +70,7 @@ func (p Params) GetBool(path string) (bool, error) {
 			return b, nil
 		}
 	}
-	return false, fmt.Errorf("cannot convert %v to bool", v)
+	return false, fmt.Errorf("cannot convert %q to bool", v)
 }
 
 // GetNumber retrieves a number parameter.
@@ -88,7 +88,7 @@ func (p Params) GetNumber(path string) (float64, error) {
 			return f, nil
 		}
 	}
-	return 0, fmt.Errorf("cannot convert %v to float64", v)
+	return 0, fmt.Errorf("cannot convert %q to float64", v)
 }
 
 // GetString retrieves a string parameter.
@@ -100,7 +100,7 @@ func (p Params) GetString(path string) (string, error) {
 	if s, ok := v.(string); ok {
 		return s, nil
 	}
-	return "", fmt.Errorf("cannot convert %v to string", v)
+	return "", fmt.Errorf("cannot convert %q to string", v)
 }
 
 // GetObject retrieves a object parameter.
@@ -112,7 +112,7 @@ func (p Params) GetObject(path string) (Params, error) {
 	if o, ok := v.(Params); ok {
 		return o, nil
 	}
-	return NewParams(), fmt.Errorf("cannot convert %v to Params", v)
+	return NewParams(), fmt.Errorf("cannot convert %q to Params", v)
 }
 
 func isMap(v interface{}) bool {
