@@ -64,7 +64,7 @@ This project is still in early stages but future (exciting!) plans include:
 [quick-start]: https://jkcfg.github.io/#/documentation/quick-start
 [mixins]: https://github.com/jkcfg/mixins
 [kubernetes]: https://github.com/jkcfg/kubernetes
-[guestbook-ts]: https://github.com/jkcfg/kubernetes/blob/master/examples/guestbook-ts/guestbook.ts
+[guestbook-ts]: https://github.com/jkcfg/kubernetes/blob/master/examples/guestbook-ts
 [mixins-example]: https://github.com/jkcfg/mixins/blob/master/examples/mix-simple/namespace.js
 [kustomize]: https://github.com/jkcfg/kubernetes/tree/master/examples/overlay
 [v8worker2]: https://github.com/ry/v8worker2
