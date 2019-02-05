@@ -3,13 +3,12 @@ package std
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/jkcfg/jk/pkg/__std"
 )
 
-func param(params Params, kind __std.ParamType, path string, defaultValue string) []byte {
+func param(params Params, kind __std.ParamType, path string, defaultValue string) ([]byte, error) {
 	var v interface{}
 	var err error
 
@@ -37,15 +36,14 @@ func param(params Params, kind __std.ParamType, path string, defaultValue string
 	}
 
 	if err != nil && strings.Contains(err.Error(), "cannot convert") {
-		// TODO(dlespiau): return an error to throw a JS exception.
-		fmt.Fprintf(os.Stderr, "invalid type for param '%s': %v\n", path, err)
-		return []byte("null")
+		return []byte("null"), fmt.Errorf("invalid type for param '%s': %v", path, err)
 	} else if err != nil {
-		// path not found.
-		return []byte("null")
+		// Path not found. This is not an error, the std lib will return the parameter
+		// default value.
+		return []byte("null"), nil
 	}
 
 	// Param returns values that can be marshalled to JSON
 	data, _ := json.Marshal(v)
-	return data
+	return data, nil
 }

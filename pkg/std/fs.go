@@ -1,6 +1,7 @@
 package std
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"sort"
@@ -14,19 +15,16 @@ func fileInfo(path string) []byte {
 	info, err := os.Stat(path)
 	switch {
 	case err != nil:
-		return fsError(err.Error())
+		return fsError(err)
 	case !(info.IsDir() || info.Mode().IsRegular()):
-		return fsError("not a regular file")
+		return fsError(errors.New("not a regular file"))
 	}
 	return fileInfoResponse(info.Name(), path, info.IsDir())
 }
 
-func fsError(msg string) []byte {
+func fsError(err error) []byte {
 	b := flatbuffers.NewBuilder(1024)
-	off := b.CreateString(msg)
-	__std.ErrorStart(b)
-	__std.ErrorAddMessage(b, off)
-	off = __std.ErrorEnd(b)
+	off := stdError(b, err)
 	__std.FileSystemResponseStart(b)
 	__std.FileSystemResponseAddRetvalType(b, __std.FileSystemRetvalError)
 	__std.FileSystemResponseAddRetval(b, off)
@@ -63,11 +61,11 @@ func buildFileInfo(b *flatbuffers.Builder, name, path string, isdir bool) flatbu
 func directoryListing(path string) []byte {
 	dir, err := os.Open(path)
 	if err != nil {
-		return fsError(err.Error())
+		return fsError(err)
 	}
 	infos, err := dir.Readdir(0)
 	if err != nil {
-		return fsError(err.Error())
+		return fsError(err)
 	}
 
 	// Sort the fileinfos by name, to avoid

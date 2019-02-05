@@ -66,6 +66,25 @@ func TestTypedGet(t *testing.T) {
 
 }
 
+func TestCoercion(t *testing.T) {
+	params := p(`{ "n": "0.2", "b": "true" }`)
+
+	// Happy cases.
+	vNumber, err := params.GetNumber("n")
+	assert.NoError(t, err)
+	assert.Equal(t, 0.2, vNumber)
+
+	vBool, err := params.GetBool("b")
+	assert.NoError(t, err)
+	assert.Equal(t, true, vBool)
+
+	// Invalid coercion.
+	_, err = params.GetNumber("b")
+	assert.Error(t, err)
+	_, err = params.GetBool("n")
+	assert.Error(t, err)
+}
+
 func TestSet(t *testing.T) {
 	tests := []struct {
 		o        Params

@@ -1,3 +1,5 @@
+include "__std_Error.fbs";
+
 namespace __std;
 
 enum ParamType : byte {
@@ -16,6 +18,15 @@ table ParamArgs {
   defaultValue: string;
 }
 
-table ParamResponse {
+table ParamValue {
   json: string;
+}
+
+union ParamRetval {
+    ParamValue,
+    Error,
+}
+
+table ParamResponse {
+  retval: ParamRetval;
 }

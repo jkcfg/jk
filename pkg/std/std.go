@@ -43,6 +43,14 @@ func toBool(b byte) bool {
 	return true
 }
 
+// stdError builds an Error flatbuffer we can return to the javascript side.
+func stdError(b *flatbuffers.Builder, err error) flatbuffers.UOffsetT {
+	off := b.CreateString(err.Error())
+	__std.ErrorStart(b)
+	__std.ErrorAddMessage(b, off)
+	return __std.ErrorEnd(b)
+}
+
 // Execute parses a message from v8 and execute the corresponding function.
 func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	message := __std.GetRootAsMessage(msg, 0)
@@ -92,12 +100,28 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		args := __std.ParamArgs{}
 		args.Init(union.Bytes, union.Pos)
 
-		json := param(options.Parameters, __std.ParamType(args.Type()), string(args.Path()), string(args.DefaultValue()))
-
+		// return buffer.
 		b := flatbuffers.NewBuilder(512)
-		jsonOffset := b.CreateString(string(json))
+		var (
+			off  flatbuffers.UOffsetT
+			kind byte
+		)
+
+		json, err := param(options.Parameters, __std.ParamType(args.Type()), string(args.Path()), string(args.DefaultValue()))
+		if err != nil {
+			kind = __std.ParamRetvalError
+			off = stdError(b, err)
+		} else {
+			kind = __std.ParamRetvalParamValue
+			jsonOffset := b.CreateString(string(json))
+			__std.ParamValueStart(b)
+			__std.ParamValueAddJson(b, jsonOffset)
+			off = __std.ParamValueEnd(b)
+		}
+
 		__std.ParamResponseStart(b)
-		__std.ParamResponseAddJson(b, jsonOffset)
+		__std.ParamResponseAddRetvalType(b, kind)
+		__std.ParamResponseAddRetval(b, off)
 		responseOffset := __std.ParamResponseEnd(b)
 		b.Finish(responseOffset)
 		return b.FinishedBytes()
@@ -125,10 +149,7 @@ type sendFunc func([]byte) error
 
 func (fn sendFunc) Error(s deferred.Serial, err error) {
 	b := flatbuffers.NewBuilder(512)
-	off := b.CreateString(err.Error())
-	__std.ErrorStart(b)
-	__std.ErrorAddMessage(b, off)
-	off = __std.ErrorEnd(b)
+	off := stdError(b, err)
 	__std.FulfilmentStart(b)
 	__std.FulfilmentAddSerial(b, uint64(s))
 	__std.FulfilmentAddValueType(b, __std.FulfilmentValueError)
