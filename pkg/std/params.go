@@ -4,8 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/ghodss/yaml"
 )
 
 // Params is a paramater store akin to a JSON object.
@@ -16,12 +21,45 @@ func NewParams() Params {
 	return make(map[string]interface{})
 }
 
-// NewParamsFromJSON creates Params from JSON.
+// NewParamsFromJSON creates Params from a JSON object.
 func NewParamsFromJSON(r io.Reader) (Params, error) {
 	p := NewParams()
 	decoder := json.NewDecoder(r)
 	err := decoder.Decode(&p)
 	return p, err
+}
+
+// NewParamsFromYAML creates Params from a YAML object.
+func NewParamsFromYAML(r io.Reader) (Params, error) {
+	bytes, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	p := NewParams()
+	if err := yaml.Unmarshal(bytes, &p); err != nil {
+		return nil, err
+	}
+	return p, err
+}
+
+// NewParamsFromFile creates Params from a JSON or YAML file.
+func NewParamsFromFile(path string) (Params, error) {
+	var decode func(r io.Reader) (Params, error)
+	switch filepath.Ext(path) {
+	case ".yml", ".yaml":
+		decode = NewParamsFromYAML
+	default:
+		decode = NewParamsFromJSON
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return decode(f)
 }
 
 // Get retrieves a parameter.
