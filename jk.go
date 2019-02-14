@@ -9,8 +9,10 @@ import (
 )
 
 var jk = cobra.Command{
-	Use:   "jk",
-	Short: "jk helps you maintain configuration",
+	Use:           "jk",
+	Short:         "jk helps you maintain configuration",
+	SilenceErrors: true,
+	SilenceUsage:  true,
 }
 
 func main() {
