@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -50,15 +49,9 @@ func (p *paramsOption) String() string {
 }
 
 func (p *paramsOption) setFromFile(s string) error {
-	f, err := os.Open(s)
+	params, err := std.NewParamsFromFile(s)
 	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	params, err := std.NewParamsFromJSON(f)
-	if err != nil {
-		return fmt.Errorf("%s isn't valid JSON: %v", s, err)
+		return fmt.Errorf("%s: %v", s, err)
 	}
 
 	p.params.Merge(params)
@@ -111,7 +104,7 @@ func init() {
 	runCmd.PersistentFlags().BoolVarP(&runOptions.verbose, "verbose", "v", false, "verbose output")
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	runCmd.PersistentFlags().StringVarP(&runOptions.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
-	runCmd.PersistentFlags().VarP(parameters(paramSourceFile), "parameters", "f", "load parameters from a JSON file")
+	runCmd.PersistentFlags().VarP(parameters(paramSourceFile), "parameters", "f", "load parameters from a JSON or YAML file")
 	runCmd.PersistentFlags().VarP(parameters(paramSourceCommandLine), "parameter", "p", "boolean input parameter")
 	jk.AddCommand(runCmd)
 }

@@ -17,6 +17,19 @@ func p(s string) Params {
 	return params
 }
 
+const yamlParams = `
+foo: bar
+o:
+  foo: baz
+  number: 2
+`
+
+func TestNewFromYAML(t *testing.T) {
+	params, err := NewParamsFromYAML(strings.NewReader(yamlParams))
+	assert.NoError(t, err)
+	assert.Equal(t, p(`{ "foo": "bar", "o": { "foo": "baz", "number": 2 } }`), params)
+}
+
 func TestGet(t *testing.T) {
 	tests := []struct {
 		o        Params
