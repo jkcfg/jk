@@ -49,7 +49,7 @@ func NewResolver(loader Loader, basePath string, importers ...Importer) *Resolve
 
 // ResolveModule imports the specifier from an import statement located in the
 // referrer module.
-func (r Resolver) ResolveModule(specifier, referrer string) int {
+func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 	// The first importer that resolves the specifier wins.
 	var resolvedPath, source string
 	var candidates []Candidate
@@ -72,14 +72,14 @@ func (r Resolver) ResolveModule(specifier, referrer string) int {
 				fmt.Fprintf(os.Stderr, "    %s (%s)\n", candidate.Path, candidate.Rule)
 			}
 		}
-		return 1
+		return "", 1
 	}
 
 	resolver := r
 	resolver.base = filepath.Dir(resolvedPath)
-	if err := r.loader.LoadModule(specifier, source, resolver.ResolveModule); err != nil {
+	if err := r.loader.LoadModule(resolvedPath, source, resolver.ResolveModule); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
-		return 1
+		return "", 1
 	}
-	return 0
+	return resolvedPath, 0
 }

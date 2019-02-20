@@ -40,6 +40,10 @@ function onerror(msg, src, line, col, err) {
 }
 `
 
+const global = `
+var global = {};
+`
+
 type paramsOption struct {
 	params *std.Params
 	source paramSource
@@ -161,6 +165,9 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	if err := worker.Load("errorHandler", errorHandler); err != nil {
+		log.Fatal(err)
+	}
+	if err := worker.Load("global", global); err != nil {
 		log.Fatal(err)
 	}
 

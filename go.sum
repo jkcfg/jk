@@ -8,6 +8,8 @@ github.com/jkcfg/v8worker2 v0.0.0-20181103131220-163e7fd126a2 h1:SsNwIj868+EIEnw
 github.com/jkcfg/v8worker2 v0.0.0-20181103131220-163e7fd126a2/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
 github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099 h1:CKxqDomswaJteVLxmp5Lo02zy3+33QGSs3J0eh+Po3U=
 github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
+github.com/jkcfg/v8worker2 v0.0.0-20190217191700-405919a64720 h1:YBgCfrSk4xZOH//PIvVw80/n5BkIPrwWoik275XUqtg=
+github.com/jkcfg/v8worker2 v0.0.0-20190217191700-405919a64720/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371 h1:SWV2fHctRpRrp49VXJ6UZja7gU9QLHwRpIPBN89SKEo=

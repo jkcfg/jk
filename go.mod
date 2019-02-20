@@ -16,4 +16,5 @@ require (
 )
 
 // go modules need a special branch with a few commits (that have been proposed upstream)
-replace github.com/ry/v8worker2 => github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099
+//replace github.com/ry/v8worker2 => github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099
+replace github.com/ry/v8worker2 => github.com/jkcfg/v8worker2 v0.0.0-20190217191700-405919a64720
