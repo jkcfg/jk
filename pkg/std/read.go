@@ -13,6 +13,7 @@ import (
 	"github.com/jkcfg/jk/pkg/__std"
 
 	"github.com/ghodss/yaml"
+	yamlclassic "gopkg.in/yaml.v2"
 )
 
 func readYAML(in io.Reader) ([]byte, error) {
@@ -23,6 +24,35 @@ func readYAML(in io.Reader) ([]byte, error) {
 	return yaml.YAMLToJSON(bytes)
 }
 
+func readYAMLStream(in io.Reader) ([]byte, error) {
+	// This specific one is tricky: since YAML can have more than just
+	// strings as map keys, the decoder may return a
+	// `map[interface{}]interface{}`, which can't be directly encoded
+	// in JSON.
+	//
+	// ghodss/yaml has a conversion function, from YAML bytes to JSON
+	// butes -- so we have to _un_parse the value we just got, to put
+	// it through the conversion.
+	decoder := yamlclassic.NewDecoder(in)
+	var yamlvalues []interface{}
+	for {
+		var v interface{}
+		err := decoder.Decode(&v)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		yamlvalues = append(yamlvalues, v)
+	}
+	yamlbytes, err := yamlclassic.Marshal(yamlvalues)
+	if err != nil {
+		return nil, err
+	}
+	return yaml.YAMLToJSON(yamlbytes)
+}
+
 func readJSON(in io.Reader) ([]byte, error) {
 	var buf bytes.Buffer
 	tee := io.TeeReader(in, &buf)
@@ -31,6 +61,24 @@ func readJSON(in io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func readJSONStream(in io.Reader) ([]byte, error) {
+	decoder := json.NewDecoder(in)
+	var items []interface{}
+	for {
+		var v interface{}
+		err := decoder.Decode(&v)
+		if err == nil {
+			items = append(items, v)
+			continue
+		}
+		if err == io.EOF {
+			break
+		}
+		return nil, err
+	}
+	return json.Marshal(items)
 }
 
 func readRaw(in io.Reader) ([]byte, error) {
@@ -76,8 +124,12 @@ func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, er
 			reader = readerByPath(path)
 		case __std.FormatYAML:
 			reader = readYAML
+		case __std.FormatYAMLStream:
+			reader = readYAMLStream
 		case __std.FormatJSON:
 			reader = readJSON
+		case __std.FormatJSONStream:
+			reader = readJSONStream
 		default:
 			reader = readJSON
 		}
