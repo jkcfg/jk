@@ -28,7 +28,7 @@ function recv(buf) {
     ({ end: callback } = deferreds[ser]);
     break;
   default:
-    throw new Error('Unknown message recieved from runtime');
+    throw new Error('Unknown message received from runtime');
   }
 
   if (callback === undefined) {

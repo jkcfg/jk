@@ -165,6 +165,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	resolver := resolve.NewResolver(worker, scriptDir,
+		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: std.MakeResourceModule},
 		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
 		&resolve.StaticImporter{Specifier: "@jkcfg/std", Source: std.Module()},
 		&resolve.FileImporter{},
