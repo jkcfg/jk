@@ -12,7 +12,7 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/text v0.3.0
-	gopkg.in/yaml.v2 v2.2.1 // indirect
+	gopkg.in/yaml.v2 v2.2.1
 )
 
 // go modules need a special branch with a few commits (that have been proposed upstream)

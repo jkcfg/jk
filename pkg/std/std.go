@@ -85,7 +85,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		// for now, treat everything as a file read from a local path
 		// (which will only fail in the resolution, and can't be
 		// cancelled).
-		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(string(args.Url()), args.Format(), args.Encoding()) }, sendFunc(res.SendBytes))
+		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(string(args.Path()), args.Format(), args.Encoding()) }, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 	case __std.ArgsFileInfoArgs:
 		args := __std.FileInfoArgs{}

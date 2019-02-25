@@ -1,0 +1,10 @@
+baz:
+- 1
+- 2
+- 3
+foo: bar
+--- literal string
+---
+- 9
+- 8
+- 7

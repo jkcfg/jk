@@ -11,6 +11,7 @@ import (
 	"github.com/jkcfg/jk/pkg/__std"
 
 	"github.com/ghodss/yaml"
+	yamlclassic "gopkg.in/yaml.v2"
 )
 
 type closer func()
@@ -61,6 +62,32 @@ func writeYAML(w io.Writer, value []byte, indent int) {
 		log.Fatalf("writeYAML: %s", err)
 	}
 	w.Write(y)
+}
+
+func writeYAMLStream(w io.Writer, v []byte, indent int) {
+	var values []interface{}
+	if err := json.Unmarshal(v, &values); err != nil {
+		log.Fatalf("writeYAMLStream: %s", err)
+	}
+	encoder := yamlclassic.NewEncoder(w)
+	for _, item := range values {
+		if err := encoder.Encode(item); err != nil {
+			log.Fatalf("writeYAMLStream: %s", err)
+		}
+	}
+}
+
+func writeJSONStream(w io.Writer, v []byte, indent int) {
+	var values []interface{}
+	if err := json.Unmarshal(v, &values); err != nil {
+		log.Fatalf("writeJSONStream: %s", err)
+	}
+	encoder := json.NewEncoder(w)
+	for _, item := range values {
+		if err := encoder.Encode(item); err != nil {
+			log.Fatalf("writeJSONStream: %s", err)
+		}
+	}
 }
 
 func writeRaw(w io.Writer, value []byte, _ int) {
@@ -119,8 +146,12 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 		out = writerFuncFromPath(path)
 	case __std.FormatJSON:
 		out = writeJSON(jsonString)
+	case __std.FormatJSONStream:
+		out = writeJSONStream
 	case __std.FormatYAML:
 		out = writeYAML
+	case __std.FormatYAMLStream:
+		out = writeYAMLStream
 	case __std.FormatRaw:
 		out = writeRaw
 	default:

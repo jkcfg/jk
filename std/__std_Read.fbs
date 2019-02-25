@@ -16,7 +16,7 @@ enum Encoding : byte {
 }
 
 table ReadArgs {
-  url: string;
+  path: string;
   timeout: uint;
   encoding: Encoding;
   format: Format;
