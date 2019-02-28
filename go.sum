@@ -10,8 +10,12 @@ github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099 h1:CKxqDomswaJteVL
 github.com/jkcfg/v8worker2 v0.0.0-20190118163300-ec91674d0099/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
 github.com/jkcfg/v8worker2 v0.0.0-20190217191700-405919a64720 h1:YBgCfrSk4xZOH//PIvVw80/n5BkIPrwWoik275XUqtg=
 github.com/jkcfg/v8worker2 v0.0.0-20190217191700-405919a64720/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
+github.com/jkcfg/v8worker2 v0.0.0-20190228210604-6677fe93c5c2 h1:yroXZIO0q4uBioF+qxfrstz58/0kCKGJsBFd1Vd2OYg=
+github.com/jkcfg/v8worker2 v0.0.0-20190228210604-6677fe93c5c2/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/ry/v8worker2 v0.0.0-20190118154056-6857a7739bc2 h1:nvqxIeI0eVhPV4d3UubaTiadSnAha1DaqMOBN0E3kqg=
+github.com/ry/v8worker2 v0.0.0-20190118154056-6857a7739bc2/go.mod h1:BdjqPPLlLw26j9NdhD0cQVJL7JvzCk6iWLsdy8NzbpQ=
 github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371 h1:SWV2fHctRpRrp49VXJ6UZja7gU9QLHwRpIPBN89SKEo=
 github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371/go.mod h1:ZY1cvUeJuFPAdZ/B6v7RHavJWZn2YPVFQ1OSXhCGOkg=
 github.com/shurcooL/vfsgen v0.0.0-20181020040650-a97a25d856ca h1:3fECS8atRjByijiI8yYiuwLwQ2ZxXobW7ua/8GRB3pI=

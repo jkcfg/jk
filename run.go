@@ -14,7 +14,7 @@ import (
 	"github.com/jkcfg/jk/pkg/resolve"
 	"github.com/jkcfg/jk/pkg/std"
 
-	v8 "github.com/ry/v8worker2"
+	v8 "github.com/jkcfg/v8worker2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
