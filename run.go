@@ -13,7 +13,7 @@ import (
 	"github.com/jkcfg/jk/pkg/resolve"
 	"github.com/jkcfg/jk/pkg/std"
 
-	v8 "github.com/ry/v8worker2"
+	v8 "github.com/jkcfg/v8worker2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -37,6 +37,10 @@ function onerror(msg, src, line, col, err) {
   V8Worker2.print("Promise rejected at", src, line + ":" + col);
   V8Worker2.print(err.stack);
 }
+`
+
+const global = `
+var global = {};
 `
 
 type paramsOption struct {
@@ -154,6 +158,9 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	if err := worker.Load("errorHandler", errorHandler); err != nil {
+		log.Fatal(err)
+	}
+	if err := worker.Load("global", global); err != nil {
 		log.Fatal(err)
 	}
 

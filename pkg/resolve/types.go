@@ -1,7 +1,7 @@
 package resolve
 
 import (
-	v8 "github.com/ry/v8worker2"
+	v8 "github.com/jkcfg/v8worker2"
 )
 
 // Loader is an object able to load a ES 2015 module.
