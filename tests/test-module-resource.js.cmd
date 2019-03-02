@@ -1,1 +1,1 @@
-jk run -v --input-directory=/tmp %f
+jk run --input-directory=/tmp %f

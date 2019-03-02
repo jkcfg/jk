@@ -1,20 +1,48 @@
 package std
 
 import (
+	"crypto/sha256"
 	"fmt"
 )
 
-func MakeResourceModule(basePath string) ([]byte, string) {
-	return []byte(fmt.Sprintf(`
+// ModuleResources keeps track of the base paths for modules, as well
+// as generating the magic modules when they are imported.
+type ModuleResources struct {
+	// module hash -> basePath for resource reads
+	modules map[string]string
+}
+
+// NewModuleResources initialises a new ModuleResources
+func NewModuleResources() *ModuleResources {
+	return &ModuleResources{
+		modules: map[string]string{},
+	}
+}
+
+// ResourceBase provides the module base path given the hash.
+func (r *ModuleResources) ResourceBase(hash string) (string, bool) {
+	path, ok := r.modules[hash]
+	return path, ok
+}
+
+// MakeModule generates resource module code (and path) given the
+// importing module's base path.
+func (r *ModuleResources) MakeModule(basePath string) ([]byte, string) {
+	hash := sha256.New()
+	hash.Write([]byte(basePath))
+	moduleHash := fmt.Sprintf("%x", hash.Sum(nil))
+	r.modules[moduleHash] = basePath
+
+	code := `
 import std from '@jkcfg/std';
 
-const base = %q;
+const module = %q;
 
-function resource(path, ...rest) {
-  return std.read(base +'/' + path, ...rest);
+function resource(path, {...rest} = {}) {
+  return std.read(path, {...rest, module});
 }
 
 export default resource;
-`,
-		basePath)), "resource:" + basePath
+`
+	return []byte(fmt.Sprintf(code, moduleHash)), "resource:" + basePath
 }

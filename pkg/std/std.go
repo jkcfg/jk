@@ -89,7 +89,8 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		if path != "" && options.Verbose {
 			fmt.Printf("read %s\n", path)
 		}
-		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(path, args.Format(), args.Encoding()) }, sendFunc(res.SendBytes))
+		module := string(args.Module())
+		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(path, args.Format(), args.Encoding(), module) }, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 	case __std.ArgsFileInfoArgs:
 		args := __std.FileInfoArgs{}
