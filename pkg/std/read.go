@@ -3,10 +3,12 @@ package std
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/text/encoding/unicode"
 
@@ -108,9 +110,12 @@ func (r ReadBase) Read(path string, format __std.Format, encoding __std.Encoding
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(r.Path, path)
 	}
-	_, err := filepath.Rel(r.Path, path)
+	rel, err := filepath.Rel(r.Path, path)
 	if err != nil {
 		return nil, err
+	}
+	if strings.HasPrefix(rel, "..") {
+		return nil, fmt.Errorf("reads outside input path forbidden")
 	}
 	return read(path, format, encoding)
 }
