@@ -1,6 +1,7 @@
 package std
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
 )
@@ -10,13 +11,17 @@ import (
 type ModuleResources struct {
 	// module hash -> basePath for resource reads
 	modules map[string]string
+	salt    []byte
 }
 
 // NewModuleResources initialises a new ModuleResources
 func NewModuleResources() *ModuleResources {
-	return &ModuleResources{
+	r := &ModuleResources{
 		modules: map[string]string{},
 	}
+	r.salt = make([]byte, 32)
+	rand.Read(r.salt)
+	return r
 }
 
 // ResourceBase provides the module base path given the hash.
@@ -30,6 +35,7 @@ func (r *ModuleResources) ResourceBase(hash string) (string, bool) {
 func (r *ModuleResources) MakeModule(basePath string) ([]byte, string) {
 	hash := sha256.New()
 	hash.Write([]byte(basePath))
+	hash.Write(r.salt)
 	moduleHash := fmt.Sprintf("%x", hash.Sum(nil))
 	r.modules[moduleHash] = basePath
 
