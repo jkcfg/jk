@@ -2,18 +2,28 @@
 
 export GO111MODULE=on
 
+echo
 echo "==> Running std tests"
 (
   cd std
   npm test
 )
 
+echo
+echo "==> Running eslint on std"
+(
+  cd std
+  npm run lint
+)
+
+echo
 echo "==> Running eslint on tests"
 (
   cd std
   npx eslint -c .eslintrc ../tests/*.js
 )
 
+echo
 echo "==> Running go linters"
 gometalinter --tests --vendor --disable-all --deadline=600s \
     --enable=misspell \
@@ -25,9 +35,11 @@ gometalinter --tests --vendor --disable-all --deadline=600s \
     ./...
 
 # Tests, both unit tests and integration tests under /tests
+echo
 echo "==> Running jk tests"
 go test -v ./...
 
+echo
 echo "==> Checking committed generated files are up to date"
 git diff --exit-code
 

@@ -3,7 +3,7 @@ import { Format, write } from 'std_write';
 import { Encoding, read } from 'std_read';
 import { info, dir } from 'std_fs';
 import { param } from 'std_param';
-import { mix, patch } from 'std_merge';
+import { mix, patch, merge } from 'std_merge';
 
 export default {
   log,
@@ -14,4 +14,7 @@ export default {
   info,
   dir,
   param,
+  mix,
+  patch,
+  merge,
 };

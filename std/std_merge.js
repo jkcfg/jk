@@ -1,9 +1,8 @@
-// merge provides a small set of ways to transform values (usually
-// objects).
 
 // patch returns a new value that has the fields of `obj`, except
 // where overridden by fields in `patchObj`. Entries in common are
-// themselves patched.
+// themselves patched. This is similar to `merge` below, but always
+// does does a deep merge.
 function patch(obj, patchObj) {
   switch (typeof obj) {
   case 'object': {
@@ -31,6 +30,28 @@ function patch(obj, patchObj) {
   }
 }
 
+// merge transforms `obj` according to the field given in
+// `mergeObj`. A field name ending in '+' is "deep merged", that is,
+// patched; otherwise, the value of the field is simply assigned into
+// the result. Any other fields in `obj` are also assigned in the
+// result.
+function merge(obj, mergeObj) {
+  const r = {};
+
+  Object.assign(r, obj);
+  for (let [key, value] of Object.entries(mergeObj)) {
+    if (key.endsWith('+')) {
+      key = key.slice(0, -1);
+      if (key in obj) {
+        r[key] = patch(obj[key], value);
+        continue;
+      }
+    }
+    r[key] = value;
+  }
+  return r;
+}
+
 // Interpret a series of transformations expressed either as object
 // patches (as in the argument to `patch` in this module), or
 // functions. Usually the first argument will be an object,
@@ -55,4 +76,4 @@ function mix(...transforms) {
   return r;
 }
 
-export { mix, patch };
+export { patch, merge, mix };
