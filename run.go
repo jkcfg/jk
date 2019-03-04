@@ -123,6 +123,7 @@ func runArgs(cmd *cobra.Command, args []string) error {
 type exec struct {
 	worker     *v8.Worker
 	workingDir string
+	resources  std.ResourceBaser
 }
 
 func (e *exec) onMessageReceived(msg []byte) []byte {
@@ -130,7 +131,7 @@ func (e *exec) onMessageReceived(msg []byte) []byte {
 		Verbose:         runOptions.verbose,
 		Parameters:      runOptions.parameters,
 		OutputDirectory: runOptions.outputDirectory,
-		Root:            std.ReadBase{Path: e.workingDir},
+		Root:            std.ReadBase{Path: e.workingDir, Resources: e.resources},
 	})
 }
 
@@ -149,7 +150,9 @@ func run(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	engine := &exec{workingDir: inputDir}
+	resources := std.NewModuleResources()
+
+	engine := &exec{workingDir: inputDir, resources: resources}
 	worker := v8.New(engine.onMessageReceived)
 	engine.worker = worker
 	input, err := ioutil.ReadFile(filename)
@@ -165,6 +168,7 @@ func run(cmd *cobra.Command, args []string) {
 	}
 
 	resolver := resolve.NewResolver(worker, scriptDir,
+		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: resources.MakeModule},
 		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
 		&resolve.StaticImporter{Specifier: "@jkcfg/std", Source: std.Module()},
 		&resolve.FileImporter{},

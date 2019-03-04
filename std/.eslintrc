@@ -12,6 +12,14 @@
   },
   "rules": {
     "import/prefer-default-export": 0,
+    "import/no-unresolved": [
+      2,
+      {
+        "ignore": [
+          "^@jkcfg/std$"
+        ]
+      }
+    ],
     "indent": ["error", 2, {"SwitchCase": 0, "CallExpression": {"arguments": "first"}}],
     "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"]
   }

@@ -20,4 +20,5 @@ table ReadArgs {
   timeout: uint;
   encoding: Encoding;
   format: Format;
+  module: string;
 }
