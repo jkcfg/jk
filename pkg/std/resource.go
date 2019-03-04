@@ -4,11 +4,13 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
+	"sync"
 )
 
 // ModuleResources keeps track of the base paths for modules, as well
 // as generating the magic modules when they are imported.
 type ModuleResources struct {
+	mu sync.RWMutex
 	// module hash -> basePath for resource reads
 	modules map[string]string
 	salt    []byte
@@ -26,7 +28,9 @@ func NewModuleResources() *ModuleResources {
 
 // ResourceBase provides the module base path given the hash.
 func (r *ModuleResources) ResourceBase(hash string) (string, bool) {
+	r.mu.RLock()
 	path, ok := r.modules[hash]
+	r.mu.RUnlock()
 	return path, ok
 }
 
@@ -37,7 +41,9 @@ func (r *ModuleResources) MakeModule(basePath string) ([]byte, string) {
 	hash.Write([]byte(basePath))
 	hash.Write(r.salt)
 	moduleHash := fmt.Sprintf("%x", hash.Sum(nil))
+	r.mu.Lock()
 	r.modules[moduleHash] = basePath
+	r.mu.Unlock()
 
 	code := `
 import std from '@jkcfg/std';
