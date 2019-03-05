@@ -64,6 +64,11 @@ func NewParamsFromFile(path string) (Params, error) {
 
 // Get retrieves a parameter.
 func (p Params) Get(path string) (interface{}, error) {
+	// "" has the special meaning of "all of p"
+	if path == "" {
+		return p, nil
+	}
+
 	parts := strings.Split(path, ".")
 	m := p
 	for i, part := range parts {

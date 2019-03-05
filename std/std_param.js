@@ -67,7 +67,12 @@ function getObject(path, defaultValue) {
   return getParameter(__std.ParamType.Object, path, defaultValue);
 }
 
+function all() {
+  return getObject('');
+}
+
 export const param = {
+  all,
   Boolean: getBoolean,
   Number: getNumber,
   String: getString,

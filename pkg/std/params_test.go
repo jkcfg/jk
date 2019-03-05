@@ -41,6 +41,8 @@ func TestGet(t *testing.T) {
 		{p(`{ "foo": 2 }`), "foo.bar", false, nil},
 		{p(`{ "foo": { "bar": 2 } }`), "foo.bar", true, float64(2)},
 		{p(`{ "foo": { "bar": "baz" } }`), "foo.bar", true, "baz"},
+		// "" means the bag of parameters
+		{p(`{ "foo": { "bar": "baz" } }`), "", true, p(`{ "foo": { "bar": "baz" } }`)},
 		{p(`{ "foo": { "bar": { "baz": 3 } } }`), "foo.bar", true, p(`{ "baz": 3 }`)},
 		{p(`{ "xxx": "yyy", "foo": { "bar": { "baz": 3 } } }`), "foo.bar", true, p(`{ "baz": 3 }`)},
 	}
@@ -77,6 +79,12 @@ func TestTypedGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, p(`{ "baz": 3 }`), vObject)
 
+	// "" means all parameters. Only valid with GetObject though.
+	vAll, err := params.GetObject("")
+	assert.NoError(t, err)
+	assert.Equal(t, params, vAll)
+	_, err = params.GetBool("")
+	assert.Error(t, err)
 }
 
 func TestCoercion(t *testing.T) {
