@@ -3,12 +3,10 @@ package std
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"golang.org/x/text/encoding/unicode"
 
@@ -99,40 +97,14 @@ func readerByPath(path string) readFunc {
 	return readJSON
 }
 
-// ResourceBaser is an interface for getting base paths for resources.
-type ResourceBaser interface {
-	ResourceBase(string) (string, bool)
-}
-
-// ReadBase resolves relative paths, and resources (module-relative
-// paths). Reads outside the base are forbidden and will return an
-// error.
-type ReadBase struct {
-	Path      string
-	Resources ResourceBaser
-}
-
+// Read returns the contents of the file at `path`, relative to the
+// root path or if given, the module directory identified by `module`.
 func (r ReadBase) Read(path string, format __std.Format, encoding __std.Encoding, module string) ([]byte, error) {
-	base := r.Path
-	if module != "" {
-		modBase, ok := r.Resources.ResourceBase(module)
-		if !ok {
-			return nil, fmt.Errorf("read from unknown module")
-		}
-		base = modBase
-	}
-
-	if !filepath.IsAbs(path) {
-		path = filepath.Join(base, path)
-	}
-	rel, err := filepath.Rel(base, path)
+	base, path, err := r.getPath(path, module)
 	if err != nil {
 		return nil, err
 	}
-	if strings.HasPrefix(rel, "..") {
-		return nil, fmt.Errorf("reads outside base path forbidden")
-	}
-	return read(path, format, encoding)
+	return read(filepath.Join(base, path), format, encoding)
 }
 
 func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, error) {

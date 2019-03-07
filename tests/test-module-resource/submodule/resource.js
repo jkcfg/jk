@@ -1,3 +1,3 @@
-import resource from '@jkcfg/std/resource';
+import { read } from '@jkcfg/std/resource';
 
-export default resource('values.json');
+export default read('values.json');

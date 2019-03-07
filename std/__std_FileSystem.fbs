@@ -16,10 +16,12 @@ table Directory {
 
 table FileInfoArgs {
     path: string;
+    module: string;
 }
 
 table ListArgs {
     path: string;
+    module: string;
 }
 
 union FileSystemRetval {

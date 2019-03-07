@@ -92,14 +92,15 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		module := string(args.Module())
 		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(path, args.Format(), args.Encoding(), module) }, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
+
 	case __std.ArgsFileInfoArgs:
 		args := __std.FileInfoArgs{}
 		args.Init(union.Bytes, union.Pos)
-		return fileInfo(string(args.Path()))
+		return options.Root.FileInfo(string(args.Path()), string(args.Module()))
 	case __std.ArgsListArgs:
 		args := __std.ListArgs{}
 		args.Init(union.Bytes, union.Pos)
-		return directoryListing(string(args.Path()))
+		return options.Root.DirectoryListing(string(args.Path()), string(args.Module()))
 
 	case __std.ArgsParamArgs:
 		args := __std.ParamArgs{}

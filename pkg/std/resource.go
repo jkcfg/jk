@@ -50,11 +50,19 @@ import std from '@jkcfg/std';
 
 const module = %q;
 
-function resource(path, {...rest} = {}) {
+function read(path, {...rest} = {}) {
   return std.read(path, {...rest, module});
 }
 
-export default resource;
+function dir(path) {
+  return std.dir(path, { module });
+}
+
+function info(path) {
+  return std.info(path, { module });
+}
+
+export { read, dir, info };
 `
 	return []byte(fmt.Sprintf(code, moduleHash)), "resource:" + basePath
 }

@@ -17,11 +17,19 @@ class Directory {
   }
 }
 
-function info(path) {
+function info(path, { module } = {}) {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
+  let moduleOffset = 0;
+  if (module !== undefined) {
+    moduleOffset = builder.createString(module);
+  }
+
   __std.FileInfoArgs.startFileInfoArgs(builder);
   __std.FileInfoArgs.addPath(builder, pathOffset);
+  if (module !== undefined) {
+    __std.FileInfoArgs.addModule(builder, moduleOffset);
+  }
   const argsOffset = __std.FileInfoArgs.endFileInfoArgs(builder);
 
   __std.Message.startMessage(builder);
@@ -49,11 +57,19 @@ function info(path) {
   }
 }
 
-function dir(path) {
+function dir(path, { module } = {}) {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
+  let moduleOffset = 0;
+  if (module !== undefined) {
+    moduleOffset = builder.createString(module);
+  }
+
   __std.ListArgs.startListArgs(builder);
   __std.ListArgs.addPath(builder, pathOffset);
+  if (module !== undefined) {
+    __std.ListArgs.addModule(builder, moduleOffset);
+  }
   const argsOffset = __std.ListArgs.endListArgs(builder);
 
   __std.Message.startMessage(builder);

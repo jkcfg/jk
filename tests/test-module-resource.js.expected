@@ -4,3 +4,21 @@
 {
   "module": "sub"
 }
+{
+  "dir": {
+    "files": [
+      {
+        "isdir": false,
+        "name": "info",
+        "path": "dir/info"
+      }
+    ],
+    "name": "dir",
+    "path": "dir"
+  },
+  "info": {
+    "isdir": false,
+    "name": "info",
+    "path": "dir/info"
+  }
+}
