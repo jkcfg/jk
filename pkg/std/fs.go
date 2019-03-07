@@ -11,7 +11,27 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-func fileInfo(path string) []byte {
+// FileInfo returns a response to a FileInfo request, encoded ready to
+// send to the V8 worker.
+func (r ReadBase) FileInfo(path, module string) []byte {
+	base, path, err := r.getPath(path, module)
+	if err != nil {
+		return fsError(err)
+	}
+	return fileInfo(base, path)
+}
+
+// DirectoryListing returns a response to a Dir request, encoded ready
+// to send to the V8 worker.
+func (r ReadBase) DirectoryListing(path, module string) []byte {
+	base, path, err := r.getPath(path, module)
+	if err != nil {
+	}
+	return directoryListing(base, path)
+}
+
+func fileInfo(base, rel string) []byte {
+	path := filepath.Join(base, rel)
 	info, err := os.Stat(path)
 	switch {
 	case err != nil:
@@ -19,7 +39,7 @@ func fileInfo(path string) []byte {
 	case !(info.IsDir() || info.Mode().IsRegular()):
 		return fsError(errors.New("not a regular file"))
 	}
-	return fileInfoResponse(info.Name(), path, info.IsDir())
+	return fileInfoResponse(info.Name(), rel, info.IsDir())
 }
 
 func fsError(err error) []byte {
@@ -58,7 +78,8 @@ func buildFileInfo(b *flatbuffers.Builder, name, path string, isdir bool) flatbu
 	return __std.FileInfoEnd(b)
 }
 
-func directoryListing(path string) []byte {
+func directoryListing(base, rel string) []byte {
+	path := filepath.Join(base, rel)
 	dir, err := os.Open(path)
 	if err != nil {
 		return fsError(err)
@@ -68,7 +89,7 @@ func directoryListing(path string) []byte {
 		return fsError(err)
 	}
 
-	// Sort the fileinfos by name, to avoid
+	// Sort the fileinfos by name, to avoid introducing non-determinism
 	sort.Slice(infos, func(i, j int) bool {
 		return infos[i].Name() < infos[j].Name()
 	})
@@ -77,7 +98,7 @@ func directoryListing(path string) []byte {
 	offsets := make([]flatbuffers.UOffsetT, 0, len(infos))
 	for i := range infos {
 		if infos[i].IsDir() || infos[i].Mode().IsRegular() {
-			offsets = append(offsets, buildFileInfo(b, infos[i].Name(), filepath.Join(path, infos[i].Name()), infos[i].IsDir()))
+			offsets = append(offsets, buildFileInfo(b, infos[i].Name(), filepath.Join(rel, infos[i].Name()), infos[i].IsDir()))
 		}
 	}
 
@@ -87,8 +108,8 @@ func directoryListing(path string) []byte {
 	}
 	infoVec := b.EndVector(len(offsets))
 
-	nameOff := b.CreateString(dir.Name())
-	pathOff := b.CreateString(path)
+	nameOff := b.CreateString(filepath.Base(rel))
+	pathOff := b.CreateString(rel)
 	__std.DirectoryStart(b)
 	__std.DirectoryAddName(b, nameOff)
 	__std.DirectoryAddPath(b, pathOff)
