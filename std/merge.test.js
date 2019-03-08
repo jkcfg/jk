@@ -66,6 +66,18 @@ test('nested patch', () => {
   });
 });
 
+test('merge values', () => {
+  expect(merge(1, 2)).toEqual(3);
+  expect(merge('a', 'b')).toEqual('ab');
+  expect(merge('a', 1)).toEqual('a1');
+  expect(merge(2, 'b')).toEqual('2b');
+  expect(merge('s', true)).toEqual('strue');
+  expect(merge('str ', {foo: 'bar'})).toEqual(`str {"foo":"bar"}`);
+  expect(merge('str ', [2, 3, true])).toEqual(`str [2,3,true]`);
+  expect(merge([1,2], [3,4])).toEqual([1,2,3,4]);
+  expect(merge({foo: 1}, {bar: 2})).toEqual({foo: 1, bar: 2});
+});
+
 test('deep merge', () => {
   const orig = {
     foo: {
@@ -92,6 +104,17 @@ test('deep merge', () => {
       boo: 'boo',
     },
     baz: 'baz',
+  });
+
+  // concat values
+  expect(merge(orig, {
+    'foo+': { 'bar+': 'concat' },
+  })).toEqual({
+    foo: {
+      bar: 'barconcat',
+      boo: 'boo',
+    },
+    baz: 'baz'
   });
 
   // original untouched

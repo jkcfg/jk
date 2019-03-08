@@ -35,7 +35,26 @@ function patch(obj, patchObj) {
 // patched; otherwise, the value of the field is simply assigned into
 // the result. Any other fields in `obj` are also assigned in the
 // result.
-function merge(obj, mergeObj) {
+function merge(a, b) {
+  const [typeA, typeB] = [typeof a, typeof b];
+  if (typeA === 'string') {
+    if (typeB === 'string') {
+      return a + b;
+    }
+    return a + JSON.stringify(b);
+  }
+  if (typeB === 'string') {
+    return JSON.stringify(a) + b;
+  }
+
+  if (typeA === 'number' && typeB === 'number') return a + b;
+  if (Array.isArray(a) && Array.isArray(b)) return [...a, ...b];
+  if (typeA === 'object' && typeB === 'object') return objectMerge(a, b);
+
+  throw new Error(`merge cannot combine values of types ${typeA} and ${typeB}`);
+}
+
+function objectMerge(obj, mergeObj) {
   const r = {};
 
   Object.assign(r, obj);
@@ -43,7 +62,7 @@ function merge(obj, mergeObj) {
     if (key.endsWith('+')) {
       key = key.slice(0, -1);
       if (key in obj) {
-        r[key] = patch(obj[key], value);
+        r[key] = merge(obj[key], value);
         continue;
       }
     }
