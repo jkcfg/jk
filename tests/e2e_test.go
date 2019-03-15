@@ -68,6 +68,17 @@ func (t *test) outputDir() string {
 	return basename(t.file) + ".got"
 }
 
+func (t *test) setStdin(cmd *exec.Cmd) error {
+	if exists(t.file + ".in") {
+		infile, err := os.Open(t.file + ".in")
+		if err != nil {
+			return err
+		}
+		cmd.Stdin = infile
+	}
+	return nil
+}
+
 func (t *test) parseCmd(line string) []string {
 	parts := strings.Split(line, " ")
 	replacer := strings.NewReplacer(
@@ -81,7 +92,6 @@ func (t *test) parseCmd(line string) []string {
 	}
 
 	return parts
-
 }
 
 func (t *test) runWithCmd() (string, error) {
@@ -97,6 +107,9 @@ func (t *test) runWithCmd() (string, error) {
 	for scanner.Scan() {
 		args := t.parseCmd(scanner.Text())
 		cmd := exec.Command(args[0], args[1:]...)
+		if err := t.setStdin(cmd); err != nil {
+			return "", err
+		}
 		if args[0] == "jk" {
 			output, err := cmd.CombinedOutput()
 			if err != nil {
@@ -123,6 +136,9 @@ func (t *test) runWithCmd() (string, error) {
 
 func (t *test) runDefault() (string, error) {
 	cmd := exec.Command("jk", "run", "-o", t.outputDir(), t.file)
+	if err := t.setStdin(cmd); err != nil {
+		return "", err
+	}
 	output, err := cmd.CombinedOutput()
 	return string(output), err
 }
