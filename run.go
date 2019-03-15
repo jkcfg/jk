@@ -108,8 +108,11 @@ func init() {
 	runCmd.PersistentFlags().BoolVarP(&runOptions.verbose, "verbose", "v", false, "verbose output")
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	runCmd.PersistentFlags().StringVarP(&runOptions.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
-	runCmd.PersistentFlags().VarP(parameters(paramSourceFile), "parameters", "f", "load parameters from a JSON or YAML file")
 	runCmd.PersistentFlags().VarP(parameters(paramSourceCommandLine), "parameter", "p", "boolean input parameter")
+	parameterFlag := runCmd.PersistentFlags().VarPF(parameters(paramSourceFile), "parameters", "f", "load parameters from a JSON or YAML file")
+	parameterFlag.Annotations = map[string][]string{
+		cobra.BashCompFilenameExt: {"json", "yaml", "yml"},
+	}
 	jk.AddCommand(runCmd)
 }
 
