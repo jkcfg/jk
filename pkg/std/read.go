@@ -100,6 +100,11 @@ func readerByPath(path string) readFunc {
 // Read returns the contents of the file at `path`, relative to the
 // root path or if given, the module directory identified by `module`.
 func (r ReadBase) Read(path string, format __std.Format, encoding __std.Encoding, module string) ([]byte, error) {
+	// Special case for reading from stdin
+	if path == "" {
+		return read("", format, encoding)
+	}
+
 	base, path, err := r.getPath(path, module)
 	if err != nil {
 		return nil, err
@@ -127,12 +132,19 @@ func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, er
 		}
 	}
 
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
+	var in io.Reader
+	if path == "" {
+		in = os.Stdin
+	} else {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		in = f
 	}
 
-	bytes, err := reader(f)
+	bytes, err := reader(in)
 	if err != nil {
 		return nil, err
 	}

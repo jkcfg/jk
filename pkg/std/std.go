@@ -79,12 +79,6 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	case __std.ArgsReadArgs:
 		args := __std.ReadArgs{}
 		args.Init(union.Bytes, union.Pos)
-
-		// TODO(michael): should do some validation and return an
-		// error here when we handle more than one kind of thing, but
-		// for now, treat everything as a file read from a local path
-		// (which will only fail in the resolution, and can't be
-		// cancelled).
 		path := string(args.Path())
 		if path != "" && options.Verbose {
 			fmt.Printf("read %s\n", path)
