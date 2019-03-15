@@ -19,6 +19,11 @@ To configure your bash shell to load completions for each session add to your ba
 
 # ~/.bashrc or ~/.profile
 . <(jk completion)
+
+If you want to use zsh instead, do the following:
+
+$ jk completion zsh > _jk
+Then move _jk into $fpath and run compinit.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		shell := "bash"
