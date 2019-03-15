@@ -111,7 +111,7 @@ func init() {
 	runCmd.PersistentFlags().VarP(parameters(paramSourceCommandLine), "parameter", "p", "boolean input parameter")
 	parameterFlag := runCmd.PersistentFlags().VarPF(parameters(paramSourceFile), "parameters", "f", "load parameters from a JSON or YAML file")
 	parameterFlag.Annotations = map[string][]string{
-		cobra.BashCompFilenameExt: []string{"json", "yaml", "yml"},
+		cobra.BashCompFilenameExt: {"json", "yaml", "yml"},
 	}
 	jk.AddCommand(runCmd)
 }
