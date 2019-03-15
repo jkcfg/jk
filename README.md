@@ -75,3 +75,53 @@ This project is still in early stages but future (exciting!) plans include:
 [issue94]: https://github.com/jkcfg/jk/issues/94
 [issue110]: https://github.com/jkcfg/jk/issues/110
 [issueHermeticity]: https://github.com/jkcfg/jk/issues?q=is%3Aissue+is%3Aopen+label%3Atopic%2Fhermeticity
+
+## Contributing
+When contributing to this repository, please first discuss the change you wish to make via issue with the owners of this repository before making a change.
+
+### Setup
+The `jk` executable itself is written in [Go](https://golang.org), but the JavaScript part of this project requires [NodeJS](https://nodejs.org).
+
+**Prerequisites:**
+* `go` 1.11+ (modules support)
+* `nodejs`, `npm`
+* `make`
+
+First off, clone this repository:
+```bash
+$ git clone https://github.com/jkcfg/jk.git
+# or with hub:
+$ hub clone jkcfg/jk
+
+$ cd ./jk
+```
+
+Then pull most of the dependencies using the `Makefile`:
+```bash
+$ make dep
+```
+
+`jk` is linked against [`v8worker2`](https://github.com/jkcfg/v8worker2). As building V8 takes ~30 minutes, [prebuilt versions](https://github.com/jkcfg/prebuilt) are provided for `linux/amd64` and `darwin/amd64`. This also includes `flatc` from `flatbuffers`:
+```bash
+# download the prebuilt artifacts from GitHub:
+$ git clone https://github.com/jkcfg/prebuilt.git
+$ cd ./prebuilt
+
+# x64 Linux:
+$ make install-linux-amd64
+
+# x64 macOS:
+$ make install-darwin-amd64
+```
+
+### Building
+After setting up the environment, the `jk` binary can be built:
+```bash
+$ make jk
+$ ./jk --help # confirm it works
+```
+
+Additionally, on Linux, it's possible to use a docker container to build the project instead of installing the prebuilt libraries and binaries:
+```bash
+$ ./run-in-docker.sh make
+```
