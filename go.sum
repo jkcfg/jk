@@ -2,7 +2,7 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/google/flatbuffers v1.10.0 h1:oRiOciRvbejW4wxTr/DVVAczyQaxsEONq6NyxhDf3bY=
+github.com/google/flatbuffers v1.10.0 h1:wHCM5N1xsJ3VwePcIpVqnmjAqRXlR44gv4hpGi+/LIw=
 github.com/google/flatbuffers v1.10.0/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv5+zNeJKJCa8=
 github.com/jkcfg/v8worker2 v0.0.0-20181103131220-163e7fd126a2 h1:SsNwIj868+EIEnwSJT02K5Y3GtGWL64/5Ipy9O0cYXY=
 github.com/jkcfg/v8worker2 v0.0.0-20181103131220-163e7fd126a2/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
