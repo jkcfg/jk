@@ -83,7 +83,7 @@ When contributing to this repository, please first discuss the change you wish t
 The `jk` executable itself is written in [Go](https://golang.org), but the JavaScript part of this project requires [NodeJS](https://nodejs.org).
 
 **Prerequisites:**
-* `go` 1.11+ (modules support)
+* `go` 1.11.4 or later (modules support)
 * `nodejs`, `npm`
 * `make`
 
