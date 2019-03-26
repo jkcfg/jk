@@ -6,5 +6,6 @@ enum Format : byte {
     YAML,
     Raw,
     YAMLStream,
-    JSONStream
+    JSONStream,
+    HCL,
 }

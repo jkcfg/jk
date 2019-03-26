@@ -12,6 +12,9 @@ import (
 
 	"github.com/ghodss/yaml"
 	yamlclassic "gopkg.in/yaml.v2"
+
+	"github.com/hashicorp/hcl/hcl/printer"
+	"github.com/hashicorp/hcl/json/parser"
 )
 
 type closer func()
@@ -90,6 +93,21 @@ func writeJSONStream(w io.Writer, v []byte, indent int) {
 	}
 }
 
+func writeHCL(w io.Writer, v []byte, indent int) {
+	ast, err := parser.Parse(v)
+	if err != nil {
+		log.Fatalf("writeHCL: unable to parse JSON: %s", err)
+	}
+
+	config := printer.Config{
+		SpacesWidth: indent,
+	}
+	err = config.Fprint(w, ast)
+	if err != nil {
+		log.Fatalf("writeHCL: unable to format HCL: %s", err)
+	}
+}
+
 func writeRaw(w io.Writer, value []byte, _ int) {
 	w.Write(value)
 }
@@ -121,6 +139,8 @@ func writerFuncFromPath(path string) writerFunc {
 		return writeYAML
 	case ".json":
 		return writeJSON(jsonString)
+	case ".hcl", ".tf":
+		return writeHCL
 	default:
 		return writeJSON(rawString)
 	}
@@ -152,6 +172,8 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 		out = writeYAML
 	case __std.FormatYAMLStream:
 		out = writeYAMLStream
+	case __std.FormatHCL:
+		out = writeHCL
 	case __std.FormatRaw:
 		out = writeRaw
 	default:

@@ -1,9 +1,9 @@
 module github.com/jkcfg/jk
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/flatbuffers v1.10.0
+	github.com/hashicorp/hcl v1.0.0
 	github.com/jkcfg/v8worker2 v0.0.0-20190228210604-6677fe93c5c2
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371 // indirect
