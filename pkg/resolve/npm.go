@@ -107,28 +107,25 @@ func loadGuessedFile(path string) ([]byte, string, []Candidate) {
 // loadAsPath attempts to load a path when it's unknown whether it
 // refers to a file or a directory.
 func loadAsPath(path string) ([]byte, string, []Candidate) {
-	candidates := []Candidate{{path, verbatimRule}}
+	bytes, resolvedPath, fileCandidates := loadAsFile(path)
+	if bytes != nil {
+		return bytes, resolvedPath, fileCandidates
+	}
+
 	info, err := os.Stat(path)
 	switch {
-	default: // file exists and is not a directory
-		bytes, err := ioutil.ReadFile(path)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return bytes, path, candidates
-
 	case os.IsNotExist(err):
-		bytes, path, guessedCandidates := loadGuessedFile(path)
-		return bytes, path, append(candidates, guessedCandidates...)
-
+		// loadAsPath will already have included the possibility of
+		// the path as-is as a candidate
+		return nil, "", fileCandidates
 	case err != nil:
 		log.Fatal(err)
 
 	case info.IsDir():
-		bytes, path, dirCandidates := loadAsDir(path)
-		return bytes, path, append(candidates, dirCandidates...)
+		bytes, resolvedPath, dirCandidates := loadAsDir(path)
+		return bytes, resolvedPath, append(fileCandidates, dirCandidates...)
 	}
-	return nil, "", candidates
+	return nil, "", fileCandidates
 }
 
 // loadIndex tries to load the default index files, assuming the path
