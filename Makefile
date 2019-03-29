@@ -24,7 +24,7 @@ build-image:
 
 # Pulls the std/node_modules directory
 std-install:
-	cd std && npm install
+	cd std && npm ci
 
 # This target install build dependencies
 dep: std-install
