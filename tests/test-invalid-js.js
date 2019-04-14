@@ -1,3 +1,3 @@
-import std from 'std';
+import std from '@jkcfg/std';
 
 std.logBlaaaah('foo');

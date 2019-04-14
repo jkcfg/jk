@@ -1,4 +1,4 @@
-import std from 'std';
+import std from '@jkcfg/std';
 
 function copy(...filenames) {
   for (const filename of filenames) {

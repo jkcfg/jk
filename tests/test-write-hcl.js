@@ -1,4 +1,4 @@
-import std from 'std';
+import std from '@jkcfg/std';
 
 // Github organization
 const organization = 'myorg';

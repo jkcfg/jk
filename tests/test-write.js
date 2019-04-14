@@ -1,4 +1,4 @@
-import std from 'std';
+import std from '@jkcfg/std';
 
 // test-log.js already has a bunch of tests, we just test write-specific things
 // here, mainly writing to files.
