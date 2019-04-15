@@ -78,8 +78,15 @@ func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 	var candidates []Candidate
 
 	for _, importer := range r.importers {
-		trace(importer, "import %s from %s (base=%s)", specifier, referrer, r.base)
 		data, path, considered := importer.Import(r.base, specifier, referrer)
+
+		if len(data) == 0 {
+			trace(importer, "✘ import %s from %s (base=%s)", specifier, referrer, r.base)
+		} else {
+
+			trace(importer, "✔ import %s from %s (base=%s) -> %s", specifier, referrer, r.base, path)
+		}
+
 		candidates = append(candidates, considered...)
 		if data != nil {
 			source = string(data)

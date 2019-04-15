@@ -1,17 +1,19 @@
-.PHONY: build-image std-install dep all install test
+.PHONY: build-image std-install dep all install test FORCE
 
 all: jk
 
 VERSION := $(shell git describe --tags)
 
-jk: pkg/__std/lib/assets_vfsdata.go
+jk: pkg/__std/lib/assets_vfsdata.go FORCE
 	GO111MODULE=on go build -o $@ -ldflags "-X main.Version=$(VERSION)"
 
-pkg/__std/lib/assets_vfsdata.go: std/build/std.js
+pkg/__std/lib/assets_vfsdata.go: std/__std_generated.js std/dist/std.js
 	GO111MODULE=on go generate ./pkg/__std/lib
 
-std/build/std.js: std/*.fbs std/*.js std/package.json std/generate.sh
+std/__std_generated.js: std/*.fbs std/package.json std/generate.sh
 	std/generate.sh
+
+std/dist/std.js: std/*.js
 	cd std && npm run build
 
 D := $(shell go env GOPATH)/bin
@@ -36,5 +38,6 @@ clean-tests:
 	@rm -rf tests/*.got
 
 clean: clean-tests
-	@rm jk
+	@rm -f jk
 	@rm -rf .bash_history .cache/ .config/ .npm
+	@rm -rf std/dist std/__std_generated.js
