@@ -1,4 +1,4 @@
-.PHONY: build-image std-install dep all jk install test
+.PHONY: build-image std-install dep all install test
 
 all: jk
 
