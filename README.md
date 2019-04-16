@@ -123,5 +123,5 @@ $ ./jk --help # confirm it works
 
 Additionally, on Linux, it's possible to use a docker container to build the project instead of installing the prebuilt libraries and binaries:
 ```bash
-$ ./run-in-docker.sh make
+$ ./run-in-docker.sh make dep jk
 ```
