@@ -192,7 +192,7 @@ func run(cmd *cobra.Command, args []string) {
 			}},
 		},
 		&resolve.FileImporter{},
-		&resolve.NodeModulesImporter{ModuleBase: scriptDir},
+		&resolve.NodeImporter{ModuleBase: scriptDir},
 	)
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		log.Fatal(err)

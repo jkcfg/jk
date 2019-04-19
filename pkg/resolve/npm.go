@@ -55,10 +55,10 @@ by
 
 */
 
-// NodeModulesImporter is an implementation of Importer that uses a
-// resolution algorithm adapted from Node.JS's, in order to support
-// modules installed with npm.
-type NodeModulesImporter struct {
+// NodeImporter is an implementation of Importer that uses a resolution
+// algorithm adapted from Node.JS's, in order to support modules installed
+// with npm.
+type NodeImporter struct {
 	// ModulesPath is the top-level directory at which to stop looking
 	// for "module paths" (those that don't start with `/`, `./`, or
 	// `../`).
@@ -66,7 +66,7 @@ type NodeModulesImporter struct {
 }
 
 // Import is the entry point into the module resolution algorithm.
-func (n *NodeModulesImporter) Import(basePath, specifier, referrer string) ([]byte, string, []Candidate) {
+func (n *NodeImporter) Import(basePath, specifier, referrer string) ([]byte, string, []Candidate) {
 	if filepath.IsAbs(specifier) {
 		log.Fatalf("absolute import path %q not allowed in %q", specifier, referrer)
 	}
