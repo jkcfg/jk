@@ -1,4 +1,4 @@
-import std from 'std';
+import std from '@jkcfg/std';
 
 const info = std.info('testfs/foo.txt');
 std.write(info, 'fileinfo.json');
