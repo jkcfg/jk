@@ -2,8 +2,11 @@ package resolve
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strings"
 )
 
 // This is how the module loading works with V8Worker: You can ask a
@@ -30,6 +33,14 @@ import (
 //  means you need to carry any directory context around with you,
 //  since relative imports will otherwise lose the full path.
 
+// Handy when debugging and implementing new importers
+var debugImports bool
+
+// Debug will cause the resolver code to trace what it's doing
+func Debug(debug bool) {
+	debugImports = debug
+}
+
 // Resolver implements module resolution by deferring to the set of
 // importers that it's given.
 type Resolver struct {
@@ -47,6 +58,18 @@ func NewResolver(loader Loader, basePath string, importers ...Importer) *Resolve
 	}
 }
 
+func importerName(i Importer) string {
+	return strings.TrimSuffix(reflect.ValueOf(i).Elem().Type().String()[8:], "Importer")
+}
+
+func trace(i Importer, f string, args ...interface{}) {
+	if !debugImports {
+		return
+	}
+	msg := fmt.Sprintf(f, args...)
+	log.Printf("debug: % 6s: %s", importerName(i), msg)
+}
+
 // ResolveModule imports the specifier from an import statement located in the
 // referrer module.
 func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
@@ -55,6 +78,7 @@ func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 	var candidates []Candidate
 
 	for _, importer := range r.importers {
+		trace(importer, "import %s from %s (base=%s)", specifier, referrer, r.base)
 		data, path, considered := importer.Import(r.base, specifier, referrer)
 		candidates = append(candidates, considered...)
 		if data != nil {

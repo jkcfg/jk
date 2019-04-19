@@ -94,6 +94,8 @@ var runOptions struct {
 	outputDirectory string
 	inputDirectory  string
 	parameters      std.Params
+
+	debugImports bool
 }
 
 func parameters(source paramSource) pflag.Value {
@@ -113,6 +115,8 @@ func init() {
 	parameterFlag.Annotations = map[string][]string{
 		cobra.BashCompFilenameExt: {"json", "yaml", "yml"},
 	}
+	runCmd.PersistentFlags().BoolVar(&runOptions.debugImports, "debug-imports", false, "trace import logic")
+	runCmd.PersistentFlags().MarkHidden("debug-imports")
 	jk.AddCommand(runCmd)
 }
 
@@ -170,6 +174,7 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	resolve.Debug(runOptions.debugImports)
 	resolver := resolve.NewResolver(worker, scriptDir,
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: resources.MakeModule},
 		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
