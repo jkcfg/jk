@@ -13,8 +13,8 @@ import (
 )
 
 // Module returns the std source corresponding to the 'std' import
-func Module() []byte {
-	data, _ := lib.ReadAll("std.js")
+func Module(path string) []byte {
+	data, _ := lib.ReadAll(path)
 	return data
 }
 

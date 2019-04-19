@@ -94,6 +94,8 @@ var runOptions struct {
 	outputDirectory string
 	inputDirectory  string
 	parameters      std.Params
+
+	debugImports bool
 }
 
 func parameters(source paramSource) pflag.Value {
@@ -113,6 +115,8 @@ func init() {
 	parameterFlag.Annotations = map[string][]string{
 		cobra.BashCompFilenameExt: {"json", "yaml", "yml"},
 	}
+	runCmd.PersistentFlags().BoolVar(&runOptions.debugImports, "debug-imports", false, "trace import logic")
+	runCmd.PersistentFlags().MarkHidden("debug-imports")
 	jk.AddCommand(runCmd)
 }
 
@@ -170,12 +174,29 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	resolve.Debug(runOptions.debugImports)
 	resolver := resolve.NewResolver(worker, scriptDir,
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: resources.MakeModule},
-		&resolve.StaticImporter{Specifier: "std", Source: std.Module()},
-		&resolve.StaticImporter{Specifier: "@jkcfg/std", Source: std.Module()},
+		&resolve.StaticImporter{Specifier: "std", Resolved: "@jkcfg/std/std.js", Source: std.Module("std.js")},
+		&resolve.StdImporter{
+			// List here the modules users are allowed to access. We map an external
+			// module name to an internal module name to not link the file name used when
+			// writing the standard library to a module name visible to the user.
+			// eg.:
+			//     import * as param from '@jkcfg/std/param.';
+			// The name exposed to users is 'param.js', the file implementing this module
+			// is 'std_param.js'
+			//    { "param.js", "std_param.js" }
+			PublicModules: []resolve.StdPublicModule{{
+				ExternalName: "std.js", InternalModule: "std.js",
+			}, {
+				ExternalName: "param.js", InternalModule: "std_param.js",
+			}, {
+				ExternalName: "fs.js", InternalModule: "std_fs.js",
+			}},
+		},
 		&resolve.FileImporter{},
-		&resolve.NodeModulesImporter{ModuleBase: scriptDir},
+		&resolve.NodeImporter{ModuleBase: scriptDir},
 	)
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		log.Fatal(err)

@@ -7,6 +7,7 @@ const (
 // StaticImporter is an importer mapping an import specifier to a static string.
 type StaticImporter struct {
 	Specifier string
+	Resolved  string
 	Source    []byte
 }
 
@@ -14,7 +15,7 @@ type StaticImporter struct {
 func (si *StaticImporter) Import(basePath, specifier, referrer string) ([]byte, string, []Candidate) {
 	candidate := []Candidate{{specifier, staticRule}}
 	if si.Specifier == specifier {
-		return si.Source, specifier, candidate
+		return si.Source, si.Resolved, candidate
 	}
 	return nil, "", candidate
 }

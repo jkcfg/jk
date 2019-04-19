@@ -5,7 +5,7 @@
   "main": "std.js",
   "scripts": {
     "lint": "eslint std*.js",
-    "build": "mkdir -p build && rollup -c > build/std.js | terser --compress defaults=false,dead_code --module | prettier --stdin-filepath std.js > build/std.js",
+    "build": "tsc",
     "test": "jest"
   },
   "repository": {
@@ -30,12 +30,9 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "jest": "^23.6.0",
-    "prettier": "^1.15.3",
-    "rollup": "^0.67.4",
-    "rollup-plugin-includepaths": "^0.2.3",
-    "terser": "^3.14.1",
     "to-fast-properties": "^2.0.0",
-    "ts-jest": "^23.10.5"
+    "ts-jest": "^23.10.5",
+    "typescript": "^3.4.3"
   },
   "jest": {
     "preset": "ts-jest/presets/js-with-babel",

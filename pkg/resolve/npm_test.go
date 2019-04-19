@@ -7,7 +7,7 @@ import (
 func TestNodeModuleImport(t *testing.T) {
 	// Depends on the layout of directories and files under `./testfiles`
 
-	node := &NodeModulesImporter{ModuleBase: "testfiles"}
+	node := &NodeImporter{ModuleBase: "testfiles"}
 
 	// referrer is not important, since the context is captured in
 	// basePath.

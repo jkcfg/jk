@@ -51,30 +51,30 @@ function getParameter(type, path, defaultValue) {
   }
 }
 
-function getBoolean(path, defaultValue) {
+export function Boolean(path, defaultValue) {
   return getParameter(__std.ParamType.Boolean, path, defaultValue);
 }
 
-function getNumber(path, defaultValue) {
+export function Number(path, defaultValue) {
   return getParameter(__std.ParamType.Number, path, defaultValue);
 }
 
-function getString(path, defaultValue) {
+export function String(path, defaultValue) {
   return getParameter(__std.ParamType.String, path, defaultValue);
 }
 
-function getObject(path, defaultValue) {
+export function Object(path, defaultValue) {
   return getParameter(__std.ParamType.Object, path, defaultValue);
 }
 
-function all() {
-  return getObject('');
+export function all() {
+  return Object('');
 }
 
 export const param = {
   all,
-  Boolean: getBoolean,
-  Number: getNumber,
-  String: getString,
-  Object: getObject,
+  Boolean,
+  Number,
+  String,
+  Object,
 };
