@@ -191,6 +191,8 @@ func run(cmd *cobra.Command, args []string) {
 				ExternalName: "std.js", InternalModule: "std.js",
 			}, {
 				ExternalName: "param.js", InternalModule: "std_param.js",
+			}, {
+				ExternalName: "fs.js", InternalModule: "std_fs.js",
 			}},
 		},
 		&resolve.FileImporter{},
