@@ -32,6 +32,13 @@ or for specific functions:
 import { log } from '@jkcfg/std';
 ```
 
+This command can be used to help porting existing code over:
+
+```
+find . -name "*.js" -o -name "*.ts" -o -name "*node_modules*" -prune | \
+  xargs sed -i -e "s#import std from 'std';#import * as std from '@jkcfg/std';#"
+```
+
 ### std sub-modules
 
 `jk` can now use fine grained modules in its standard library. We have split out:
