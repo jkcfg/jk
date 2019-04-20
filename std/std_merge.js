@@ -9,7 +9,11 @@ function patch(obj, patchObj) {
     const result = {};
     for (const [k, v] of Object.entries(obj)) {
       if (k in patchObj) {
-        result[k] = patch(v, patchObj[k]);
+        if (Array.isArray(v)) {
+          result[k] = patchObj[k];
+        } else {
+          result[k] = patch(v, patchObj[k]);
+        }
       } else {
         result[k] = v;
       }
