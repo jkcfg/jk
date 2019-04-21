@@ -1,7 +1,7 @@
 namespace __std;
 
 enum Format : byte {
-    Auto,
+    FromExtension,
     JSON,
     YAML,
     Raw,

@@ -1,8 +1,12 @@
-import flatbuffers from 'flatbuffers';
-import { __std } from '__std_generated';
+import { flatbuffers } from './flatbuffers';
+import { __std } from './__std_generated';
 
 class FileInfo {
-  constructor(n, p, d) {
+  name: string;
+  path: string;
+  isdir: boolean;
+
+  constructor(n: string, p: string, d: boolean) {
     this.name = n;
     this.path = p;
     this.isdir = d;
@@ -10,14 +14,22 @@ class FileInfo {
 }
 
 class Directory {
-  constructor(n, p, files) {
+  name: string;
+  path: string;
+  files: FileInfo[];
+
+  constructor(n: string, p: string, files: FileInfo[]) {
     this.name = n;
     this.path = p;
     this.files = files;
   }
 }
 
-function info(path, { module } = {}) {
+interface InfoOptions {
+  module?: string;
+}
+
+function info(path: string, { module }: InfoOptions = {}): FileInfo {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
   let moduleOffset = 0;
@@ -38,26 +50,30 @@ function info(path, { module } = {}) {
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  const bytes = V8Worker2.send(builder.asArrayBuffer());
+  const bytes = <ArrayBuffer>V8Worker2.send(builder.asArrayBuffer());
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
   const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
   switch (resp.retvalType()) {
   case __std.FileSystemRetval.FileInfo: {
     const f = new __std.FileInfo();
     resp.retval(f);
-    return new FileInfo(f.name(), f.path(), f.isdir());
+    return new FileInfo(<string>f.name(), <string>f.path(), f.isdir());
   }
   case __std.FileSystemRetval.Error: {
     const err = new __std.Error();
     resp.retval(err);
-    throw new Error(err.message());
+    throw new Error(<string>err.message());
   }
   default:
     throw new Error('Unexpected response to fileinfo');
   }
 }
 
-function dir(path, { module } = {}) {
+interface DirOptions {
+  module?: string;
+}
+
+function dir(path: string, { module }: DirOptions = {}): Directory {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
   let moduleOffset = 0;
@@ -78,24 +94,24 @@ function dir(path, { module } = {}) {
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  const bytes = V8Worker2.send(builder.asArrayBuffer());
+  const bytes = <ArrayBuffer>V8Worker2.send(builder.asArrayBuffer());
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
   const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
   switch (resp.retvalType()) {
   case __std.FileSystemRetval.Directory: {
     const d = new __std.Directory();
     resp.retval(d);
-    const files = new Array(d.filesLength());
+    const files = new Array<FileInfo>(d.filesLength());
     for (let i = 0; i < files.length; i += 1) {
       const f = d.files(i);
-      files[i] = new FileInfo(f.name(), f.path(), f.isdir());
+      files[i] = new FileInfo(<string>f.name(), <string>f.path(), f.isdir());
     }
-    return new Directory(d.name(), d.path(), files);
+    return new Directory(<string>d.name(), <string>d.path(), files);
   }
   case __std.FileSystemRetval.Error: {
     const err = new __std.Error();
     resp.retval(err);
-    throw new Error(err.message());
+    throw new Error(<string>err.message());
   }
   default:
     throw new Error('Unexpected response to fileinfo');

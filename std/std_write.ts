@@ -1,11 +1,15 @@
-import { __std } from '__std_generated';
-import flatbuffers from 'flatbuffers';
+import { __std } from './__std_generated';
+import { flatbuffers } from './flatbuffers';
 
-const formatNoAuto = Object.assign({}, __std.Format);
-delete formatNoAuto.Auto;
-const Format = Object.freeze(formatNoAuto);
+import Format = __std.Format;
 
-function write(value, path = '', { format = Format.Auto, indent = 2, overwrite = true } = {}) {
+interface WriteOptions {
+  format?: Format;
+  indent?: number;
+  overwrite?: boolean;
+}
+
+function write(value: any, path = '', { format = Format.FromExtension, indent = 2, overwrite = true }: WriteOptions = {}): void {
   const builder = new flatbuffers.Builder(1024);
   const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
   const strOff = builder.createString(str);
@@ -31,4 +35,5 @@ function write(value, path = '', { format = Format.Auto, indent = 2, overwrite =
 export {
   Format,
   write,
+  WriteOptions,
 };

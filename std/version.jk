@@ -1,0 +1,3 @@
+import { log, read } from '@jkcfg/std'
+
+read('package.json').then(p => log(p.version));

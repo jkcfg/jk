@@ -1,7 +1,9 @@
-import flatbuffers from 'flatbuffers';
-import { __std } from '__std_generated';
+import { flatbuffers } from './flatbuffers';
+import { __std } from './__std_generated';
 
-function getParameter(type, path, defaultValue) {
+import ParamType = __std.ParamType;
+
+function getParameter<T>(type: ParamType, path: string, defaultValue: T): T | undefined {
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
   const isObject = type === __std.ParamType.Object;
@@ -23,7 +25,7 @@ function getParameter(type, path, defaultValue) {
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  const bytes = V8Worker2.send(builder.asArrayBuffer());
+  const bytes = <ArrayBuffer>V8Worker2.send(builder.asArrayBuffer());
 
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
   const resp = __std.ParamResponse.getRootAsParamResponse(buf);
@@ -34,7 +36,7 @@ function getParameter(type, path, defaultValue) {
     const ret = new __std.ParamValue();
     resp.retval(ret);
 
-    const v = JSON.parse(ret.json());
+    const v = JSON.parse(<string>ret.json());
     if (v == null) {
       return defaultValue;
     }
@@ -44,31 +46,31 @@ function getParameter(type, path, defaultValue) {
     // The runtime has returned an error.
     const err = new __std.Error();
     resp.retval(err);
-    throw new Error(err.message());
+    throw new Error(<string>err.message());
   }
   default:
     throw new Error('Unexpected response to param');
   }
 }
 
-export function Boolean(path, defaultValue) {
+export function Boolean(path: string, defaultValue?: boolean): boolean | undefined {
   return getParameter(__std.ParamType.Boolean, path, defaultValue);
 }
 
-export function Number(path, defaultValue) {
+export function Number(path: string, defaultValue?: number): number | undefined {
   return getParameter(__std.ParamType.Number, path, defaultValue);
 }
 
-export function String(path, defaultValue) {
+export function String(path: string, defaultValue?: string): string | undefined {
   return getParameter(__std.ParamType.String, path, defaultValue);
 }
 
-export function Object(path, defaultValue) {
+export function Object(path: string, defaultValue?: object): object | undefined {
   return getParameter(__std.ParamType.Object, path, defaultValue);
 }
 
-export function all() {
-  return Object('');
+export function all(): object {
+  return <object>Object('');
 }
 
 export const param = {

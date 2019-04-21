@@ -13,12 +13,11 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
-    "strictNullChecks": true
+    "strictNullChecks": false
   },
   "exclude": [
     "dist",
     "node_modules",
-    "shim",
     "*.test.js"
   ]
 }

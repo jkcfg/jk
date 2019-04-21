@@ -226,6 +226,19 @@ flatbuffers.Builder = function(opt_initial_size) {
   this.force_defaults = false;
 };
 
+flatbuffers.Builder.prototype.clear = function() {
+  this.bb.clear();
+  this.space = this.bb.capacity();
+  this.minalign = 1;
+  this.vtable = null;
+  this.vtable_in_use = 0;
+  this.isNested = false;
+  this.object_start = 0;
+  this.vtables = [];
+  this.vector_num_elems = 0;
+  this.force_defaults = false;
+};
+
 /**
  * In order to save space, fields that are set to their default value
  * don't get serialized into the buffer. Forcing defaults provides a
@@ -258,6 +271,12 @@ flatbuffers.Builder.prototype.asUint8Array = function() {
   return this.bb.bytes().subarray(this.bb.position(), this.bb.position() + this.offset());
 };
 
+/**
+ * Get the bytes representing the FlatBuffer. Only call this after you've
+ * called finish().
+ *
+ * @returns {ArrayBuffer}
+ */
 flatbuffers.Builder.prototype.asArrayBuffer = function() {
   return this.bb.bytes().buffer.slice(this.bb.position(), this.bb.position() + this.offset());
 };
@@ -832,6 +851,10 @@ flatbuffers.ByteBuffer.allocate = function(byte_size) {
   return new flatbuffers.ByteBuffer(new Uint8Array(byte_size));
 };
 
+flatbuffers.ByteBuffer.prototype.clear = function() {
+  this.position_ = 0;
+};
+
 /**
  * Get the underlying `Uint8Array`.
  *
@@ -1218,7 +1241,9 @@ flatbuffers.ByteBuffer.prototype.createLong = function(low, high) {
   return flatbuffers.Long.create(low, high);
 };
 
-export default flatbuffers;
+export {
+  flatbuffers,
+}
 
 /// @endcond
 /// @}
