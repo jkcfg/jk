@@ -1,11 +1,11 @@
-import { mix, patch, merge } from '../std/std_merge';
+import { mix, patch, merge } from './std_merge';
 
 test('mix objects', () => {
-  const r = mix({foo: 1}, {bar: 2}, {foo: 3});
+  const r = mix({ foo: 1 }, { bar: 2 }, { foo: 3 });
 
   expect(r).toEqual({
     foo: 3,
-    bar: 2
+    bar: 2,
   });
 });
 
@@ -23,46 +23,46 @@ test('mix transforms', () => {
       l1: 'w1',
       l2: 'v2',
       l3: 'v3',
-    }
+    },
   });
 
   // orig has been left untouched.
   expect(orig).toEqual(
-    { foo: 1, labels: { l1: 'v1', l2: 'v2' } }
+    { foo: 1, labels: { l1: 'v1', l2: 'v2' } },
   );
 });
 
 test('trivial patch', () => {
   expect(patch({}, {})).toEqual({});
-  expect(patch({}, {foo: 1})).toEqual({foo: 1});
-  expect(patch({}, {foo: {bar: "baz"}})).toEqual({foo: {bar: "baz"}});
-  expect(patch({foo: 1}, {foo: {bar: "baz"}})).toEqual({foo: {bar: "baz"}});
+  expect(patch({}, { foo: 1 })).toEqual({ foo: 1 });
+  expect(patch({}, { foo: { bar: 'baz' } })).toEqual({ foo: { bar: 'baz' } });
+  expect(patch({ foo: 1 }, { foo: { bar: 'baz' } })).toEqual({ foo: { bar: 'baz' } });
 });
 
 test('nested patch', () => {
   const orig = {
-    foo: {bar: 1},
-    baz: 2
+    foo: { bar: 1 },
+    baz: 2,
   };
 
-  expect(patch(orig, {foo: {bar: 3}})).toEqual(
+  expect(patch(orig, { foo: { bar: 3 } })).toEqual(
     {
-      foo: {bar: 3},
-      baz: 2
-    }
+      foo: { bar: 3 },
+      baz: 2,
+    },
   );
 
-  expect(patch(orig, {foo: {bar: 3, baz: 4}})).toEqual(
+  expect(patch(orig, { foo: { bar: 3, baz: 4 } })).toEqual(
     {
-      foo: {bar: 3, baz: 4},
-      baz: 2
-    }
+      foo: { bar: 3, baz: 4 },
+      baz: 2,
+    },
   );
 
   // orig has been left untouched.
   expect(orig).toEqual({
-    foo: {bar: 1},
-    baz: 2
+    foo: { bar: 1 },
+    baz: 2,
   });
 });
 
@@ -72,10 +72,10 @@ test('merge values', () => {
   expect(merge('a', 1)).toEqual('a1');
   expect(merge(2, 'b')).toEqual('2b');
   expect(merge('s', true)).toEqual('strue');
-  expect(merge('str ', {foo: 'bar'})).toEqual(`str {"foo":"bar"}`);
-  expect(merge('str ', [2, 3, true])).toEqual(`str [2,3,true]`);
-  expect(merge([1,2], [3,4])).toEqual([1,2,3,4]);
-  expect(merge({foo: 1}, {bar: 2})).toEqual({foo: 1, bar: 2});
+  expect(merge('str ', { foo: 'bar' })).toEqual('str {"foo":"bar"}');
+  expect(merge('str ', [2, 3, true])).toEqual('str [2,3,true]');
+  expect(merge([1, 2], [3, 4])).toEqual([1, 2, 3, 4]);
+  expect(merge({ foo: 1 }, { bar: 2 })).toEqual({ foo: 1, bar: 2 });
 });
 
 test('deep merge', () => {
@@ -89,15 +89,15 @@ test('deep merge', () => {
 
   // regular assign syntax (no '+')
   expect(merge(orig, {
-    foo: {bar: 'replaced'},
+    foo: { bar: 'replaced' },
   })).toEqual({
-    foo: {bar: 'replaced'},
+    foo: { bar: 'replaced' },
     baz: 'baz',
   });
 
   // deep merge syntax ('+')
   expect(merge(orig, {
-    'foo+': {bar: 'replaced'},
+    'foo+': { bar: 'replaced' },
   })).toEqual({
     foo: {
       bar: 'replaced',
@@ -114,7 +114,7 @@ test('deep merge', () => {
       bar: 'barconcat',
       boo: 'boo',
     },
-    baz: 'baz'
+    baz: 'baz',
   });
 
   // original untouched
@@ -127,20 +127,20 @@ test('deep merge', () => {
   });
 });
 
-test("array patch", () => {
+test('array patch', () => {
   const orig = {
-    foo: { bar: 1, ary: ["foo"] },
-    baz: 2
+    foo: { bar: 1, ary: ['foo'] },
+    baz: 2,
   };
 
-  expect(patch(orig, { foo: { bar: 3, ary: ["bar"] } })).toEqual({
-    foo: { bar: 3, ary: ["bar"] },
-    baz: 2
+  expect(patch(orig, { foo: { bar: 3, ary: ['bar'] } })).toEqual({
+    foo: { bar: 3, ary: ['bar'] },
+    baz: 2,
   });
 
   // orig has been left untouched.
   expect(orig).toEqual({
-    foo: { bar: 1, ary: ["foo"] },
-    baz: 2
+    foo: { bar: 1, ary: ['foo'] },
+    baz: 2,
   });
 });

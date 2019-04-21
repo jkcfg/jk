@@ -1,5 +1,6 @@
 {
   "extends": "airbnb-base",
+  "plugins": ["eslint-plugin-jest"],
   "globals": {
     "V8Worker2": true
   },
@@ -9,6 +10,9 @@
           "paths": ["."]
         }
      }
+  },
+  "env": {
+    "jest/globals": true
   },
   "rules": {
     "no-continue": 0,

@@ -4,7 +4,7 @@
   "description": "jk standard library",
   "main": "std.js",
   "scripts": {
-    "lint": "eslint std*.js",
+    "lint": "eslint std*.js *.test.js",
     "build": "tsc",
     "test": "jest"
   },
@@ -29,6 +29,7 @@
     "eslint": "^5.12.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^22.4.1",
     "jest": "^23.6.0",
     "to-fast-properties": "^2.0.0",
     "ts-jest": "^23.10.5",
