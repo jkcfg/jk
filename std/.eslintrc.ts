@@ -20,6 +20,7 @@
     "@typescript-eslint/indent": ["error", 2, {"SwitchCase": 0, "CallExpression": {"arguments": "first"}}],
     "no-undef": "off",
     "@typescript-eslint/no-explicit-any": off,
+    "@typescript-eslint/no-angle-bracket-type-assertion": "off",
     "no-continue": 0,
     "prefer-const": ["error", {"destructuring": "all"}],
     "import/prefer-default-export": 0,
