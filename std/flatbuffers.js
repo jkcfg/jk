@@ -271,6 +271,12 @@ flatbuffers.Builder.prototype.asUint8Array = function() {
   return this.bb.bytes().subarray(this.bb.position(), this.bb.position() + this.offset());
 };
 
+/**
+ * Get the bytes representing the FlatBuffer. Only call this after you've
+ * called finish().
+ *
+ * @returns {ArrayBuffer}
+ */
 flatbuffers.Builder.prototype.asArrayBuffer = function() {
   return this.bb.bytes().buffer.slice(this.bb.position(), this.bb.position() + this.offset());
 };

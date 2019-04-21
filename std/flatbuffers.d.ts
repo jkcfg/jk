@@ -72,6 +72,12 @@ declare global {
       asUint8Array(): Uint8Array;
 
       /**
+       * Get the ByteBuffer as an ArrayBuffer. Only call this after you've
+       * called finish().
+       */
+      asArrayBuffer(): ArrayBuffer;
+
+      /**
        * Prepare to write an element of `size` after `additional_bytes` have been
        * written, e.g. if you write a string, you need to align such the int length
        * field is aligned to 4 bytes, and the string data follows it directly. If all
