@@ -7,10 +7,10 @@ VERSION := $(shell git describe --tags)
 jk: pkg/__std/lib/assets_vfsdata.go FORCE
 	GO111MODULE=on go build -o $@ -ldflags "-X main.Version=$(VERSION)"
 
-pkg/__std/lib/assets_vfsdata.go: std/__std_generated.js std/dist/std.js
+pkg/__std/lib/assets_vfsdata.go: std/__std_generated.ts std/dist/std.js
 	GO111MODULE=on go generate ./pkg/__std/lib
 
-std/__std_generated.js: std/*.fbs std/package.json std/generate.sh
+std/__std_generated.ts: std/*.fbs std/package.json std/generate.sh
 	std/generate.sh
 
 std/dist/std.js: std/*.js std/*.ts
@@ -40,4 +40,4 @@ clean-tests:
 clean: clean-tests
 	@rm -f jk
 	@rm -rf .bash_history .cache/ .config/ .npm
-	@rm -rf std/dist std/__std_generated.js
+	@rm -rf std/dist std/__std_generated.js std/__std_generated.ts
