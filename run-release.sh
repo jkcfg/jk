@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 tag=$1
 user=jkcfg
 repo=jk
@@ -30,7 +32,8 @@ function upload() {
 
 }
 
-binary=jk-`go env GOOS`-`go env GOARCH`
+os=`go env GOOS`
+binary=jk-$os-`go env GOARCH`
 mv jk $binary
 
 echo "==> Uploading $binary"

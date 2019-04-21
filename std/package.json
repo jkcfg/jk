@@ -4,7 +4,7 @@
   "description": "jk standard library",
   "main": "std.js",
   "scripts": {
-    "lint": "eslint std*.js *.test.js && eslint -c .eslintrc.ts *.ts",
+    "lint": "eslint std*.js *.test.js && eslint -c .eslintrc.ts std*.ts",
     "build": "tsc",
     "test": "jest"
   },
