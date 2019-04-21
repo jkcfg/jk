@@ -1,20 +1,29 @@
-import { requestAsPromise } from 'std_deferred';
-import flatbuffers from 'flatbuffers';
-import { __std } from '__std_generated';
-import { Format } from 'std_write';
+import { requestAsPromise } from './std_deferred';
+import flatbuffers from './flatbuffers';
+import { __std } from './__std_generated';
 
-const Encoding = Object.freeze(__std.Encoding);
+import Encoding = __std.Encoding;
+import Format = __std.Format;
 
-function uint8ToUint16Array(bytes) {
+function uint8ToUint16Array(bytes: Uint8Array): Uint16Array {
   return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
 }
 
-const compose = (f, g) => x => f(g(x));
-const stringify = bytes => String.fromCodePoint(...uint8ToUint16Array(bytes));
+type Data = Uint8Array | string;
+type Transform = (x: Data) => Data;
+
+const compose = (f: Transform, g: Transform): Transform => (x: Data): Data => f(g(x));
+const stringify = (bytes: Uint8Array): string => String.fromCodePoint(...uint8ToUint16Array(bytes));
+
+interface ReadOptions {
+  encoding?: Encoding;
+  format?: Format;
+  module?: string;
+}
 
 // read requests the path and returns a promise that will be resolved
 // with the contents at the path, or rejected.
-function read(path, opts = {}) {
+function read(path: string, opts: ReadOptions = {}): Promise<object | string> {
   const { encoding = Encoding.JSON, format = Format.FromExtension, module } = opts;
 
   const builder = new flatbuffers.Builder(512);
@@ -37,7 +46,7 @@ function read(path, opts = {}) {
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  let tx = bytes => bytes;
+  let tx: Transform = (bytes: Uint8Array): Uint8Array => bytes;
   switch (encoding) {
   case Encoding.String:
     tx = stringify;
@@ -49,7 +58,7 @@ function read(path, opts = {}) {
     break;
   }
 
-  return requestAsPromise(() => V8Worker2.send(builder.asArrayBuffer()), tx);
+  return requestAsPromise((): null | ArrayBuffer => V8Worker2.send(builder.asArrayBuffer()), tx);
 }
 
 export {
