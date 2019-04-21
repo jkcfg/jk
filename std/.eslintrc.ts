@@ -23,6 +23,7 @@
     "no-continue": 0,
     "prefer-const": ["error", {"destructuring": "all"}],
     "import/prefer-default-export": 0,
+    "import/no-extraneous-dependencies": "off",
     "import/no-unresolved": [
       2,
       {
