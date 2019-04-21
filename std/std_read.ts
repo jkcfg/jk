@@ -23,7 +23,7 @@ interface ReadOptions {
 
 // read requests the path and returns a promise that will be resolved
 // with the contents at the path, or rejected.
-function read(path: string, opts: ReadOptions = {}): Promise<object | string> {
+function read(path: string, opts: ReadOptions = {}): Promise<any> {
   const { encoding = Encoding.JSON, format = Format.FromExtension, module } = opts;
 
   const builder = new flatbuffers.Builder(512);
