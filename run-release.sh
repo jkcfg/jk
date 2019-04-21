@@ -15,6 +15,13 @@ function run() {
     fi
 }
 
+echo "==> Checking package.json is up to date"
+version=$(./jk run std/version.jk)
+if [ "$version" != "$tag" ]; then
+    echo "error: releasing $tag but std/package.json references $version"
+    exit 1
+fi
+
 echo "==> Creating $tag release"
 run release \
     --user $user \
@@ -42,3 +49,16 @@ upload $binary
 echo "==> Uploading $binary.sha256"
 shasum -a 256 $binary > $binary.sha256
 upload $binary.sha256
+
+# We can only upload the npm module once. Do it from the Linux CI.
+if [ $os != "linux" ]; then
+  exit 0
+fi
+
+echo "==> Uploading npm module"
+if [ -z "$NPM_TOKEN" ]; then
+    echo "error: NPM_TOKEN needs to be defined for  pushing npm modules"
+    exit 1
+fi
+echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > @jkcfg/std/.npmrc
+(cd @jkcfg/std && npm publish)
