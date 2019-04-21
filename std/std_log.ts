@@ -1,6 +1,6 @@
-import { write } from 'std_write';
+import { write, WriteOptions } from './std_write';
 
-function log(value, options) {
+function log(value: any, options?: WriteOptions): void {
   write(value, '', options);
 }
 
