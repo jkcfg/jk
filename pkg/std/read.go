@@ -117,7 +117,7 @@ func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, er
 
 	if encoding == __std.EncodingJSON {
 		switch format {
-		case __std.FormatAuto:
+		case __std.FormatFromExtension:
 			reader = readerByPath(path)
 		case __std.FormatYAML:
 			reader = readYAML

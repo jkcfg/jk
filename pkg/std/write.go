@@ -162,7 +162,7 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 
 	var out writerFunc
 	switch format {
-	case __std.FormatAuto:
+	case __std.FormatFromExtension:
 		out = writerFuncFromPath(path)
 	case __std.FormatJSON:
 		out = writeJSON(jsonString)

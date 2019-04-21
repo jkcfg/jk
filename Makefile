@@ -13,7 +13,7 @@ pkg/__std/lib/assets_vfsdata.go: std/__std_generated.js std/dist/std.js
 std/__std_generated.js: std/*.fbs std/package.json std/generate.sh
 	std/generate.sh
 
-std/dist/std.js: std/*.js
+std/dist/std.js: std/*.js std/*.ts
 	cd std && npm run build
 
 D := $(shell go env GOPATH)/bin
