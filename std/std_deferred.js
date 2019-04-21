@@ -1,5 +1,5 @@
 import { __std } from '__std_generated';
-import flatbuffers from 'flatbuffers';
+import { flatbuffers } from 'flatbuffers';
 
 const deferreds = {};
 

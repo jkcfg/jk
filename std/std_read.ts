@@ -1,5 +1,5 @@
 import { requestAsPromise } from './std_deferred';
-import flatbuffers from './flatbuffers';
+import { flatbuffers } from './flatbuffers';
 import { __std } from './__std_generated';
 
 import Encoding = __std.Encoding;

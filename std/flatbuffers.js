@@ -1218,7 +1218,9 @@ flatbuffers.ByteBuffer.prototype.createLong = function(low, high) {
   return flatbuffers.Long.create(low, high);
 };
 
-export default flatbuffers;
+export {
+  flatbuffers,
+}
 
 /// @endcond
 /// @}

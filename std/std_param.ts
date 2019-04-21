@@ -1,4 +1,4 @@
-import flatbuffers from './flatbuffers';
+import { flatbuffers } from './flatbuffers';
 import { __std } from './__std_generated';
 
 import ParamType = __std.ParamType;
