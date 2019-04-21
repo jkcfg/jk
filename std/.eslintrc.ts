@@ -17,7 +17,7 @@
   },
   "rules": {
     "indent": "off",
-    "@typescript-eslint/indent": ["error", 2, {"SwitchCase": 0, "CallExpression": {"arguments": "first"}}],
+    "@typescript-eslint/indent": ["error", 2, {"SwitchCase": 0, "CallExpression": {"arguments": "first"}, "FunctionDeclaration": {"parameters": "first"}}],
     "no-undef": "off",
     "@typescript-eslint/no-explicit-any": off,
     "@typescript-eslint/no-angle-bracket-type-assertion": "off",
