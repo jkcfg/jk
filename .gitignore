@@ -1,3 +1,4 @@
+/@jkcfg
 /jk
 /pkg/__std/*.go
 /pkg/__std/lib/assets_vfsdata.go
