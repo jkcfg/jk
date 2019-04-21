@@ -1,6 +1,6 @@
 {
-  "name": "std",
-  "version": "0.1.0",
+  "name": "@jkcfg/std",
+  "version": "0.2.4",
   "description": "jk standard library",
   "main": "std.js",
   "scripts": {
