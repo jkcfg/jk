@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -19,10 +20,11 @@ import (
 )
 
 var runCmd = &cobra.Command{
-	Use:   "run",
-	Short: "Execute a jk program",
-	Args:  runArgs,
-	Run:   run,
+	Use:     "run",
+	Example: examples(),
+	Short:   "Execute a jk program",
+	Args:    runArgs,
+	Run:     run,
 }
 
 type paramSource int
@@ -31,6 +33,17 @@ const (
 	paramSourceFile paramSource = iota
 	paramSourceCommandLine
 )
+
+func examples() string {
+	b := bytes.Buffer{}
+	b.WriteString("  specifying where are input files used by script and output generated files\n")
+	b.WriteString("    jk run -v -i ./inputdir -o ./outputdir ./scriptdir/script.js\n")
+	b.WriteString("  specifying input parameters\n")
+	b.WriteString("    jk run -v -p path.k1.k2=value ./scriptdir/script.js\n")
+	b.WriteString("  specifying input parameters and file containing parameters\n")
+	b.WriteString("    jk run -v -p key=value -f filename.json script.js\n")
+	return b.String()
+}
 
 const errorHandler = `
 function onerror(msg, src, line, col, err) {
@@ -117,6 +130,7 @@ func init() {
 	}
 	runCmd.PersistentFlags().BoolVar(&runOptions.debugImports, "debug-imports", false, "trace import logic")
 	runCmd.PersistentFlags().MarkHidden("debug-imports")
+
 	jk.AddCommand(runCmd)
 }
 
