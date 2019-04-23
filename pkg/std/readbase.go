@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/jkcfg/jk/pkg/record"
 )
 
 // ResourceBaser is an interface for getting base paths for resources.
@@ -17,6 +19,7 @@ type ResourceBaser interface {
 type ReadBase struct {
 	Path      string
 	Resources ResourceBaser
+	Recorder  *record.Recorder
 }
 
 func (r ReadBase) getPath(path, module string) (string, string, error) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/record"
 	"github.com/jkcfg/jk/pkg/resolve"
 	"github.com/jkcfg/jk/pkg/std"
 
@@ -103,10 +105,11 @@ func (p *paramsOption) Type() string {
 }
 
 var runOptions struct {
-	verbose         bool
-	outputDirectory string
-	inputDirectory  string
-	parameters      std.Params
+	verbose          bool
+	outputDirectory  string
+	inputDirectory   string
+	parameters       std.Params
+	emitDependencies bool
 
 	debugImports bool
 }
@@ -128,6 +131,7 @@ func init() {
 	parameterFlag.Annotations = map[string][]string{
 		cobra.BashCompFilenameExt: {"json", "yaml", "yml"},
 	}
+	runCmd.PersistentFlags().BoolVarP(&runOptions.emitDependencies, "emit-dependencies", "d", false, "emit script dependencies")
 	runCmd.PersistentFlags().BoolVar(&runOptions.debugImports, "debug-imports", false, "trace import logic")
 	runCmd.PersistentFlags().MarkHidden("debug-imports")
 
@@ -145,6 +149,7 @@ type exec struct {
 	worker     *v8.Worker
 	workingDir string
 	resources  std.ResourceBaser
+	recorder   *record.Recorder
 }
 
 func (e *exec) onMessageReceived(msg []byte) []byte {
@@ -152,7 +157,8 @@ func (e *exec) onMessageReceived(msg []byte) []byte {
 		Verbose:         runOptions.verbose,
 		Parameters:      runOptions.parameters,
 		OutputDirectory: runOptions.outputDirectory,
-		Root:            std.ReadBase{Path: e.workingDir, Resources: e.resources},
+		Root:            std.ReadBase{Path: e.workingDir, Resources: e.resources, Recorder: e.recorder},
+		DryRun:          runOptions.emitDependencies,
 	})
 }
 
@@ -176,6 +182,11 @@ func run(cmd *cobra.Command, args []string) {
 	engine := &exec{workingDir: inputDir, resources: resources}
 	worker := v8.New(engine.onMessageReceived)
 	engine.worker = worker
+
+	if runOptions.emitDependencies {
+		engine.recorder = &record.Recorder{}
+	}
+
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -212,8 +223,24 @@ func run(cmd *cobra.Command, args []string) {
 		&resolve.FileImporter{},
 		&resolve.NodeImporter{ModuleBase: scriptDir},
 	)
+	resolver.SetRecorder(engine.recorder)
+	if engine.recorder != nil {
+		abspath, _ := filepath.Abs(filename)
+		engine.recorder.Record(record.ImportFile, record.Params{
+			"specifier": filename,
+			"path":      abspath,
+		})
+	}
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		log.Fatal(err)
 	}
 	deferred.Wait() // TODO(michael): hide this in std?
+
+	if engine.recorder != nil {
+		data, err := json.MarshalIndent(engine.recorder, "", "  ")
+		if err != nil {
+			log.Fatal("emit-dependencies:", err)
+		}
+		fmt.Println(string(data))
+	}
 }

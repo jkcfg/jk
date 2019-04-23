@@ -11,6 +11,7 @@ import (
 	"golang.org/x/text/encoding/unicode"
 
 	"github.com/jkcfg/jk/pkg/__std"
+	"github.com/jkcfg/jk/pkg/record"
 
 	"github.com/ghodss/yaml"
 	yamlclassic "gopkg.in/yaml.v2"
@@ -109,7 +110,13 @@ func (r ReadBase) Read(path string, format __std.Format, encoding __std.Encoding
 	if err != nil {
 		return nil, err
 	}
-	return read(filepath.Join(base, path), format, encoding)
+	fullpath := filepath.Join(base, path)
+	if r.Recorder != nil {
+		r.Recorder.Record(record.ReadFile, record.Params{
+			"path": fullpath,
+		})
+	}
+	return read(fullpath, format, encoding)
 }
 
 func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, error) {
