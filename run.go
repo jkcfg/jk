@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -61,6 +62,7 @@ var global = {};
 type paramsOption struct {
 	params *std.Params
 	source paramSource
+	files  *[]string
 }
 
 func (p *paramsOption) String() string {
@@ -71,6 +73,9 @@ func (p *paramsOption) setFromFile(s string) error {
 	params, err := std.NewParamsFromFile(s)
 	if err != nil {
 		return fmt.Errorf("%s: %v", s, err)
+	}
+	if p.files != nil {
+		*p.files = append(*p.files, s)
 	}
 
 	p.params.Merge(params)
@@ -109,6 +114,7 @@ var runOptions struct {
 	outputDirectory  string
 	inputDirectory   string
 	parameters       std.Params
+	parameterFiles   []string // list of files specified on the command line with -f.
 	emitDependencies bool
 
 	debugImports bool
@@ -118,6 +124,7 @@ func parameters(source paramSource) pflag.Value {
 	return &paramsOption{
 		params: &runOptions.parameters,
 		source: source,
+		files:  &runOptions.parameterFiles,
 	}
 }
 
@@ -224,13 +231,25 @@ func run(cmd *cobra.Command, args []string) {
 		&resolve.NodeImporter{ModuleBase: scriptDir},
 	)
 	resolver.SetRecorder(engine.recorder)
+
+	// Add the script and parameter files to the list of dependencies.
 	if engine.recorder != nil {
 		abspath, _ := filepath.Abs(filename)
 		engine.recorder.Record(record.ImportFile, record.Params{
 			"specifier": filename,
 			"path":      abspath,
 		})
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal("run: unable to get current working directory:", err)
+		}
+		for _, f := range runOptions.parameterFiles {
+			engine.recorder.Record(record.ParameterFile, record.Params{
+				"path": filepath.Join(cwd, f),
+			})
+		}
 	}
+
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		log.Fatal(err)
 	}

@@ -11,6 +11,8 @@ type Params map[string]interface{}
 const (
 	// ImportFile is a js import from the filesystem (exclude stdlib imports).
 	ImportFile OperationKind = "import-file"
+	// ParameterFile is a file holding input parameters specified with the -f switch.
+	ParameterFile OperationKind = "parameter-file"
 	// ReadFile is a std.read from the filesystem (exclude reading from stdin).
 	ReadFile OperationKind = "read-file"
 )
