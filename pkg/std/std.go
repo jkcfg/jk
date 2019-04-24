@@ -34,6 +34,9 @@ type ExecuteOptions struct {
 	OutputDirectory string
 	// Root is topmost directory under which file reads are allowed
 	Root ReadBase
+	// DryRun instructs standard library functions to not complete operations that
+	// would mutate something (eg. std.write()).
+	DryRun bool
 }
 
 func toBool(b byte) bool {
@@ -74,6 +77,11 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		if path != "" && options.Verbose {
 			fmt.Printf("wrote %s\n", path)
 		}
+
+		if options.DryRun {
+			break
+		}
+
 		write(args.Value(), path, args.Format(), int(args.Indent()), toBool(args.Overwrite()))
 		return nil
 	case __std.ArgsReadArgs:
@@ -128,8 +136,9 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 
 	default:
 		log.Fatalf("unknown Message (%d)", message.ArgsType())
-		return nil
 	}
+
+	return nil
 }
 
 func deferredResponse(s deferred.Serial) []byte {

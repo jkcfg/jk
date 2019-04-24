@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+
+	"github.com/jkcfg/jk/pkg/record"
 )
 
 // This is how the module loading works with V8Worker: You can ask a
@@ -44,9 +46,16 @@ func Debug(debug bool) {
 // Resolver implements module resolution by deferring to the set of
 // importers that it's given.
 type Resolver struct {
+	recorder  *record.Recorder
 	loader    Loader
 	base      string
 	importers []Importer
+}
+
+// SetRecorder instructs Resolver to record actions in the specified recoder.
+// Call with nil to disable.
+func (r *Resolver) SetRecorder(recorder *record.Recorder) {
+	r.recorder = recorder
 }
 
 // NewResolver creates a new Resolver.
@@ -70,6 +79,11 @@ func trace(i Importer, f string, args ...interface{}) {
 	log.Printf("debug: % 6s: %s", importerName(i), msg)
 }
 
+func isInternalImporter(i Importer) bool {
+	name := importerName(i)
+	return name == "Std" || name == "Magic" || name == "Static"
+}
+
 // ResolveModule imports the specifier from an import statement located in the
 // referrer module.
 func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
@@ -83,7 +97,12 @@ func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 		if len(data) == 0 {
 			trace(importer, "✘ import %s from %s (base=%s)", specifier, referrer, r.base)
 		} else {
-
+			if r.recorder != nil && !isInternalImporter(importer) {
+				r.recorder.Record(record.ImportFile, record.Params{
+					"specifier": specifier,
+					"path":      path,
+				})
+			}
 			trace(importer, "✔ import %s from %s (base=%s) -> %s", specifier, referrer, r.base, path)
 		}
 

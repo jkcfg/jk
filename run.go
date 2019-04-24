@@ -2,15 +2,18 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/record"
 	"github.com/jkcfg/jk/pkg/resolve"
 	"github.com/jkcfg/jk/pkg/std"
 
@@ -59,6 +62,7 @@ var global = {};
 type paramsOption struct {
 	params *std.Params
 	source paramSource
+	files  *[]string
 }
 
 func (p *paramsOption) String() string {
@@ -69,6 +73,9 @@ func (p *paramsOption) setFromFile(s string) error {
 	params, err := std.NewParamsFromFile(s)
 	if err != nil {
 		return fmt.Errorf("%s: %v", s, err)
+	}
+	if p.files != nil {
+		*p.files = append(*p.files, s)
 	}
 
 	p.params.Merge(params)
@@ -103,10 +110,12 @@ func (p *paramsOption) Type() string {
 }
 
 var runOptions struct {
-	verbose         bool
-	outputDirectory string
-	inputDirectory  string
-	parameters      std.Params
+	verbose          bool
+	outputDirectory  string
+	inputDirectory   string
+	parameters       std.Params
+	parameterFiles   []string // list of files specified on the command line with -f.
+	emitDependencies bool
 
 	debugImports bool
 }
@@ -115,6 +124,7 @@ func parameters(source paramSource) pflag.Value {
 	return &paramsOption{
 		params: &runOptions.parameters,
 		source: source,
+		files:  &runOptions.parameterFiles,
 	}
 }
 
@@ -128,6 +138,7 @@ func init() {
 	parameterFlag.Annotations = map[string][]string{
 		cobra.BashCompFilenameExt: {"json", "yaml", "yml"},
 	}
+	runCmd.PersistentFlags().BoolVarP(&runOptions.emitDependencies, "emit-dependencies", "d", false, "emit script dependencies")
 	runCmd.PersistentFlags().BoolVar(&runOptions.debugImports, "debug-imports", false, "trace import logic")
 	runCmd.PersistentFlags().MarkHidden("debug-imports")
 
@@ -145,6 +156,7 @@ type exec struct {
 	worker     *v8.Worker
 	workingDir string
 	resources  std.ResourceBaser
+	recorder   *record.Recorder
 }
 
 func (e *exec) onMessageReceived(msg []byte) []byte {
@@ -152,7 +164,8 @@ func (e *exec) onMessageReceived(msg []byte) []byte {
 		Verbose:         runOptions.verbose,
 		Parameters:      runOptions.parameters,
 		OutputDirectory: runOptions.outputDirectory,
-		Root:            std.ReadBase{Path: e.workingDir, Resources: e.resources},
+		Root:            std.ReadBase{Path: e.workingDir, Resources: e.resources, Recorder: e.recorder},
+		DryRun:          runOptions.emitDependencies,
 	})
 }
 
@@ -176,6 +189,11 @@ func run(cmd *cobra.Command, args []string) {
 	engine := &exec{workingDir: inputDir, resources: resources}
 	worker := v8.New(engine.onMessageReceived)
 	engine.worker = worker
+
+	if runOptions.emitDependencies {
+		engine.recorder = &record.Recorder{}
+	}
+
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -212,8 +230,36 @@ func run(cmd *cobra.Command, args []string) {
 		&resolve.FileImporter{},
 		&resolve.NodeImporter{ModuleBase: scriptDir},
 	)
+	resolver.SetRecorder(engine.recorder)
+
+	// Add the script and parameter files to the list of dependencies.
+	if engine.recorder != nil {
+		abspath, _ := filepath.Abs(filename)
+		engine.recorder.Record(record.ImportFile, record.Params{
+			"specifier": filename,
+			"path":      abspath,
+		})
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal("run: unable to get current working directory:", err)
+		}
+		for _, f := range runOptions.parameterFiles {
+			engine.recorder.Record(record.ParameterFile, record.Params{
+				"path": filepath.Join(cwd, f),
+			})
+		}
+	}
+
 	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
 		log.Fatal(err)
 	}
 	deferred.Wait() // TODO(michael): hide this in std?
+
+	if engine.recorder != nil {
+		data, err := json.MarshalIndent(engine.recorder, "", "  ")
+		if err != nil {
+			log.Fatal("emit-dependencies:", err)
+		}
+		fmt.Println(string(data))
+	}
 }

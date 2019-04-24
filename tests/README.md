@@ -15,7 +15,7 @@ to the results we expect.
 - The test will run with:
 
 ```console
-$ jk run -o test-$testname.expected test-$testname.js
+$ jk run -o test-$testname.got test-$testname.js
 ```
 
 - If the file `test-$testname.js.skip` exists, the test is skipped. This is

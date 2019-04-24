@@ -106,7 +106,7 @@ func (t *test) runWithCmd() (string, error) {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		args := t.parseCmd(scanner.Text())
-		cmd := exec.Command(args[0], args[1:]...)
+		cmd := exec.Command("/bin/sh", "-c", strings.Join(args, " "))
 		if err := t.setStdin(cmd); err != nil {
 			return "", err
 		}
