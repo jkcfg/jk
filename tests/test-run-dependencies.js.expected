@@ -1,0 +1,20 @@
+[
+  {
+    "kind": "import-file",
+    "path": "/jk/tests/test-run-dependencies.js",
+    "specifier": "test-run-dependencies.js"
+  },
+  {
+    "kind": "parameter-file",
+    "path": "/jk/tests/test-run-dependencies/params.json"
+  },
+  {
+    "kind": "import-file",
+    "path": "/jk/tests/test-run-dependencies/failure.js",
+    "specifier": "./test-run-dependencies/failure"
+  },
+  {
+    "kind": "read-file",
+    "path": "/jk/tests/test-run-dependencies/svc-myapp.yaml"
+  }
+]
