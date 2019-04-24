@@ -4,6 +4,8 @@
 
 ### std import
 
+*Deprecated in 0.2.5*
+
 We have decided the std library should be imported from `'@jkcfg/std'`:
 
 - It lets us write a node.js shim at a later point that replicates the
@@ -40,6 +42,8 @@ find . -name "*.js" -o -name "*.ts" -o -name "*node_modules*" -prune | \
 ```
 
 ### std sub-modules
+
+*Deprecated in 0.2.5*
 
 `jk` can now use fine grained modules in its standard library. We have split out:
 
