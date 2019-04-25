@@ -24,7 +24,8 @@ echo "==> Creating $tag release"
 run github-release release \
     --user $user \
     --repo $repo \
-    --tag $tag
+    --tag $tag \
+    || true
 
 function upload() {
     file=$1
