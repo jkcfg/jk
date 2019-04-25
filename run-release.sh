@@ -7,12 +7,16 @@ user=jkcfg
 repo=jk
 pkg=github.com/$user/$repo
 
+function docker_run() {
+    docker run -e GITHUB_TOKEN -e NPM_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build "$@"
+}
+
 function run() {
     cmd=$1
     if [[ $cmd != ./* ]] && command -v $cmd; then
         "$@"
     else
-        docker run -e GITHUB_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build "$@"
+        docker_run $@
     fi
 }
 
@@ -62,4 +66,4 @@ if [ -z "$NPM_TOKEN" ]; then
     exit 1
 fi
 echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > @jkcfg/std/.npmrc
-(cd @jkcfg/std && npm publish)
+docker_run bash -c '$(cd @jkcfg/std && npm publish)'
