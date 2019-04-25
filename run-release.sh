@@ -16,7 +16,7 @@ function run() {
 }
 
 echo "==> Checking package.json is up to date"
-version=$(./jk run std/version.jk)
+version=$(run jk run std/version.jk)
 if [ "$version" != "$tag" ]; then
     echo "error: releasing $tag but std/package.json references $version"
     exit 1
