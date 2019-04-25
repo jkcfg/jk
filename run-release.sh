@@ -67,4 +67,4 @@ if [ -z "$NPM_TOKEN" ]; then
     exit 1
 fi
 echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > @jkcfg/std/.npmrc
-docker_run bash -c '$(cd @jkcfg/std && npm publish)'
+run npm publish @jkcfg/std
