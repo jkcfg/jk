@@ -8,29 +8,30 @@ repo=jk
 pkg=github.com/$user/$repo
 
 function run() {
-    if command -v github-release; then
-        github-release "$@"
+    cmd=$1
+    if [[ $cmd != ./* ]] && command -v $cmd; then
+        "$@"
     else
-        docker run -e GITHUB_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build github-release "$@"
+        docker run -e GITHUB_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build "$@"
     fi
 }
 
 echo "==> Checking package.json is up to date"
-version=$(run jk run std/version.jk)
+version=$(run ./jk run std/version.jk)
 if [ "$version" != "$tag" ]; then
     echo "error: releasing $tag but std/package.json references $version"
     exit 1
 fi
 
 echo "==> Creating $tag release"
-run release \
+run github-release release \
     --user $user \
     --repo $repo \
     --tag $tag
 
 function upload() {
     file=$1
-    run upload \
+    run github-release upload \
         --user $user \
         --repo $repo \
         --tag $tag \
