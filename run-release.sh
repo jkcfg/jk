@@ -20,13 +20,6 @@ function run() {
     fi
 }
 
-echo "==> Checking package.json is up to date"
-version=$(run ./jk run std/version.jk)
-if [ "$version" != "$tag" ]; then
-    echo "error: releasing $tag but std/package.json references $version"
-    exit 1
-fi
-
 echo "==> Creating $tag release"
 run github-release release \
     --user $user \
@@ -58,6 +51,13 @@ upload $binary.sha256
 # We can only upload the npm module once. Do it from the Linux CI.
 if [ $os != "linux" ]; then
   exit 0
+fi
+
+echo "==> Checking package.json is up to date"
+version=$(run ./$binary run std/version.jk)
+if [ "$version" != "$tag" ]; then
+    echo "error: releasing $tag but std/package.json references $version"
+    exit 1
 fi
 
 echo "==> Uploading npm module"
