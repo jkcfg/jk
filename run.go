@@ -222,9 +222,11 @@ func run(cmd *cobra.Command, args []string) {
 			PublicModules: []resolve.StdPublicModule{{
 				ExternalName: "std.js", InternalModule: "std.js",
 			}, {
-				ExternalName: "param.js", InternalModule: "std_param.js",
+				ExternalName: "param.js", InternalModule: "param.js",
 			}, {
-				ExternalName: "fs.js", InternalModule: "std_fs.js",
+				ExternalName: "fs.js", InternalModule: "fs.js",
+			}, {
+				ExternalName: "merge.js", InternalModule: "merge.js",
 			}},
 		},
 		&resolve.FileImporter{},

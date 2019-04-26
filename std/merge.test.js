@@ -1,4 +1,4 @@
-import { mix, patch, merge } from './std_merge';
+import { mix, patch, merge } from './merge';
 
 test('mix objects', () => {
   const r = mix({ foo: 1 }, { bar: 2 }, { foo: 3 });

@@ -1,4 +1,4 @@
-import { requestAsPromise } from './std_deferred';
+import { requestAsPromise } from './deferred';
 import { flatbuffers } from './flatbuffers';
 import { __std } from './__std_generated';
 
