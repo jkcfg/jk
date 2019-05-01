@@ -15,21 +15,21 @@ func TestStdImporter(t *testing.T) {
 		valid    bool
 		resolved string
 	}{{
-		"std",
+		"default",
 		"@jkcfg/std", "test.js", "/path/to/dir",
-		true, "@jkcfg/std/std.js",
+		true, "@jkcfg/std/index.js",
 	}, {
-		"std.js",
-		"@jkcfg/std/std.js", "test.js", "/path/to/dir",
-		true, "@jkcfg/std/std.js",
+		"index.js",
+		"@jkcfg/std/index.js", "test.js", "/path/to/dir",
+		true, "@jkcfg/std/index.js",
 	}, {
 		"std/param",
 		"@jkcfg/std/param", "test.js", "/path/to/dir",
-		true, "@jkcfg/std/std_param.js",
+		true, "@jkcfg/std/param.js",
 	}, {
 		"std/param.js",
 		"@jkcfg/std/param.js", "test.js", "/path/to/dir",
-		true, "@jkcfg/std/std_param.js",
+		true, "@jkcfg/std/param.js",
 	}, {
 		// Users cannot load non-exported modules.
 		"not-public",
@@ -38,26 +38,26 @@ func TestStdImporter(t *testing.T) {
 	}, {
 		// We can still import std modules from the std code itself.
 		"internal",
-		"std_log", "@jkcfg/std/std.js", "@jkcfg/std",
-		true, "@jkcfg/std/std_log.js",
+		"log", "@jkcfg/std/index.js", "@jkcfg/std",
+		true, "@jkcfg/std/log.js",
 	}}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			i := &StdImporter{
 				PublicModules: []StdPublicModule{{
-					ExternalName: "std.js", InternalModule: "std.js",
+					ExternalName: "index.js", InternalModule: "index.js",
 				}, {
-					ExternalName: "param.js", InternalModule: "std_param.js",
+					ExternalName: "param.js", InternalModule: "param.js",
 				}},
 			}
 
 			source, resolved, _ := i.Import(test.base, test.specifier, test.referrer)
 			if !test.valid {
-				assert.Equal(t, 0, len(source))
+				assert.Empty(t, source)
 				return
 			}
-			assert.NotEqual(t, 0, len(source))
+			assert.NotEmpty(t, source)
 			assert.Equal(t, test.resolved, resolved)
 		})
 	}

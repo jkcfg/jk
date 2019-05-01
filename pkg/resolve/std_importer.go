@@ -55,7 +55,7 @@ func (i *StdImporter) Import(basePath, specifier, referrer string) ([]byte, stri
 	}
 	path = strings.TrimPrefix(path, "/")
 	if path == "" {
-		path = "std.js"
+		path = "index.js"
 	}
 	if !strings.HasSuffix(path, ".js") {
 		path += ".js"

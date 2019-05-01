@@ -209,7 +209,7 @@ func run(cmd *cobra.Command, args []string) {
 	resolve.Debug(runOptions.debugImports)
 	resolver := resolve.NewResolver(worker, scriptDir,
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: resources.MakeModule},
-		&resolve.StaticImporter{Specifier: "std", Resolved: "@jkcfg/std/std.js", Source: std.Module("std.js")},
+		&resolve.StaticImporter{Specifier: "std", Resolved: "@jkcfg/std/index.js", Source: std.Module("index.js")},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access. We map an external
 			// module name to an internal module name to not link the file name used when
@@ -220,7 +220,7 @@ func run(cmd *cobra.Command, args []string) {
 			// is 'std_param.js'
 			//    { "param.js", "std_param.js" }
 			PublicModules: []resolve.StdPublicModule{{
-				ExternalName: "std.js", InternalModule: "std.js",
+				ExternalName: "index.js", InternalModule: "index.js",
 			}, {
 				ExternalName: "param.js", InternalModule: "param.js",
 			}, {
