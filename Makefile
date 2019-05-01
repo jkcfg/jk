@@ -7,13 +7,13 @@ VERSION := $(shell git describe --tags)
 jk: pkg/__std/lib/assets_vfsdata.go FORCE
 	GO111MODULE=on go build -o $@ -ldflags "-X main.Version=$(VERSION)"
 
-pkg/__std/lib/assets_vfsdata.go: std/__std_generated.ts std/dist/std.js
+pkg/__std/lib/assets_vfsdata.go: std/__std_generated.ts std/dist/index.js
 	GO111MODULE=on go generate ./pkg/__std/lib
 
 std/__std_generated.ts: std/*.fbs std/package.json std/generate.sh
 	std/generate.sh
 
-std/dist/std.js: std/*.js std/*.ts
+std/dist/index.js: std/*.js std/*.ts
 	cd std && npm run build
 
 module = @jkcfg/std

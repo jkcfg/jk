@@ -36,6 +36,7 @@
       }
     ],
     "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
-    "no-use-before-define": ["error", { "functions": false }]
+    "no-use-before-define": ["error", { "functions": false }],
+    "no-useless-constructor": "off"
   }
 }
