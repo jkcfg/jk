@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -32,6 +31,15 @@ var runCmd = &cobra.Command{
 
 type paramSource int
 
+// InlineSpecifier is used as the initial module specifier when exec'ing literal JavaScript
+const InlineSpecifier = "<exec>"
+
+// StdinSpecifier is used as the initial module specifier when reading JavaScript from stdin
+const StdinSpecifier = "<stdin>"
+
+// ToplevelReferrer is used as the module referrer when using --module
+const ToplevelReferrer = "<toplevel>"
+
 const (
 	paramSourceFile paramSource = iota
 	paramSourceCommandLine
@@ -45,6 +53,12 @@ func examples() string {
 	b.WriteString("    jk run -v -p path.k1.k2=value ./scriptdir/script.js\n")
 	b.WriteString("  specifying input parameters and file containing parameters\n")
 	b.WriteString("    jk run -v -p key=value -f filename.json script.js\n")
+	b.WriteString("  run the JavaScript given on the command line, with standard lib available\n")
+	b.WriteString("    jk run -c log('foo')\n")
+	b.WriteString("  run the module given, resolved relative to the current directory\n")
+	b.WriteString("    jk run -m @example/module\n")
+	b.WriteString("  read the script to run from stdin\n")
+	b.WriteString("    jk run -\n")
 	return b.String()
 }
 
@@ -53,6 +67,14 @@ function onerror(msg, src, line, col, err) {
   V8Worker2.print("Promise rejected at", src, line + ":" + col);
   V8Worker2.print(err.stack);
 }
+`
+
+const inlineTemplate = `
+import { log, write, read } from '@jkcfg/std';
+import { dir, info } from '@jkcfg/std/fs';
+import * as param from '@jkcfg/std/param';
+
+%s;
 `
 
 const global = `
@@ -110,6 +132,10 @@ func (p *paramsOption) Type() string {
 }
 
 var runOptions struct {
+	// control how the argument is interpreted; by default, it's a
+	// file to load
+	module, inline bool
+
 	verbose          bool
 	outputDirectory  string
 	inputDirectory   string
@@ -130,6 +156,10 @@ func parameters(source paramSource) pflag.Value {
 
 func init() {
 	runOptions.parameters = std.NewParams()
+
+	runCmd.PersistentFlags().BoolVarP(&runOptions.module, "module", "m", false, "treat argument as specifying a module to load")
+	runCmd.PersistentFlags().BoolVarP(&runOptions.inline, "exec", "c", false, "treat argument as specifying literal JavaScript to execute")
+
 	runCmd.PersistentFlags().BoolVarP(&runOptions.verbose, "verbose", "v", false, "verbose output")
 	runCmd.PersistentFlags().StringVarP(&runOptions.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	runCmd.PersistentFlags().StringVarP(&runOptions.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
@@ -170,8 +200,23 @@ func (e *exec) onMessageReceived(msg []byte) []byte {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	filename := args[0]
-	scriptDir, err := filepath.Abs(filepath.Dir(filename))
+	var (
+		scriptDir string
+	)
+
+	// Before setting anything else up, we have to establish the
+	// directory relative to which modules will be resolved.
+	var err error
+	switch {
+	case runOptions.module && runOptions.inline:
+		log.Fatal("supply one or neither of --module,-m and --exec,-c")
+	case runOptions.module || runOptions.inline || args[0] == "-":
+		scriptDir, err = filepath.Abs(".")
+	default:
+		filename := args[0]
+		scriptDir, err = filepath.Abs(filepath.Dir(filename))
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -187,17 +232,23 @@ func run(cmd *cobra.Command, args []string) {
 	resources := std.NewModuleResources()
 
 	engine := &exec{workingDir: inputDir, resources: resources}
-	worker := v8.New(engine.onMessageReceived)
-	engine.worker = worker
 
 	if runOptions.emitDependencies {
 		engine.recorder = &record.Recorder{}
+		// Add the parameter files to the list of dependencies.
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal("run: unable to get current working directory:", err)
+		}
+		for _, f := range runOptions.parameterFiles {
+			engine.recorder.Record(record.ParameterFile, record.Params{
+				"path": filepath.Join(cwd, f),
+			})
+		}
 	}
 
-	input, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
+	worker := v8.New(engine.onMessageReceived)
+	engine.worker = worker
 
 	if err := worker.Load("errorHandler", errorHandler); err != nil {
 		log.Fatal(err)
@@ -234,27 +285,43 @@ func run(cmd *cobra.Command, args []string) {
 	)
 	resolver.SetRecorder(engine.recorder)
 
-	// Add the script and parameter files to the list of dependencies.
-	if engine.recorder != nil {
-		abspath, _ := filepath.Abs(filename)
-		engine.recorder.Record(record.ImportFile, record.Params{
-			"specifier": filename,
-			"path":      abspath,
-		})
-		cwd, err := os.Getwd()
-		if err != nil {
-			log.Fatal("run: unable to get current working directory:", err)
+	var runErr error
+
+	switch {
+	case runOptions.module:
+		_, ret := resolver.ResolveModule(args[0], ToplevelReferrer)
+		if ret != 0 {
+			runErr = fmt.Errorf("unable to load module %q", args[0])
 		}
-		for _, f := range runOptions.parameterFiles {
-			engine.recorder.Record(record.ParameterFile, record.Params{
-				"path": filepath.Join(cwd, f),
+	case runOptions.inline:
+		runErr = worker.LoadModule(InlineSpecifier, fmt.Sprintf(inlineTemplate, args[0]), resolver.ResolveModule)
+	case args[0] == "-":
+		input, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
+			log.Fatal(err)
+		}
+		runErr = worker.LoadModule(StdinSpecifier, string(input), resolver.ResolveModule)
+	default: // a file
+		// Add the script to the list of dependencies.
+		filename := args[0]
+		if engine.recorder != nil {
+			abspath, _ := filepath.Abs(filename)
+			engine.recorder.Record(record.ImportFile, record.Params{
+				"specifier": filename,
+				"path":      abspath,
 			})
 		}
+		input, err := ioutil.ReadFile(filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+		runErr = worker.LoadModule(filepath.Base(filename), string(input), resolver.ResolveModule)
 	}
 
-	if err := worker.LoadModule(path.Base(filename), string(input), resolver.ResolveModule); err != nil {
-		log.Fatal(err)
+	if runErr != nil {
+		log.Fatal(runErr)
 	}
+
 	deferred.Wait() // TODO(michael): hide this in std?
 
 	if engine.recorder != nil {

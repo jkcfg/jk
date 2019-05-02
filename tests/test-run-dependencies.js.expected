@@ -1,12 +1,12 @@
 [
   {
+    "kind": "parameter-file",
+    "path": "/jk/tests/test-run-dependencies/params.json"
+  },
+  {
     "kind": "import-file",
     "path": "/jk/tests/test-run-dependencies.js",
     "specifier": "test-run-dependencies.js"
-  },
-  {
-    "kind": "parameter-file",
-    "path": "/jk/tests/test-run-dependencies/params.json"
   },
   {
     "kind": "import-file",
