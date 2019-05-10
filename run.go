@@ -123,7 +123,4 @@ func run(cmd *cobra.Command, args []string) {
 	if runErr != nil {
 		log.Fatal(runErr)
 	}
-
-	vm.Wait()
-	vm.Finish()
 }

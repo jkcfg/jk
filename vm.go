@@ -8,12 +8,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+
 	"github.com/jkcfg/jk/pkg/deferred"
 	"github.com/jkcfg/jk/pkg/record"
 	"github.com/jkcfg/jk/pkg/resolve"
 	"github.com/jkcfg/jk/pkg/std"
 	v8 "github.com/jkcfg/v8worker2"
-	"github.com/spf13/cobra"
 )
 
 type vmOptions struct {
@@ -158,16 +160,20 @@ func (vm *vm) resolver() *resolve.Resolver {
 
 func (vm *vm) Run(specifier string, source string) error {
 	resolver := vm.resolver()
-	return vm.worker.LoadModule(specifier, source, resolver.ResolveModule)
+	if err := vm.worker.LoadModule(specifier, source, resolver.ResolveModule); err != nil {
+		return err
+	}
+	return vm.flush()
 }
 
 func (vm *vm) RunModule(specifier string, referrer string) error {
 	resolver := vm.resolver()
 	_, ret := resolver.ResolveModule(specifier, referrer)
 	if ret != 0 {
-		return fmt.Errorf("unable to load module %q", specifier)
+		err := fmt.Errorf("unable to load module %q", specifier)
+		return errors.Wrap(err, "run-module")
 	}
-	return nil
+	return vm.flush()
 }
 
 func (vm *vm) RunFile(filename string) error {
@@ -185,19 +191,23 @@ func (vm *vm) RunFile(filename string) error {
 	}
 
 	resolver := vm.resolver()
-	return vm.worker.LoadModule(filepath.Base(filename), string(input), resolver.ResolveModule)
+	if err := vm.worker.LoadModule(filepath.Base(filename), string(input), resolver.ResolveModule); err != nil {
+		return err
+	}
+
+	return vm.flush()
 }
 
-func (vm *vm) Wait() {
+func (vm *vm) flush() error {
 	deferred.Wait() // TODO(michael): hide this in std?
-}
 
-func (vm *vm) Finish() {
 	if vm.recorder != nil {
 		data, err := json.MarshalIndent(vm.recorder, "", "  ")
 		if err != nil {
-			log.Fatal("emit-dependencies:", err)
+			return errors.Wrap(err, "emit-dependencies")
 		}
 		fmt.Println(string(data))
 	}
+
+	return nil
 }
