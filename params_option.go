@@ -23,11 +23,11 @@ type paramsOption struct {
 	files  *[]string
 }
 
-func parameters(source paramSource) pflag.Value {
+func parameters(opts *vmOptions, source paramSource) pflag.Value {
 	return &paramsOption{
-		params: &runOptions.parameters,
+		params: &opts.parameters,
 		source: source,
-		files:  &runOptions.parameterFiles,
+		files:  &opts.parameterFiles,
 	}
 }
 
