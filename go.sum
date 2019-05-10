@@ -14,6 +14,8 @@ github.com/jkcfg/v8worker2 v0.0.0-20190217191700-405919a64720 h1:YBgCfrSk4xZOH//
 github.com/jkcfg/v8worker2 v0.0.0-20190217191700-405919a64720/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
 github.com/jkcfg/v8worker2 v0.0.0-20190228210604-6677fe93c5c2 h1:yroXZIO0q4uBioF+qxfrstz58/0kCKGJsBFd1Vd2OYg=
 github.com/jkcfg/v8worker2 v0.0.0-20190228210604-6677fe93c5c2/go.mod h1:V1TBZ48loRvHpVCQEQSt39QYggAjIWgCaA63Z7NuGPI=
+github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/ry/v8worker2 v0.0.0-20190118154056-6857a7739bc2 h1:nvqxIeI0eVhPV4d3UubaTiadSnAha1DaqMOBN0E3kqg=
