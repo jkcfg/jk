@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/jkcfg/jk/pkg/deferred"
 	"github.com/jkcfg/jk/pkg/record"
@@ -18,7 +17,6 @@ import (
 
 	v8 "github.com/jkcfg/v8worker2"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 var runCmd = &cobra.Command{
@@ -29,8 +27,6 @@ var runCmd = &cobra.Command{
 	Run:     run,
 }
 
-type paramSource int
-
 // InlineSpecifier is used as the initial module specifier when exec'ing literal JavaScript
 const InlineSpecifier = "<exec>"
 
@@ -39,11 +35,6 @@ const StdinSpecifier = "<stdin>"
 
 // ToplevelReferrer is used as the module referrer when using --module
 const ToplevelReferrer = "<toplevel>"
-
-const (
-	paramSourceFile paramSource = iota
-	paramSourceCommandLine
-)
 
 func examples() string {
 	b := bytes.Buffer{}
@@ -81,56 +72,6 @@ const global = `
 var global = {};
 `
 
-type paramsOption struct {
-	params *std.Params
-	source paramSource
-	files  *[]string
-}
-
-func (p *paramsOption) String() string {
-	return ""
-}
-
-func (p *paramsOption) setFromFile(s string) error {
-	params, err := std.NewParamsFromFile(s)
-	if err != nil {
-		return fmt.Errorf("%s: %v", s, err)
-	}
-	if p.files != nil {
-		*p.files = append(*p.files, s)
-	}
-
-	p.params.Merge(params)
-
-	return nil
-}
-
-func (p *paramsOption) setFromCommandline(s string) error {
-	parts := strings.Split(s, "=")
-	if len(parts) != 2 {
-		return errors.New("input parameters are of the form name=value")
-	}
-	path := parts[0]
-	v := parts[1]
-
-	p.params.SetString(path, v)
-	return nil
-}
-
-func (p *paramsOption) Set(s string) error {
-	if p.source == paramSourceFile {
-		return p.setFromFile(s)
-	}
-	return p.setFromCommandline(s)
-}
-
-func (p *paramsOption) Type() string {
-	if p.source == paramSourceFile {
-		return "filename"
-	}
-	return "name=value"
-}
-
 var runOptions struct {
 	// control how the argument is interpreted; by default, it's a
 	// file to load
@@ -144,14 +85,6 @@ var runOptions struct {
 	emitDependencies bool
 
 	debugImports bool
-}
-
-func parameters(source paramSource) pflag.Value {
-	return &paramsOption{
-		params: &runOptions.parameters,
-		source: source,
-		files:  &runOptions.parameterFiles,
-	}
 }
 
 func init() {
