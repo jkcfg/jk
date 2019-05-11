@@ -67,10 +67,10 @@ function validate(value) {
     return false;
   }
 
-  /* an array with each element a { file, content } object */
+  /* an array with each element a { file, value } object */
   let valid = true;
   value.forEach((e, i) => {
-    ['file', 'content'].forEach((prop) => {
+    ['file', 'value'].forEach((prop) => {
       if (!Object.prototype.hasOwnProperty.call(e, prop)) {
         error(`${nth(i + 1)} element does not have a '${prop}' property`);
         valid = false;
@@ -94,8 +94,8 @@ function generate(definition) {
     }
 
     for (const o of files) {
-      const { file, content, ...args } = o;
-      std.write(content, file, args);
+      const { file, value, ...args } = o;
+      std.write(value, file, args);
     }
   });
 }

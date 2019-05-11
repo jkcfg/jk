@@ -3,6 +3,6 @@ const object = {
 };
 
 export default [
-  { file: 'object0.yaml', content: object },
-  { file: 'object1.json', content: object, indent: 4 },
+  { file: 'object0.yaml', value: object },
+  { file: 'object1.json', value: object, indent: 4 },
 ];

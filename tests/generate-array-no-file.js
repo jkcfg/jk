@@ -3,6 +3,6 @@ const object = {
 };
 
 export default [
-  { content: object },
-  { content: object, indent: 4 },
+  { value: object },
+  { value: object, indent: 4 },
 ];
