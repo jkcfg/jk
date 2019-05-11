@@ -23,7 +23,8 @@
       2,
       {
         "ignore": [
-          "^@jkcfg/std$"
+          "^@jkcfg/std.*$",
+          "^%s$"
         ]
       }
     ],
