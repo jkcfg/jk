@@ -16,7 +16,10 @@ To use generate, export a default value with the list of files to generate:
     ...
   ];
 
-Optional parameters are the same as std.write().`;
+Notes:
+
+- The default export can also be a promise to such a array.
+- Optional parameters are the same as std.write().`;
 
 function error(msg) {
   std.log(`error: ${msg}`);
@@ -84,15 +87,17 @@ function validate(value) {
 
 
 function generate(definition) {
-  if (!validate(definition)) {
-    help();
-    throw new Error('jk-internal-skip: validation failed');
-  }
+  Promise.resolve(definition).then((files) => {
+    if (!validate(files)) {
+      help();
+      throw new Error('jk-internal-skip: validation failed');
+    }
 
-  for (const d of definition) {
-    const { file, content, ...args } = d;
-    std.write(content, file, args);
-  }
+    for (const o of files) {
+      const { file, content, ...args } = o;
+      std.write(content, file, args);
+    }
+  });
 }
 
 generate(generateDefinition, inputParams);
