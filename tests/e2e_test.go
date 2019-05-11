@@ -168,8 +168,11 @@ func runTest(t *testing.T, test *test) {
 
 	// 0. Check process exit code.
 	if test.shouldErrorOut() {
-		_, ok := err.(*exec.ExitError)
-		assert.True(t, ok, err.Error())
+		assert.Error(t, err)
+		if err != nil {
+			_, ok := err.(*exec.ExitError)
+			assert.True(t, ok, err.Error())
+		}
 	} else {
 		if err != nil {
 			fmt.Print(string(output))
