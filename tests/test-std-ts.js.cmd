@@ -1,3 +1,3 @@
-npm install --prefix %t
-npm run build --prefix %t
-jk run -i . %t/test.js
+npm install --prefix %b
+npm run build --prefix %b
+jk run -i . %b/test.js

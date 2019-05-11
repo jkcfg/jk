@@ -47,8 +47,12 @@ func (t *test) jsFile() string {
 	return t.file
 }
 
+func (t *test) basename() string {
+	return basename(t.file)
+}
+
 func (t *test) name() string {
-	return t.file[:len(t.file)-3]
+	return t.file[len("test-") : len(t.file)-3]
 }
 
 func exists(filename string) bool {
@@ -83,6 +87,7 @@ func (t *test) parseCmd(line string) []string {
 	parts := strings.Split(line, " ")
 	replacer := strings.NewReplacer(
 		"%d", t.outputDir(),
+		"%b", t.basename(),
 		"%t", t.name(),
 		"%f", t.jsFile(),
 	)

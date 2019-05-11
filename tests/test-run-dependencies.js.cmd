@@ -1,1 +1,1 @@
-jk run -f %t/params.json -d %t.js | sed 's#^\(.*"path": "\).*\(/jk/tests/.*\)$#\1\2#'
+jk run -f %b/params.json -d %b.js | sed 's#^\(.*"path": "\).*\(/jk/tests/.*\)$#\1\2#'

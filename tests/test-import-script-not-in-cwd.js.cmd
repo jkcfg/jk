@@ -1,1 +1,1 @@
-jk run %t/test.js
+jk run %b/test.js

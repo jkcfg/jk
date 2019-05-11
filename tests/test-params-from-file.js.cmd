@@ -1,1 +1,1 @@
-jk run --parameters %t.json %f
+jk run --parameters %b.json %f
