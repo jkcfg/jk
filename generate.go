@@ -9,8 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jkcfg/jk/pkg/std"
 	"github.com/spf13/cobra"
+
+	"github.com/jkcfg/jk/pkg/std"
 )
 
 var generateCmd = &cobra.Command{
@@ -34,16 +35,20 @@ func generateExamples() string {
 
 var generateOptions struct {
 	vmOptions
+
+	stdout bool
 }
 
 func init() {
 	initVMFlags(generateCmd, &generateOptions.vmOptions)
 
+	generateCmd.PersistentFlags().BoolVar(&generateOptions.stdout, "stdout", false, "print values on stdout")
+
 	jk.AddCommand(generateCmd)
 }
 
 func skipException(err error) bool {
-	return strings.Contains(err.Error(), "throw new Error(\"jk-internal-skip: ")
+	return strings.Contains(err.Error(), "jk-internal-skip: ")
 }
 
 func generateArgs(cmd *cobra.Command, args []string) error {
@@ -61,6 +66,7 @@ func generate(cmd *cobra.Command, args []string) {
 	}
 
 	vm := newVM(&generateOptions.vmOptions)
+	vm.parameters.SetBool("jk.generate.stdout", generateOptions.stdout)
 	vm.SetWorkingDirectory(scriptDir)
 
 	if err = vm.Run("<generate>", fmt.Sprintf(string(std.Module("generate.js")), args[0])); err != nil {

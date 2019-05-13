@@ -3,8 +3,7 @@ import * as param from '@jkcfg/std/param';
 import generateDefinition from '%s';
 
 const inputParams = {
-  format: param.Number('format', std.Format.FromExtension),
-  stdout: param.Boolean('stdout', false),
+  stdout: param.Boolean('jk.generate.stdout', false),
 };
 
 const helpMsg = `
@@ -55,16 +54,77 @@ function mod(x, y) {
 const nth = (n) => {
   const s = ['th', 'st', 'nd', 'rd'];
 
-
   const v = mod(n, 100);
   return n + (s[mod(v - 20, 10)] || s[v] || s[0]);
 };
 
-function validate(value) {
+function extension(path) {
+  return path.split('.').pop();
+}
+
+function formatFromPath(path) {
+  switch (extension(path)) {
+  case 'yaml':
+  case 'yml':
+    return std.Format.YAML;
+  case 'json':
+    return std.Format.JSON;
+  case 'hcl':
+  case 'tf':
+    return std.Format.HCL;
+  default:
+    return std.Format.JSON;
+  }
+}
+
+// Compute the output format of a value.
+function valueFormat(o) {
+  let { file, format } = o;
+
+  if (format === undefined || format === std.Format.FromExtension) {
+    format = formatFromPath(file);
+  }
+
+  return format;
+}
+
+function formatSummary(value) {
+  const formats = Array(Object.keys(std.Format).length).fill(0);
+
+  value.forEach((e) => {
+    formats[valueFormat(e)] += 1;
+  });
+
+  return formats;
+}
+
+const formatNames = [
+  'FromExtension',
+  'JSON',
+  'YAML',
+  'Raw',
+  'YAMLStream',
+  'JSONStream',
+  'HCL',
+];
+
+const formatName = f => formatNames[f];
+
+function usedFormats(summary) {
+  const augmented = summary.map((n, i) => ({ format: formatName(i), n }));
+  return augmented.reduce((formats, desc) => {
+    if (desc.n > 0) {
+      formats.push(desc.format);
+    }
+    return formats;
+  }, []);
+}
+
+function validate(value, params) {
   /* we have an array */
   if (!Array.isArray(value)) {
     error('default value is not an array');
-    return false;
+    return { valid: false, showHelp: true };
   }
 
   /* an array with each element a { file, value } object */
@@ -79,23 +139,55 @@ function validate(value) {
   });
 
   if (valid === false) {
-    return false;
+    return { valid, showHelp: true };
   }
 
-  return true;
+  /* when outputting to stdout, ensure that: */
+  let stdoutFormat;
+  if (params.stdout === true) {
+    /* there's a single output format defined */
+    const summary = formatSummary(value);
+    const formats = usedFormats(summary);
+    if (formats.length > 1) {
+      error(`stdout output requires using a single format but got: ${formats.join(',')}`);
+      return { valid: false, showHelp: false };
+    }
+
+    /* it's either JSON or YAML */
+    if (formats[0] !== 'JSON' && formats[0] !== 'YAML') {
+      error(`stdout output requires either JSON or YAML format but got: ${formats[0]}`);
+      return { valid: false, showHelp: false };
+    }
+
+    if (formats[0] === 'JSON') {
+      stdoutFormat = std.Format.JSONStream;
+    } else if (formats[0] === 'YAML') {
+      stdoutFormat = std.Format.YAMLStream;
+    }
+  }
+
+  return { valid: true, stdoutFormat, showHelp: false };
 }
 
 
-function generate(definition) {
+function generate(definition, params) {
   Promise.resolve(definition).then((files) => {
-    if (!validate(files)) {
+    const { valid, stdoutFormat, showHelp } = validate(files, params);
+    if (showHelp) {
       help();
+    }
+    if (!valid) {
       throw new Error('jk-internal-skip: validation failed');
     }
 
-    for (const o of files) {
-      const { file, value, ...args } = o;
-      std.write(value, file, args);
+    if (params.stdout) {
+      const values = files.map(f => f.value);
+      std.write(values, '', { format: stdoutFormat });
+    } else {
+      for (const o of files) {
+        const { file, value, ...args } = o;
+        std.write(value, file, args);
+      }
     }
   });
 }
