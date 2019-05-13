@@ -1,1 +1,1 @@
-jk run --parameters %t.yaml %f
+jk run --parameters %b.yaml %f

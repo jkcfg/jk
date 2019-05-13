@@ -36,16 +36,18 @@ $ jk run -o test-$testname.got test-$testname.js
 
   ```text
   npm install
-  jk run %t/test.js
+  jk run %b/test.js
   ```
 
   In that file, special variables can be used for convenience:
 
-  **%f**: the name of test js file
+  **%f**: the name of test js file (eg. `test-foo.js`)
 
-  **%t**: the name of the test
+  **%b**: the test file base name (eg. `test-foo`)
 
-  **%d**: the name of the recommended output directory (ie. `test-%testname.got`)
+  **%t**: the name of the test (eg. `foo`)
+
+  **%d**: the name of the recommended output directory (eg. `test-foo.got`)
 
 
 - `jk` std{out,err} will be compared to `test-$testname.js.expected`.

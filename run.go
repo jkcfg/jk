@@ -14,7 +14,7 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:     "run",
-	Example: examples(),
+	Example: runExamples(),
 	Short:   "Execute a jk program",
 	Args:    runArgs,
 	Run:     run,
@@ -29,7 +29,7 @@ const StdinSpecifier = "<stdin>"
 // ToplevelReferrer is used as the module referrer when using --module
 const ToplevelReferrer = "<toplevel>"
 
-func examples() string {
+func runExamples() string {
 	b := bytes.Buffer{}
 	b.WriteString("  specifying where are input files used by script and output generated files\n")
 	b.WriteString("    jk run -v -i ./inputdir -o ./outputdir ./scriptdir/script.js\n")
