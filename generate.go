@@ -59,17 +59,20 @@ func generateArgs(cmd *cobra.Command, args []string) error {
 }
 
 func generate(cmd *cobra.Command, args []string) {
-	filename := args[0]
-	scriptDir, err := filepath.Abs(filepath.Dir(filename))
-	if err != nil {
-		log.Fatal(err)
+	if generateOptions.inputDirectory == "" {
+		filename := args[0]
+		intputDir, err := filepath.Abs(filepath.Dir(filename))
+		if err != nil {
+			log.Fatal(err)
+		}
+		generateOptions.inputDirectory = intputDir
 	}
 
 	vm := newVM(&generateOptions.vmOptions)
 	vm.parameters.SetBool("jk.generate.stdout", generateOptions.stdout)
-	vm.SetWorkingDirectory(scriptDir)
+	vm.SetWorkingDirectory(".")
 
-	if err = vm.Run("<generate>", fmt.Sprintf(string(std.Module("generate.js")), args[0])); err != nil {
+	if err := vm.Run("<generate>", fmt.Sprintf(string(std.Module("generate.js")), args[0])); err != nil {
 		if !skipException(err) {
 			log.Fatal(err)
 		}
