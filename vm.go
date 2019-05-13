@@ -35,7 +35,7 @@ func initVMFlags(cmd *cobra.Command, opts *vmOptions) {
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	cmd.PersistentFlags().StringVarP(&opts.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
-	cmd.PersistentFlags().VarP(parameters(opts, paramSourceCommandLine), "parameter", "p", "boolean input parameter")
+	cmd.PersistentFlags().VarP(parameters(opts, paramSourceCommandLine), "parameter", "p", "set input parameters")
 	parameterFlag := cmd.PersistentFlags().VarPF(parameters(opts, paramSourceFile), "parameters", "f", "load parameters from a JSON or YAML file")
 	parameterFlag.Annotations = map[string][]string{
 		cobra.BashCompFilenameExt: {"json", "yaml", "yml"},
