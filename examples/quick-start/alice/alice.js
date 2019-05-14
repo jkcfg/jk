@@ -1,4 +1,4 @@
-// Define a developer.
+// Alice is a developer.
 const alice = {
   name: 'Alice',
   beverage: 'Club-Mate',
@@ -11,7 +11,7 @@ const alice = {
   ],
 };
 
-// Write the developer description as YAML.
+// Instruct to write the alice object as a YAML file.
 export default [
   { value: alice, file: `developers/${alice.name.toLowerCase()}.yaml` },
 ];
