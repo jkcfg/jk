@@ -170,7 +170,18 @@ function validate(value, params) {
 }
 
 
-function generate(definition, params) {
+function generate(defaultExport, params) {
+  /*
+   * The default export can be:
+   *  1. an array of { file, value } objects,
+   *  2. a promise to such an array,
+   *  3. a function evaluating to either 1. or 2.
+   */
+  let definition = defaultExport;
+  if (typeof definition === 'function') {
+    definition = definition();
+  }
+
   Promise.resolve(definition).then((files) => {
     const { valid, stdoutFormat, showHelp } = validate(files, params);
     if (showHelp) {
