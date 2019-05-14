@@ -24,6 +24,13 @@ echo "==> Running eslint on tests"
 )
 
 echo
+echo "==> Running eslint on examples"
+(
+  cd std
+  npx eslint -c .eslintrc ../examples
+)
+
+echo
 echo "==> Running go linters"
 gometalinter --tests --vendor --disable-all --deadline=600s \
     --enable=misspell \
