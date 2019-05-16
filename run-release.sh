@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x
 
 tag=$1
 user=jkcfg
