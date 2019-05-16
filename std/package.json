@@ -3,6 +3,7 @@
   "version": "0.2.5",
   "description": "jk standard library",
   "main": "std.js",
+  "type": "module",
   "scripts": {
     "lint": "eslint *.js *.test.js && eslint -c .eslintrc.ts *.ts",
     "build": "tsc",
