@@ -84,6 +84,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 
 		write(args.Value(), path, args.Format(), int(args.Indent()), toBool(args.Overwrite()))
 		return nil
+
 	case __std.ArgsReadArgs:
 		args := __std.ReadArgs{}
 		args.Init(union.Bytes, union.Pos)
@@ -94,6 +95,18 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		module := string(args.Module())
 		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(path, args.Format(), args.Encoding(), module) }, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
+
+	case __std.ArgsParseArgs:
+		args := __std.ParseArgs{}
+		args.Init(union.Bytes, union.Pos)
+		out, err := Parse(args.Chars(), args.Format())
+		return parseUnparseResponse(out, err)
+
+	case __std.ArgsUnparseArgs:
+		args := __std.UnparseArgs{}
+		args.Init(union.Bytes, union.Pos)
+		out, err := Parse(args.Object(), args.Format())
+		return parseUnparseResponse(out, err)
 
 	case __std.ArgsFileInfoArgs:
 		args := __std.FileInfoArgs{}

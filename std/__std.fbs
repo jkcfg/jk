@@ -3,12 +3,15 @@ include "__std_FileSystem.fbs";
 include "__std_Write.fbs";
 include "__std_Read.fbs";
 include "__std_Param.fbs";
+include "__std_ParseUnparse.fbs";
 
 namespace __std;
 
 union Args {
     WriteArgs,
     ReadArgs,
+    ParseArgs,
+    UnparseArgs,
     // Deferreds
     CancelArgs,
     // FileSystem
