@@ -15,3 +15,28 @@ log(jsons);
 log('# YAML stream');
 const yamls = unparse([{ yaml: 1 }, { yaml: 2 }], Format.YAMLStream);
 log(yamls);
+
+log('# HCL config');
+const config = {
+  provider: {
+    github: {
+      organization: 'myorg',
+    },
+  },
+  github_membership: {
+    myorg_foo: {
+      username: 'foo',
+      role: 'admin',
+    },
+  },
+};
+const hcl = unparse(config, Format.HCL);
+log(hcl);
+
+log('# Unsupported format');
+try {
+  const str = unparse({ foo: 2 }, Format.FromExtension);
+  log(str);
+} catch (_) {
+  log('Unsupported format correctly errored.');
+}

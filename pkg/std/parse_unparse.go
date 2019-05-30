@@ -53,6 +53,10 @@ func Unparse(jsonString []byte, format __std.Format) ([]byte, error) {
 		var buf bytes.Buffer
 		err := writeYAMLStream(&buf, jsonString, 2)
 		return buf.Bytes(), err
+	case __std.FormatHCL:
+		var buf bytes.Buffer
+		err := writeHCL(&buf, jsonString, 2)
+		return buf.Bytes(), err
 	}
 	return nil, fmt.Errorf(`Unsupported format for Unparse: %s`, __std.EnumNamesFormat[format])
 }

@@ -12,3 +12,15 @@ yaml: 1
 ---
 yaml: 2
 
+# HCL config
+"provider" "github" {
+  "organization" = "myorg"
+}
+
+"github_membership" "myorg_foo" {
+  "username" = "foo"
+
+  "role" = "admin"
+}
+# Unsupported format
+Unsupported format correctly errored.
