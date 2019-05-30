@@ -1,11 +1,13 @@
 package std
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
 	"github.com/jkcfg/jk/pkg/__std"
 
+	"github.com/ghodss/yaml"
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
@@ -21,6 +23,12 @@ func Parse(input []byte, format __std.Format) ([]byte, error) {
 			return nil, err
 		}
 		return input, nil
+	case __std.FormatYAML:
+		return yaml.YAMLToJSON(input)
+	case __std.FormatJSONStream:
+		return readJSONStream(bytes.NewReader(input))
+	case __std.FormatYAMLStream:
+		return readYAMLStream(bytes.NewReader(input))
 	}
 	return nil, fmt.Errorf(`Unsupported format for Parse: %s`, __std.EnumNamesFormat[format])
 }
