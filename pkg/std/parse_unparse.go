@@ -42,7 +42,17 @@ func Unparse(jsonString []byte, format __std.Format) ([]byte, error) {
 	}
 	switch format {
 	case __std.FormatJSON:
-		return jsonString, nil
+		return json.Marshal(value)
+	case __std.FormatYAML:
+		return yaml.Marshal(value)
+	case __std.FormatJSONStream:
+		var buf bytes.Buffer
+		err := writeJSONStream(&buf, jsonString, 2)
+		return buf.Bytes(), err
+	case __std.FormatYAMLStream:
+		var buf bytes.Buffer
+		err := writeYAMLStream(&buf, jsonString, 2)
+		return buf.Bytes(), err
 	}
 	return nil, fmt.Errorf(`Unsupported format for Unparse: %s`, __std.EnumNamesFormat[format])
 }

@@ -105,7 +105,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	case __std.ArgsUnparseArgs:
 		args := __std.UnparseArgs{}
 		args.Init(union.Bytes, union.Pos)
-		out, err := Parse(args.Object(), args.Format())
+		out, err := Unparse(args.Object(), args.Format())
 		return parseUnparseResponse(out, err)
 
 	case __std.ArgsFileInfoArgs:

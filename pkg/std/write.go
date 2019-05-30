@@ -2,6 +2,7 @@ package std
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -21,7 +22,7 @@ type closer func()
 
 func nilCloser() {}
 
-type writerFunc func(io.Writer, []byte, int)
+type writerFunc func(io.Writer, []byte, int) error
 
 type writeString bool
 
@@ -35,10 +36,10 @@ const (
 //   std.log('foo') -> foo (not "foo")
 // However, when explicitly asked to write JSON, we still need to honour that:
 //   std.write('foo', 'file.json') -> "foo"
-func writeJSONFull(w io.Writer, value []byte, indent int, str writeString) {
+func writeJSONFull(w io.Writer, value []byte, indent int, str writeString) error {
 	var v interface{}
 	if err := json.Unmarshal(value, &v); err != nil {
-		log.Fatalf("writeJSON: unmarshal: %s", err)
+		return fmt.Errorf("writeJSON: unmarshal: %s", err.Error())
 	}
 	// Special case strings: we don't want to print them as JSON values.
 	if s, ok := v.(string); str == rawString && ok {
@@ -46,57 +47,61 @@ func writeJSONFull(w io.Writer, value []byte, indent int, str writeString) {
 	} else {
 		i, err := json.MarshalIndent(v, "", strings.Repeat(" ", indent))
 		if err != nil {
-			log.Fatalf("writeJSON: marshal: %s", err)
+			return fmt.Errorf("writeJSON: marshal: %s", err.Error())
 		}
 		w.Write(i)
 	}
-	w.Write([]byte{'\n'})
+	_, err := w.Write([]byte{'\n'})
+	return err
 }
 
 func writeJSON(str writeString) writerFunc {
-	return func(w io.Writer, value []byte, indent int) {
-		writeJSONFull(w, value, indent, str)
+	return func(w io.Writer, value []byte, indent int) error {
+		return writeJSONFull(w, value, indent, str)
 	}
 }
 
-func writeYAML(w io.Writer, value []byte, indent int) {
+func writeYAML(w io.Writer, value []byte, indent int) error {
 	y, err := yaml.JSONToYAML([]byte(value))
 	if err != nil {
-		log.Fatalf("writeYAML: %s", err)
+		return fmt.Errorf("writeYAML: %s", err.Error())
 	}
-	w.Write(y)
+	_, err = w.Write(y)
+	return err
 }
 
-func writeYAMLStream(w io.Writer, v []byte, indent int) {
+func writeYAMLStream(w io.Writer, v []byte, indent int) error {
 	var values []interface{}
 	if err := json.Unmarshal(v, &values); err != nil {
-		log.Fatalf("writeYAMLStream: %s", err)
+		return fmt.Errorf("writeYAMLStream: %s", err.Error())
 	}
 	encoder := yamlclassic.NewEncoder(w)
 	for _, item := range values {
 		if err := encoder.Encode(item); err != nil {
-			log.Fatalf("writeYAMLStream: %s", err)
+			return fmt.Errorf("writeYAMLStream: %s", err.Error())
 		}
 	}
+	return nil
 }
 
-func writeJSONStream(w io.Writer, v []byte, indent int) {
+func writeJSONStream(w io.Writer, v []byte, indent int) error {
 	var values []interface{}
 	if err := json.Unmarshal(v, &values); err != nil {
-		log.Fatalf("writeJSONStream: %s", err)
+		return fmt.Errorf("writeJSONStream: %s", err.Error())
 	}
 	encoder := json.NewEncoder(w)
 	for _, item := range values {
 		if err := encoder.Encode(item); err != nil {
-			log.Fatalf("writeJSONStream: %s", err)
+			return fmt.Errorf("writeJSONStream: %s", err.Error())
 		}
 	}
+	return nil
 }
 
-func writeHCL(w io.Writer, v []byte, indent int) {
+func writeHCL(w io.Writer, v []byte, indent int) error {
 	ast, err := parser.Parse(v)
 	if err != nil {
-		log.Fatalf("writeHCL: unable to parse JSON: %s", err)
+		return fmt.Errorf("writeHCL: unable to parse JSON: %s", err.Error())
 	}
 
 	config := printer.Config{
@@ -104,12 +109,14 @@ func writeHCL(w io.Writer, v []byte, indent int) {
 	}
 	err = config.Fprint(w, ast)
 	if err != nil {
-		log.Fatalf("writeHCL: unable to format HCL: %s", err)
+		return fmt.Errorf("writeHCL: unable to format HCL: %s", err.Error())
 	}
+	return nil
 }
 
-func writeRaw(w io.Writer, value []byte, _ int) {
-	w.Write(value)
+func writeRaw(w io.Writer, value []byte, _ int) error {
+	_, err := w.Write(value)
+	return err
 }
 
 func writer(path string) (io.Writer, closer) {
@@ -180,7 +187,8 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 		log.Fatalf("write: unknown output format (%d)", int(format))
 	}
 
-	out(w, value, indent)
-
-	close()
+	defer close()
+	if err := out(w, value, indent); err != nil {
+		log.Fatal(err)
+	}
 }

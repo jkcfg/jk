@@ -1,0 +1,14 @@
+# JSON
+{"json":"ok"}
+# YAML
+yaml: ok
+
+# JSON stream
+{"json":1}
+{"json":2}
+
+# YAML stream
+yaml: 1
+---
+yaml: 2
+
