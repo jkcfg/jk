@@ -1,0 +1,5 @@
+FromExtension format correctly errored.
+Garbage JSON correctly errored.
+Multiple JSON values correctly errored.
+Invalid YAML correctly errored.
+Invalid JSON stream correctly errored.

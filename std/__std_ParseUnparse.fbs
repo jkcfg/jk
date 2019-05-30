@@ -1,0 +1,37 @@
+include "__std_Format.fbs";
+include "__std_Error.fbs";
+
+namespace __std;
+
+// Parse turns a string (chars) into an object. The `format` field is
+// the serialisation format of the string. The return value is the
+// JSON serialisation of the object as a UTF16 string, or an error.
+
+table ParseArgs {
+    chars: string;
+    format: Format;
+}
+
+// ParseUnparse holds either the JSON-serialised object return value of
+// Parse, or the UTF16 return vaule of Unparse.
+table ParseUnparseData {
+    data: string;
+}
+
+union ParseUnparseRetval {
+  ParseUnparseData,
+  Error
+}
+
+table ParseUnparseResponse {
+  retval: ParseUnparseRetval;
+}
+
+// Unparse takes a JSON representation (i.e., the output of
+// `JSON.stringify`) and serialises it in a given format, returning a
+// UTF16 string.
+
+table UnparseArgs {
+    object: string;
+    format: Format;
+}

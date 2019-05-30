@@ -27,3 +27,4 @@ export { Encoding, read } from './read';
 export { info, dir } from './fs';
 export { param } from './param';
 export { mix, patch, merge } from './merge';
+export { parse, unparse } from './parse';

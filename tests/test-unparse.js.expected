@@ -1,0 +1,26 @@
+# JSON
+{"json":"ok"}
+# YAML
+yaml: ok
+
+# JSON stream
+{"json":1}
+{"json":2}
+
+# YAML stream
+yaml: 1
+---
+yaml: 2
+
+# HCL config
+"provider" "github" {
+  "organization" = "myorg"
+}
+
+"github_membership" "myorg_foo" {
+  "username" = "foo"
+
+  "role" = "admin"
+}
+# Unsupported format
+Unsupported format correctly errored.

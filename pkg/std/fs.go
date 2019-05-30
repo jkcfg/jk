@@ -26,6 +26,7 @@ func (r ReadBase) FileInfo(path, module string) []byte {
 func (r ReadBase) DirectoryListing(path, module string) []byte {
 	base, path, err := r.getPath(path, module)
 	if err != nil {
+		return fsError(err)
 	}
 	return directoryListing(base, path)
 }
