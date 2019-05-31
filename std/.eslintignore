@@ -1,3 +1,4 @@
+node_modules
 flatbuffers.js
 flatbuffers.d.ts
 __std*.js
