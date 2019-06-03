@@ -1,0 +1,3 @@
+service:
+  name: my-service
+  port: 80
