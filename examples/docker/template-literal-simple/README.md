@@ -8,6 +8,6 @@ literal][js-template-literal].
 Run this example with:
 
 ```console
-$ jk generate -v dockerfile.js
+$ jk generate -v -f my-service.yaml dockerfile.js
 wrote Dockerfile
 ```
