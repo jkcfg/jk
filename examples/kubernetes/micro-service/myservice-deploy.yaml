@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myservice
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: myservice
+  template:
+    containers:
+    - image: quay.io/dlespiau/myservice:0.2.0
+      name: myservice
+    metadata:
+      labels:
+        app: myservice
