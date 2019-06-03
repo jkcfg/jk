@@ -1,4 +1,4 @@
-# `github.js`
+# `docker.js`
 
 An example generating a very simple Dockerfile using a [template
 literal][js-template-literal].

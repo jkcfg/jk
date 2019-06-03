@@ -7,11 +7,6 @@ parameters in `billing.yaml`.
 Run this example with:
 
 ```console
+$ npm install @jkcfg/kubernetes
 $ jk generate -f billing.yaml micro-service.js
-```
-
-or:
-
-```console
-$ jk generate --stdout -f billing.yaml micro-service.js
 ```

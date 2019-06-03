@@ -6,7 +6,7 @@ The examples directory contains various examples illustrating how one can use
 ## jk
 
 - [Your first `jk` program](quick-start/alice)
-- [Generate a terraform file with the Github provider](quick-start/terraform-github)
+- [Generate a simple terraform file](quick-start/terraform-github)
 
 ## Docker
 
