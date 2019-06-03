@@ -1,4 +1,4 @@
-# `github.js`
+# `docker.js`
 
 An example generating a "best practice" Dockerfile using a [template
 literal][js-template-literal]. Compared to the [simple
