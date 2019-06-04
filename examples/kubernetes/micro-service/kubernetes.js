@@ -64,6 +64,9 @@ function Ingress(service) {
   return new api.extensions.v1beta1.Ingress(service.name, {
     metadata: {
       namespace: service.namespace,
+      labels: {
+        app: service.name,
+      },
       annotations: {
         'nginx.ingress.kubernetes.io/rewrite-target': '/',
       },
