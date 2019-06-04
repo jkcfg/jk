@@ -10,6 +10,7 @@ function Deployment(service) {
       namespace: service.namespace,
       labels: {
         app: service.name,
+        maintainer: service.maintainer,
       },
     },
     spec: {
@@ -25,6 +26,7 @@ function Deployment(service) {
         metadata: {
           labels: {
             app: service.name,
+            maintainer: service.maintainer,
           },
         },
         spec: {
@@ -47,6 +49,7 @@ function Service(service) {
       namespace: service.namespace,
       labels: {
         app: service.name,
+        maintainer: service.maintainer,
       },
     },
     spec: {
@@ -66,6 +69,7 @@ function Ingress(service) {
       namespace: service.namespace,
       labels: {
         app: service.name,
+        maintainer: service.maintainer,
       },
       annotations: {
         'nginx.ingress.kubernetes.io/rewrite-target': '/',
