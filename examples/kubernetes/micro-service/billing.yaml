@@ -7,3 +7,5 @@ service:
   image: quay.io/acmecorp/billing:master-fd986f62
   ingress:
     path: /api/billing
+  dashboards:
+    - service.RPS.HTTP
