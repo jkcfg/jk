@@ -15,6 +15,8 @@ They offer mature tooling, great runtimes, a well established ecosystem and
 many learning resources. `jk` uses Javascript and a runtime tailored for
 configuration.
 
+This project is sponsored by [Weaveworks](https://weave.works).
+
 ## Quick start
 
 A good way to start with `jk` is to read our [introduction
@@ -125,3 +127,13 @@ Additionally, on Linux, it's possible to use a docker container to build the pro
 ```bash
 $ ./run-in-docker.sh make dep jk
 ```
+
+## Getting Help
+
+If you have any questions about jk:
+
+* Invite yourself to the [Weave community slack](https://slack.weave.works/)
+  and join the [#jkcfg](https://weave-community.slack.com/messages/jkcfg/) channel.
+* Join the [Weave User Group](https://www.meetup.com/pro/Weave/) and get invited to online talks,
+  hands-on training and meetups in your area.
+* File an [issue](https://github.com/jkcfg/jk/issues/new).
