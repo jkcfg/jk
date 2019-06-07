@@ -91,9 +91,23 @@ function Ingress(service) {
   });
 }
 
+function ConfigMap(service, name, data) {
+  return new api.core.v1.ConfigMap(name, {
+    metadata: {
+      namespace: service.namespace,
+      labels: {
+        app: service.name,
+        maintainer: service.maintainer,
+      },
+    },
+    data,
+  });
+}
+
 export {
   Deployment,
   Ingress,
   Namespace,
   Service,
+  ConfigMap,
 };
