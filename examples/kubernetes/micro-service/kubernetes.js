@@ -14,6 +14,11 @@ function Deployment(service) {
       },
     },
     spec: {
+      selector: {
+        matchLabels: {
+          app: service.name,
+        },
+      },
       replicas: service.replicas,
       revisionHistoryLimit: 2,
       strategy: {
