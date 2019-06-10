@@ -4,6 +4,7 @@ import {
   Namespace, Deployment, Service, Ingress, ConfigMap,
 } from './kubernetes';
 import { Dashboard } from './dashboard';
+import { PrometheusRule } from './alert';
 
 const service = param.Object('service');
 const ns = service.namespace;
@@ -18,4 +19,5 @@ export default [
   { file: `${ns}/${service.name}-svc.yaml`, value: Service(service) },
   { file: `${ns}/${service.name}-ingress.yaml`, value: Ingress(service) },
   { file: `${ns}/${service.name}-dashboards-cm.yaml`, value: ConfigMap(service, `${service.name}-dashboards`, dashboards) },
+  { file: `${ns}/${service.name}-prometheus-rule.yaml`, value: PrometheusRule(service) },
 ];

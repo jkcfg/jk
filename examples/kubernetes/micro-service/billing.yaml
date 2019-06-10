@@ -9,3 +9,5 @@ service:
     path: /api/billing
   dashboards:
     - service.RPS.HTTP
+  alerts:
+    - service.RPS.HTTP.HighErrorRate
