@@ -33,8 +33,8 @@ const RPSHttp = service => new G.Dashboard(`Service > ${service.name}`)
       ],
     })
       .addTargets([
-        new G.Prometheus(ServiceLatency(selector(service))[0], { legendFormat: '{{route}} 99th percentile' }),
-        new G.Prometheus(ServiceLatency(selector(service))[1], { legendFormat: '{{route}} median' }),
+        new G.Prometheus(ServiceLatency(selector(service))[0], { legendFormat: '99th percentile' }),
+        new G.Prometheus(ServiceLatency(selector(service))[1], { legendFormat: 'median' }),
         new G.Prometheus(ServiceLatency(selector(service))[2], { legendFormat: 'mean' }),
       ]),
     {
