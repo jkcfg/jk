@@ -6,3 +6,4 @@
 /std/node_modules
 /std/dist
 /tests/*.got
+docs/.DS_Store
