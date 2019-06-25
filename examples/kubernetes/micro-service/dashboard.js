@@ -1,8 +1,8 @@
 import * as G from './grafana';
 
 const r = '2m'; // Time window for range vectors.
-const selector = service => `job=${service.name}`;
-const ServiceRPS = selector => `sum by (code)(sum(irate(http_request_total{${selector}}[${r}])))`;
+const selector = service => `job='${service.name}'`;
+const ServiceRPS = selector => `sum by (code)(sum(irate(http_requests_total{${selector}}[${r}])))`;
 const ServiceLatency = selector => [
   `histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{${selector}}[${r}])) by (route) * 1e3`,
   `histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{${selector}}[${r}])) by (route) * 1e3`,
