@@ -1,4 +1,4 @@
-import * as G from './grafana';
+import * as G from '@jkcfg/grafana';
 
 const r = '2m'; // Time window for range vectors.
 const selector = service => `job='${service.name}'`;
