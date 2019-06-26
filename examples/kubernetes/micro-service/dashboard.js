@@ -59,5 +59,6 @@ function Dashboard(service) {
 }
 
 export {
+  RPSHttp,
   Dashboard,
 };
