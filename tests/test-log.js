@@ -3,7 +3,7 @@ import std from '@jkcfg/std';
 // We can print basic types to stdout.
 std.log(1.2);
 std.log('foo');
-// XXX std.log(undefined);
+std.log(undefined);
 std.log(null);
 
 // We can print an object to stdout.

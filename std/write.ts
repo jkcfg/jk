@@ -10,6 +10,10 @@ interface WriteOptions {
 }
 
 function write(value: any, path = '', { format = Format.FromExtension, indent = 2, overwrite = true }: WriteOptions = {}): void {
+  if (value === undefined) {
+    throw TypeError('cannot write undefined value');
+  }
+
   const builder = new flatbuffers.Builder(1024);
   const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
   const strOff = builder.createString(str);
