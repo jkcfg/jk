@@ -1,5 +1,5 @@
 /**
- * @module fs
+ * @module std/fs
  */
 
 import { flatbuffers } from './internal/flatbuffers';
