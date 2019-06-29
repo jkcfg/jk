@@ -40,6 +40,10 @@ func TestStdImporter(t *testing.T) {
 		"internal",
 		"log", "@jkcfg/std/index.js", "@jkcfg/std",
 		true, "@jkcfg/std/log.js",
+	}, {
+		"internal-relative-deep-path",
+		"./write", "@jkcfg/std/internal/log.js", "@jkcfg/std/internal",
+		true, "@jkcfg/std/internal/write.js",
 	}}
 
 	for _, test := range tests {

@@ -72,6 +72,10 @@ func (i *StdImporter) Import(basePath, specifier, referrer string) ([]byte, stri
 	}
 
 	source := path
+	if isStdModule(basePath) {
+		directory := basePath[len(stdPrefix):]
+		source = filepath.Join(directory, path)
+	}
 	if m != nil {
 		source = m.InternalModule
 	}
