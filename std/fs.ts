@@ -1,7 +1,11 @@
+/**
+ * @module fs
+ */
+
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
 
-class FileInfo {
+export class FileInfo {
   name: string;
   path: string;
   isdir: boolean;
@@ -13,7 +17,7 @@ class FileInfo {
   }
 }
 
-class Directory {
+export class Directory {
   name: string;
   path: string;
   files: FileInfo[];
@@ -25,11 +29,12 @@ class Directory {
   }
 }
 
-interface InfoOptions {
+export interface InfoOptions {
   module?: string;
 }
 
-function info(path: string, { module }: InfoOptions = {}): FileInfo {
+export function info(path: string, options: InfoOptions = {}): FileInfo {
+  const { module } = options;
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
   let moduleOffset = 0;
@@ -69,11 +74,12 @@ function info(path: string, { module }: InfoOptions = {}): FileInfo {
   }
 }
 
-interface DirOptions {
+export interface DirOptions {
   module?: string;
 }
 
-function dir(path: string, { module }: DirOptions = {}): Directory {
+export function dir(path: string, options: DirOptions = {}): Directory {
+  const { module } = options;
   const builder = new flatbuffers.Builder(512);
   const pathOffset = builder.createString(path);
   let moduleOffset = 0;
@@ -117,8 +123,3 @@ function dir(path: string, { module }: DirOptions = {}): Directory {
     throw new Error('Unexpected response to fileinfo');
   }
 }
-
-export {
-  info,
-  dir,
-};
