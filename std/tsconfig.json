@@ -23,7 +23,8 @@
     "externalPattern": [
       "internal/**/*.{ts,js}",
       "docs/**/*.{ts,js}",
-      "dist/**/*.{ts.js}"
+      "dist/**/*.{ts.js}",
+      "index.ts"
     ],
     "hideGenerator": true,
     "readme": "none",

@@ -1,9 +1,19 @@
-import { requestAsPromise } from './deferred';
-import { flatbuffers } from './flatbuffers';
-import { __std } from './__std_generated';
+/**
+ * @module std
+ */
 
-import Encoding = __std.Encoding;
-import Format = __std.Format;
+import { requestAsPromise } from './internal/deferred';
+import { flatbuffers } from './internal/flatbuffers';
+import { __std } from './internal/__std_generated';
+import { Format } from './write';
+
+/* we re-define Encoding from the generated __std.Encoding to document it */
+
+export enum Encoding {
+  Bytes= 0,
+  String= 1,
+  JSON= 2,
+}
 
 function uint8ToUint16Array(bytes: Uint8Array): Uint16Array {
   return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
@@ -15,7 +25,7 @@ type Transform = (x: Data) => Data;
 const compose = (f: Transform, g: Transform): Transform => (x: Data): Data => f(g(x));
 const stringify = (bytes: Uint8Array): string => String.fromCodePoint(...uint8ToUint16Array(bytes));
 
-interface ReadOptions {
+export interface ReadOptions {
   encoding?: Encoding;
   format?: Format;
   module?: string;
@@ -23,7 +33,7 @@ interface ReadOptions {
 
 // read requests the path and returns a promise that will be resolved
 // with the contents at the path, or rejected.
-function read(path: string, opts: ReadOptions = {}): Promise<any> {
+export function read(path: string, opts: ReadOptions = {}): Promise<any> {
   const { encoding = Encoding.JSON, format = Format.FromExtension, module } = opts;
 
   const builder = new flatbuffers.Builder(512);
@@ -60,8 +70,3 @@ function read(path: string, opts: ReadOptions = {}): Promise<any> {
 
   return requestAsPromise((): null | ArrayBuffer => V8Worker2.send(builder.asArrayBuffer()), tx);
 }
-
-export {
-  Encoding,
-  read,
-};
