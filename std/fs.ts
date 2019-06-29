@@ -1,5 +1,5 @@
-import { flatbuffers } from './flatbuffers';
-import { __std } from './__std_generated';
+import { flatbuffers } from './internal/flatbuffers';
+import { __std } from './internal/__std_generated';
 
 class FileInfo {
   name: string;

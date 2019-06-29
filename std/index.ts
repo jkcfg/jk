@@ -1,6 +1,6 @@
-import { log } from './log';
-import { Format, write } from './write';
-import { Encoding, read } from './read';
+import { log } from './internal/log';
+import { Format, write } from './internal/write';
+import { Encoding, read } from './internal/read';
 import { info, dir } from './fs';
 import { param } from './param';
 import { mix, patch, merge } from './merge';
@@ -21,9 +21,9 @@ export default {
   merge,
 };
 
-export { log } from './log';
-export { Format, write } from './write';
-export { Encoding, read } from './read';
+export { log } from './internal/log';
+export { Format, write } from './internal/write';
+export { Encoding, read } from './internal/read';
 export { info, dir } from './fs';
 export { param } from './param';
 export { mix, patch, merge } from './merge';
