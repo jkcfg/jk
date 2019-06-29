@@ -7,7 +7,8 @@
   "scripts": {
     "lint": "eslint *.js *.test.js && eslint -c .eslintrc.ts *.ts",
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "doc": "typedoc"
   },
   "repository": {
     "type": "git",
@@ -25,9 +26,9 @@
   },
   "homepage": "https://github.com/jkcfg/jk#readme",
   "devDependencies": {
+    "@babel/preset-env": "^7.4.5",
     "@typescript-eslint/eslint-plugin": "^1.7.0",
     "babel-jest": "^24.8.0",
-    "@babel/preset-env": "^7.4.5",
     "eslint": "^5.12.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.2",
@@ -35,6 +36,8 @@
     "jest": "^24.8.0",
     "to-fast-properties": "^2.0.0",
     "ts-jest": "^24.0.2",
+    "typedoc": "^0.14.2",
+    "typedoc-plugin-external-module-name": "^2.1.0",
     "typescript": "^3.4.3"
   },
   "jest": {

@@ -5,5 +5,6 @@
 /std/internal/__std_generated.*
 /std/node_modules
 /std/dist
+/std/docs
 /tests/*.got
 docs/.DS_Store
