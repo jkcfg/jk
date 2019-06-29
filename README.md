@@ -17,8 +17,8 @@ configuration.
 
 ## Quick start
 
-A good way to start with `jk` is to read our [introduction
-tutorial][quick-start].
+A good way to start with `jk` is to read our [introdution tutorial][quick-start].
+For more context head to our [introduction blog post][blog-0]!
 
 ## More complex examples
 
@@ -61,6 +61,7 @@ This project is still in early stages but future (exciting!) plans include:
 - HCL support ([#94][issue94]).
 
 [v8]: https://v8.dev/
+[blog-0]: https://damien.lespiau.name/posts/2019-06-12-jk-configuration-as-code/
 [quick-start]: https://jkcfg.github.io/#/documentation/quick-start
 [mixins]: https://github.com/jkcfg/mixins
 [kubernetes]: https://github.com/jkcfg/kubernetes
