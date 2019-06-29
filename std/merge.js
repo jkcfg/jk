@@ -1,9 +1,12 @@
+/**
+ * @module std/merge
+ */
 
 // patch returns a new value that has the fields of `obj`, except
 // where overridden by fields in `patchObj`. Entries in common are
 // themselves patched. This is similar to `merge` below, but always
 // does does a deep merge.
-function patch(obj, patchObj) {
+export function patch(obj, patchObj) {
   switch (typeof obj) {
   case 'object': {
     const result = {};
@@ -39,7 +42,7 @@ function patch(obj, patchObj) {
 // patched; otherwise, the value of the field is simply assigned into
 // the result. Any other fields in `obj` are also assigned in the
 // result.
-function merge(a, b) {
+export function merge(a, b) {
   const [typeA, typeB] = [typeof a, typeof b];
   if (typeA === 'string') {
     if (typeB === 'string') {
@@ -80,7 +83,7 @@ function objectMerge(obj, mergeObj) {
 // functions. Usually the first argument will be an object,
 // representing an initial value, but it can be a function (that will
 // be given an empty object as its argument).
-function mix(...transforms) {
+export function mix(...transforms) {
   let r = {};
 
   for (const transform of transforms) {
@@ -98,5 +101,3 @@ function mix(...transforms) {
 
   return r;
 }
-
-export { patch, merge, mix };

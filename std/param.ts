@@ -1,3 +1,7 @@
+/**
+ * @module std/param
+ */
+
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
 

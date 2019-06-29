@@ -1,9 +1,13 @@
+/**
+ * @module std/parse
+ */
+
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
 
 import Format = __std.Format;
 
-function parse(input: string, format?: Format): any {
+export function parse(input: string, format?: Format): any {
   const builder = new flatbuffers.Builder(512);
   const inputOffset = builder.createString(input);
 
@@ -37,7 +41,7 @@ function parse(input: string, format?: Format): any {
   }
 }
 
-function unparse(obj: any, format?: Format): string {
+export function unparse(obj: any, format?: Format): string {
   const builder = new flatbuffers.Builder(512);
   const inputOffset = builder.createString(JSON.stringify(obj));
 
@@ -70,5 +74,3 @@ function unparse(obj: any, format?: Format): string {
     throw new Error('Response type was not set');
   }
 }
-
-export { parse, unparse };
