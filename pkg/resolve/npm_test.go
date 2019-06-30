@@ -40,4 +40,6 @@ func TestNodeModuleImport(t *testing.T) {
 	test("in a node_modules package, as an index file", "testfiles/", "modfoo")
 	test("in a package, in a sub-directory, then package.json", "testfiles/", "modfoo/lib")
 	test("in a package, in a sub-directory, preferring file to dir", "testfiles/", "modfoo/lib/bar")
+
+	test("under ../node_modules", "testfiles/pkg", "modfoo")
 }
