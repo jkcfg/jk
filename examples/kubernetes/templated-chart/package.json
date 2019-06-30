@@ -1,0 +1,29 @@
+{
+  "name": "@jkcfg/kubernetes-examples-templated-chart",
+  "version": "1.0.0",
+  "description": "Example of using jk to generate Kubernetes config",
+  "main": "index.js",
+  "dependencies": {
+    "@jkcfg/kubernetes": "^0.3.1",
+    "handlebars": "^4.1.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "generate": "jk generate --stdout ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jk/examples.git"
+  },
+  "keywords": [
+    "kubernetes",
+    "jk",
+    "configuration"
+  ],
+  "author": "The jk authors",
+  "license": "Apache License 2.0",
+  "bugs": {
+    "url": "https://github.com/jk/examples/issues"
+  },
+  "homepage": "https://github.com/jk/examples/kubernetes#readme"
+}
