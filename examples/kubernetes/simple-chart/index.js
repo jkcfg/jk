@@ -1,6 +1,5 @@
 import { generateChart } from '@jkcfg/kubernetes/chart';
 import * as param from '@jkcfg/std/param';
-import { log, Format } from '@jkcfg/std';
 
 import resources from './resources';
 
