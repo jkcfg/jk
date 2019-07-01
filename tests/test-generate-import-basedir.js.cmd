@@ -1,1 +1,1 @@
-cd %b && jk generate --stdout test.js
+cd %b && jk generate -o ../%b.got test.js

@@ -113,7 +113,11 @@ func newVM(opts *vmOptions) *vm {
 }
 
 func (vm *vm) SetWorkingDirectory(dir string) {
-	vm.scriptDir = dir
+	scriptDir, err := filepath.Abs(dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	vm.scriptDir = scriptDir
 
 	inputDir := dir
 	if vm.inputDirectory != "" {
