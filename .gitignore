@@ -6,5 +6,6 @@
 /std/node_modules
 /std/dist
 /std/docs
+/std/typedoc-theme
 /tests/*.got
 docs/.DS_Store

@@ -37,8 +37,12 @@ build-image:
 std-install:
 	cd std && npm ci
 
-# This target install build dependencies
-dep: std-install
+# Clone the theme directory
+typedoc-theme-install:
+	rm -rf std/typedoc-theme && git clone https://github.com/jkcfg/typedoc-theme.git std/typedoc-theme
+
+# This target installs build dependencies
+dep: std-install typedoc-theme-install
 
 test: module
 	./run-tests.sh
@@ -54,3 +58,7 @@ clean: clean-tests
 	@rm -rf .bash_history .cache/ .config/ .npm
 	@rm -rf std/dist std/internal/__std_generated.js std/internal/__std_generated.ts
 	@rm -rf @jkcfg
+
+dep-clean: clean
+	@rm -rf std/node_modules
+	@rm -rf std/typedoc-theme

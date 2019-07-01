@@ -28,7 +28,7 @@
     ],
     "hideGenerator": true,
     "readme": "none",
-    "theme": "minimal"
+    "theme": "typedoc-theme/minimal"
   },
   "exclude": [
     "dist",
