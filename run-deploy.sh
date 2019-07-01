@@ -4,8 +4,8 @@ set -e
 set -x
 
 # Only deploy from the Linux CI
-os=`go env GOOS`
-if [ $os != "linux" ]; then
+os=`uname`
+if [ $os != "Linux" ]; then
   exit 0
 fi
 
