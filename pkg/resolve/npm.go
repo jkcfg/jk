@@ -71,27 +71,27 @@ func (n *NodeImporter) Import(basePath, specifier, referrer string) ([]byte, str
 		log.Fatalf("absolute import path %q not allowed in %q", specifier, referrer)
 	}
 	if strings.HasPrefix(specifier, "./") || strings.HasPrefix(specifier, "../") {
-		return loadAsPath(filepath.Join(basePath, specifier))
+		return n.loadAsPath(filepath.Join(basePath, specifier))
 	}
-	return loadAsModule(specifier, basePath)
+	return n.loadAsModule(specifier, basePath)
 }
 
 var moduleExtensions = []string{".mjs", ".js"}
 
 // loadAsFile tries to load a path as though it referred to a file. No
 // bytes returned means failure.
-func loadAsFile(path string) ([]byte, string, []Candidate) {
+func (n *NodeImporter) loadAsFile(path string) ([]byte, string, []Candidate) {
 	candidates := []Candidate{{path, verbatimRule}}
 	bytes, err := ioutil.ReadFile(path)
 	if err == nil {
 		return bytes, path, candidates
 	}
 
-	bytes, path, extCandidates := loadGuessedFile(path)
+	bytes, path, extCandidates := n.loadGuessedFile(path)
 	return bytes, path, append(candidates, extCandidates...)
 }
 
-func loadGuessedFile(path string) ([]byte, string, []Candidate) {
+func (n *NodeImporter) loadGuessedFile(path string) ([]byte, string, []Candidate) {
 	var candidates []Candidate
 	for _, ext := range moduleExtensions {
 		p := path + ext
@@ -106,8 +106,8 @@ func loadGuessedFile(path string) ([]byte, string, []Candidate) {
 
 // loadAsPath attempts to load a path when it's unknown whether it
 // refers to a file or a directory.
-func loadAsPath(path string) ([]byte, string, []Candidate) {
-	bytes, resolvedPath, fileCandidates := loadAsFile(path)
+func (n *NodeImporter) loadAsPath(path string) ([]byte, string, []Candidate) {
+	bytes, resolvedPath, fileCandidates := n.loadAsFile(path)
 	if bytes != nil {
 		return bytes, resolvedPath, fileCandidates
 	}
@@ -115,14 +115,14 @@ func loadAsPath(path string) ([]byte, string, []Candidate) {
 	info, err := os.Stat(path)
 	switch {
 	case os.IsNotExist(err):
-		// loadAsPath will already have included the possibility of
+		// loadAsFile will already have included the possibility of
 		// the path as-is as a candidate
 		return nil, "", fileCandidates
 	case err != nil:
 		log.Fatal(err)
 
 	case info.IsDir():
-		bytes, resolvedPath, dirCandidates := loadAsDir(path)
+		bytes, resolvedPath, dirCandidates := n.loadAsDir(path)
 		return bytes, resolvedPath, append(fileCandidates, dirCandidates...)
 	}
 	return nil, "", fileCandidates
@@ -130,7 +130,7 @@ func loadAsPath(path string) ([]byte, string, []Candidate) {
 
 // loadIndex tries to load the default index files, assuming the path
 // is a directory.
-func loadIndex(path string) ([]byte, string, []Candidate) {
+func (n *NodeImporter) loadIndex(path string) ([]byte, string, []Candidate) {
 	var candidates []Candidate
 	for _, ext := range moduleExtensions {
 		p := filepath.Join(path, "index"+ext)
@@ -144,7 +144,7 @@ func loadIndex(path string) ([]byte, string, []Candidate) {
 }
 
 // loadAsDir attempts to load a path which is known to be a directory.
-func loadAsDir(path string) ([]byte, string, []Candidate) {
+func (n *NodeImporter) loadAsDir(path string) ([]byte, string, []Candidate) {
 	var candidates []Candidate
 
 	packageJSONPath := filepath.Join(path, "package.json")
@@ -154,7 +154,7 @@ func loadAsDir(path string) ([]byte, string, []Candidate) {
 		if err := json.Unmarshal(packageJSON, &pkg); err == nil && pkg.Module != "" {
 			module := filepath.Join(path, pkg.Module)
 			// .module is treated as through it were a file (but not a directory)
-			bytes, path, pkgCandidates := loadAsFile(module)
+			bytes, path, pkgCandidates := n.loadAsFile(module)
 			// TODO(michael) consider transformating these candidates
 			// (and below) to reflect the indirection through
 			// package.json
@@ -164,7 +164,7 @@ func loadAsDir(path string) ([]byte, string, []Candidate) {
 				return bytes, path, candidates
 			}
 			// .. or a directory with an index (but not another package.json)
-			bytes, path, modIndexCandidates := loadIndex(module)
+			bytes, path, modIndexCandidates := n.loadIndex(module)
 			qualifyCandidates(modIndexCandidates, "via .module in "+packageJSONPath)
 			candidates = append(candidates, modIndexCandidates...)
 			if bytes != nil {
@@ -172,24 +172,30 @@ func loadAsDir(path string) ([]byte, string, []Candidate) {
 			}
 		}
 	}
-	bytes, path, indexCandidates := loadIndex(path)
+	bytes, path, indexCandidates := n.loadIndex(path)
 	return bytes, path, append(candidates, indexCandidates...)
 }
 
 // loadAsModule attempts to load a specifier as though it referred to
 // a package in (potentially nested) node_modules directories.
-func loadAsModule(specifier, base string) (_ []byte, _ string, candidates []Candidate) {
+func (n *NodeImporter) loadAsModule(specifier, base string) (_ []byte, _ string, candidates []Candidate) {
 	defer func() {
 		qualifyCandidates(candidates, "via NPM resolution")
 	}()
 
-	bits := strings.Split(base, "/")
-	for i := len(bits) - 1; i >= 0; i-- {
-		if bits[i] == "node_modules" {
+	pathFromModuleBase, err := filepath.Rel(n.ModuleBase, base)
+	if err != nil {
+		return nil, "", candidates
+	}
+
+	bits := strings.Split(pathFromModuleBase, string(filepath.Separator))
+	for i := len(bits); i >= 0; i-- {
+		if i > 0 && bits[i-1] == "node_modules" {
 			continue
 		}
-		path := strings.Join(append(bits[:i+1], "node_modules", specifier), "/")
-		bytes, path, pathCandidates := loadAsPath(path)
+		path := filepath.Join(append(bits[:i], "node_modules", specifier)...)
+		path = filepath.Join(n.ModuleBase, path)
+		bytes, path, pathCandidates := n.loadAsPath(path)
 		candidates = append(candidates, pathCandidates...)
 		if bytes != nil {
 			return bytes, path, candidates
