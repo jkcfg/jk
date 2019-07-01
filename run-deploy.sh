@@ -26,6 +26,7 @@ function website_upload() {
   git clone $git_url deploy
 
   echo "==> deploying $src to $dst"
+  rm -rf deploy/$dst
   mkdir -p $(dirname deploy/$dst)
   cp -r $src deploy/$dst
   (cd deploy && git add . && git commit -m "automated publication" && git push)
