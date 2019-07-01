@@ -38,7 +38,7 @@ matrix:
 deploy:
   - skip_cleanup: true
     provider: script
-    script: ./run-deploy
+    script: ./run-deploy.sh
 
   - skip_cleanup: true
     provider: script
