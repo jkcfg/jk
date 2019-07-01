@@ -1,4 +1,7 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -e
+set -x
 
 # Only deploy from the Linux CI
 os=`go env GOOS`
