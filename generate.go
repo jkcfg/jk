@@ -72,7 +72,7 @@ func generate(cmd *cobra.Command, args []string) {
 	vm.parameters.SetBool("jk.generate.stdout", generateOptions.stdout)
 	vm.SetWorkingDirectory(".")
 
-	if err := vm.Run("<generate>", fmt.Sprintf(string(std.Module("generate.js")), args[0])); err != nil {
+	if err := vm.Run("<generate>", fmt.Sprintf(string(std.Module("internal/generate.js")), args[0])); err != nil {
 		if !skipException(err) {
 			log.Fatal(err)
 		}

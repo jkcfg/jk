@@ -38,8 +38,12 @@ func TestStdImporter(t *testing.T) {
 	}, {
 		// We can still import std modules from the std code itself.
 		"internal",
-		"log", "@jkcfg/std/index.js", "@jkcfg/std",
+		"./log", "@jkcfg/std/index.js", "@jkcfg/std",
 		true, "@jkcfg/std/log.js",
+	}, {
+		"internal-relative-deep-path",
+		"./flatbuffers", "@jkcfg/std/internal/deferred.js", "@jkcfg/std/internal",
+		true, "@jkcfg/std/internal/flatbuffers.js",
 	}}
 
 	for _, test := range tests {

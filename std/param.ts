@@ -1,5 +1,9 @@
-import { flatbuffers } from './flatbuffers';
-import { __std } from './__std_generated';
+/**
+ * @module std/param
+ */
+
+import { flatbuffers } from './internal/flatbuffers';
+import { __std } from './internal/__std_generated';
 
 import ParamType = __std.ParamType;
 

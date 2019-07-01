@@ -14,7 +14,7 @@ matrix:
       services:
         - docker
       script:
-        - ./run-in-docker.sh make dep install module test
+        - ./run-in-docker.sh make dep install test api-reference
 
     - os: osx
       osx_image: xcode10.1
@@ -34,6 +34,11 @@ matrix:
       script:
         - export PATH=~/go-${GOVERSION}/bin:~/go/bin:$PATH
         - make dep install test
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: ./run-deploy
 
 deploy:
   skip_cleanup: true

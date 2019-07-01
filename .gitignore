@@ -2,8 +2,10 @@
 /jk
 /pkg/__std/*.go
 /pkg/__std/lib/assets_vfsdata.go
-/std/__std_generated.*
+/std/internal/__std_generated.*
 /std/node_modules
 /std/dist
+/std/docs
+/std/typedoc-theme
 /tests/*.got
 docs/.DS_Store
