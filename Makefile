@@ -1,4 +1,4 @@
-.PHONY: build-image std-install dep all install test FORCE
+.PHONY: build-image std-install dep all install test api-reference FORCE
 
 all: jk
 
@@ -13,7 +13,9 @@ pkg/__std/lib/assets_vfsdata.go: std/internal/__std_generated.ts std/dist/index.
 std/internal/__std_generated.ts: std/internal/*.fbs std/package.json std/generate.sh
 	std/generate.sh
 
-std/dist/index.js: std/*.js std/*.ts
+std_sources = std/*.js std/*.ts std/internal/*.ts std/internal/*.js
+
+std/dist/index.js: $(std_sources)
 	cd std && npm run build
 
 module = @jkcfg/std
@@ -40,6 +42,9 @@ dep: std-install
 
 test: module
 	./run-tests.sh
+
+api-reference: $(std_sources)
+	cd std && npm run doc
 
 clean-tests:
 	@rm -rf tests/*.got
