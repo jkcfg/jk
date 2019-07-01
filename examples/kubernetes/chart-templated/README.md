@@ -1,7 +1,7 @@
 # Helm chart analogue using templates
 
 This example shows a "chart" that uses textual templates to generate
-the resources. In the `simple-chart` example, the resources were
+the resources. In the `chart-simple` example, the resources were
 object literals; in this example, they are loaded from files in a
 directory relative to the chart module.
 

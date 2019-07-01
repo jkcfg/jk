@@ -1,11 +1,10 @@
 {
-  "name": "@jkcfg/kubernetes-examples-templated-chart",
+  "name": "@jkcfg/kubernetes-examples-chart-simple",
   "version": "1.0.0",
   "description": "Example of using jk to generate Kubernetes config",
   "main": "index.js",
   "dependencies": {
-    "@jkcfg/kubernetes": "^0.3.1",
-    "handlebars": "^4.1.2"
+    "@jkcfg/kubernetes": "^0.3.0"
   },
   "devDependencies": {},
   "scripts": {
