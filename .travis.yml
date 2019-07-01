@@ -36,13 +36,12 @@ matrix:
         - make dep install test
 
 deploy:
-  skip_cleanup: true
-  provider: script
-  script: ./run-deploy
+  - skip_cleanup: true
+    provider: script
+    script: ./run-deploy
 
-deploy:
-  skip_cleanup: true
-  provider: script
-  script: ./run-release.sh $TRAVIS_TAG
-  on:
-    tags: true
+  - skip_cleanup: true
+    provider: script
+    script: ./run-release.sh $TRAVIS_TAG
+    on:
+      tags: true
