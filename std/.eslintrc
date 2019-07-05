@@ -19,15 +19,7 @@
     "prefer-const": ["error", {"destructuring": "all"}],
     "import/prefer-default-export": 0,
     "import/no-extraneous-dependencies": "off",
-    "import/no-unresolved": [
-      2,
-      {
-        "ignore": [
-          "^@jkcfg/.*$",
-          "^%s$"
-        ]
-      }
-    ],
+    "import/no-unresolved": 0,
     "indent": ["error", 2, {"SwitchCase": 0, "CallExpression": {"arguments": "first"}, "FunctionDeclaration": {"parameters": "first"}}],
     "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
     "no-use-before-define": ["error", { "functions": false }],
