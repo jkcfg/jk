@@ -30,6 +30,17 @@ Steps to produce a new `jk` version:
 1. Redact the release changelog on github with the list of new features, API
 changes and bug fixes.
 
+1. Freeze the API refrence documentation for this version:
+
+   ```console
+   # TODO(damien): automate this in run-release.sh
+   $ git clone git@github.com:jkcfg/jkcfg.github.io.git
+   $ cp -r reference/std/latest reference/std/x.y.z
+   $ git add reference/std/x.y.z
+   $ git commit -m '@jkcfg/std: Freeze API reference for x.y.z'
+   $ git push
+   ```
+
 1. Bump the latest version in `src/params.json` located in the [website
 repository][website] and push the result.
 
