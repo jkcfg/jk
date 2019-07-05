@@ -1,0 +1,15 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "namespace": "default",
+    "name": "hello"
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "labels": { "instance": "blue" }
+      }
+    }
+  }
+}
