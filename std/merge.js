@@ -5,7 +5,7 @@
 // patch returns a new value that has the fields of `obj`, except
 // where overridden by fields in `patchObj`. Entries in common are
 // themselves patched. This is similar to `merge` below, but always
-// does does a deep merge.
+// does a deep merge on objects, and always replaces other values.
 export function patch(obj, patchObj) {
   switch (typeof obj) {
   case 'object': {
@@ -37,11 +37,14 @@ export function patch(obj, patchObj) {
   }
 }
 
-// merge transforms `obj` according to the field given in
-// `mergeObj`. A field name ending in '+' is "deep merged", that is,
-// patched; otherwise, the value of the field is simply assigned into
-// the result. Any other fields in `obj` are also assigned in the
-// result.
+// merge returns a new value which is `a` merged additively with
+// `b`. For values other than objects, this means addition (or
+// concatenation), with a coercion if necessary.
+//
+// If both `a` and `b` are objects, there is some fine control over
+// each field. If the key in `b` ends with a `+`, the values are
+// summed; otherwise, the value is replaced. Any fields in
+// `a` and not in `b` are also assigned in the result.
 export function merge(a, b) {
   const [typeA, typeB] = [typeof a, typeof b];
   if (typeA === 'string') {
