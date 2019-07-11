@@ -43,16 +43,16 @@ type test struct {
 	file string // name of the test-*.js test file
 }
 
-func (t *test) jsFile() string {
-	return t.file
+func (test *test) jsFile() string {
+	return test.file
 }
 
-func (t *test) basename() string {
-	return basename(t.file)
+func (test *test) basename() string {
+	return basename(test.file)
 }
 
-func (t *test) name() string {
-	return t.file[len("test-") : len(t.file)-3]
+func (test *test) name() string {
+	return test.file[len("test-") : len(test.file)-3]
 }
 
 func exists(filename string) bool {
@@ -60,21 +60,21 @@ func exists(filename string) bool {
 	return err == nil
 }
 
-func (t *test) shouldErrorOut() bool {
-	return exists(t.file + ".error")
+func (test *test) shouldErrorOut() bool {
+	return exists(test.file + ".error")
 }
 
-func (t *test) shouldSkip() bool {
-	return exists(t.file + ".skip")
+func (test *test) shouldSkip() bool {
+	return exists(test.file + ".skip")
 }
 
-func (t *test) outputDir() string {
-	return basename(t.file) + ".got"
+func (test *test) outputDir() string {
+	return basename(test.file) + ".got"
 }
 
-func (t *test) setStdin(cmd *exec.Cmd) error {
-	if exists(t.file + ".in") {
-		infile, err := os.Open(t.file + ".in")
+func (test *test) setStdin(cmd *exec.Cmd) error {
+	if exists(test.file + ".in") {
+		infile, err := os.Open(test.file + ".in")
 		if err != nil {
 			return err
 		}
@@ -83,13 +83,13 @@ func (t *test) setStdin(cmd *exec.Cmd) error {
 	return nil
 }
 
-func (t *test) parseCmd(line string) []string {
+func (test *test) parseCmd(line string) []string {
 	parts := strings.Split(line, " ")
 	replacer := strings.NewReplacer(
-		"%d", t.outputDir(),
-		"%b", t.basename(),
-		"%t", t.name(),
-		"%f", t.jsFile(),
+		"%d", test.outputDir(),
+		"%b", test.basename(),
+		"%t", test.name(),
+		"%f", test.jsFile(),
 	)
 	// Replace special strings
 	for i := range parts {
@@ -99,10 +99,10 @@ func (t *test) parseCmd(line string) []string {
 	return parts
 }
 
-func (t *test) runWithCmd() (string, error) {
+func (test *test) execWithCmd() (string, error) {
 	jkOutput := ""
 
-	f, err := os.Open(t.file + ".cmd")
+	f, err := os.Open(test.file + ".cmd")
 	if err != nil {
 		return "", err
 	}
@@ -110,9 +110,9 @@ func (t *test) runWithCmd() (string, error) {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		args := t.parseCmd(scanner.Text())
+		args := test.parseCmd(scanner.Text())
 		cmd := exec.Command("/bin/sh", "-c", strings.Join(args, " "))
-		if err := t.setStdin(cmd); err != nil {
+		if err := test.setStdin(cmd); err != nil {
 			return "", err
 		}
 		if args[0] == "jk" {
@@ -139,23 +139,23 @@ func (t *test) runWithCmd() (string, error) {
 	return jkOutput, nil
 }
 
-func (t *test) runDefault() (string, error) {
-	cmd := exec.Command("jk", "run", "-o", t.outputDir(), t.file)
-	if err := t.setStdin(cmd); err != nil {
+func (test *test) execDefault() (string, error) {
+	cmd := exec.Command("jk", "run", "-o", test.outputDir(), test.file)
+	if err := test.setStdin(cmd); err != nil {
 		return "", err
 	}
 	output, err := cmd.CombinedOutput()
 	return string(output), err
 }
 
-func (t *test) run() (string, error) {
-	if exists(t.file + ".cmd") {
-		return t.runWithCmd()
+func (test *test) exec() (string, error) {
+	if exists(test.file + ".cmd") {
+		return test.execWithCmd()
 	}
-	return t.runDefault()
+	return test.execDefault()
 }
 
-func runTest(t *testing.T, test *test) {
+func (test *test) run(t *testing.T) {
 	base := basename(test.file)
 	expectedDir := base + ".expected"
 	gotDir := base + ".got"
@@ -164,7 +164,7 @@ func runTest(t *testing.T, test *test) {
 		return
 	}
 
-	output, err := test.run()
+	output, err := test.exec()
 
 	// 0. Check process exit code.
 	if test.shouldErrorOut() {
@@ -240,7 +240,7 @@ func TestEndToEnd(t *testing.T) {
 	for _, file := range files {
 		test := &test{file}
 		t.Run(test.name(), func(t *testing.T) {
-			runTest(t, test)
+			test.run(t)
 		})
 	}
 }
