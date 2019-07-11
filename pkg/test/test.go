@@ -42,6 +42,9 @@ type Options struct {
 	// Name is the test name. This value is used as the go test name. When left
 	// empty, the script file name is used to derive the test name.
 	Name string
+
+	// WorkingDirectory is a directoring to change to before executing the test.
+	WorkingDirectory string
 }
 
 // Test is a end to end test, corresponding to one test-$testname.js file.
@@ -137,6 +140,7 @@ func (test *Test) execWithCmd() (string, error) {
 	for scanner.Scan() {
 		args := test.parseCmd(scanner.Text())
 		cmd := exec.Command("/bin/sh", "-c", strings.Join(args, " "))
+		cmd.Dir = test.opts.WorkingDirectory
 		if err := test.setStdin(cmd); err != nil {
 			return "", err
 		}
@@ -166,6 +170,7 @@ func (test *Test) execWithCmd() (string, error) {
 
 func (test *Test) execDefault() (string, error) {
 	cmd := exec.Command("jk", "run", "-o", test.outputDir(), test.file)
+	cmd.Dir = test.opts.WorkingDirectory
 	if err := test.setStdin(cmd); err != nil {
 		return "", err
 	}
