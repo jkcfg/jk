@@ -17,7 +17,7 @@ configuration.
 
 ## Quick start
 
-A good way to start with `jk` is to read our [introdution tutorial][quick-start].
+A good way to start with `jk` is to read our [introduction tutorial][quick-start].
 For more context head to our [introduction blog post][blog-0]!
 
 ## More complex examples
