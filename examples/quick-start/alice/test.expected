@@ -1,0 +1,8 @@
+beverage: Club-Mate
+languages:
+- python
+- haskell
+- c++
+- 68k assembly
+monitors: 2
+name: Alice
