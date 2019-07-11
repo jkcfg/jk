@@ -111,7 +111,8 @@ func writeHCL(w io.Writer, v []byte, indent int) error {
 	if err != nil {
 		return fmt.Errorf("writeHCL: unable to format HCL: %s", err.Error())
 	}
-	return nil
+	_, err = w.Write([]byte{'\n'})
+	return err
 }
 
 func writeRaw(w io.Writer, value []byte, _ int) error {
