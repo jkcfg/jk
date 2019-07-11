@@ -153,16 +153,23 @@ function validate(value, params) {
       return { valid: false, showHelp: false };
     }
 
-    /* it's either JSON or YAML */
-    if (formats[0] !== 'JSON' && formats[0] !== 'YAML') {
-      error(`stdout output requires either JSON or YAML format but got: ${formats[0]}`);
+    /*
+     * If we have more than one file to generate, make sure it's either JSON or
+     * YAML so we can output a stream of documents.
+     */
+    if (value.length > 1 && formats[0] !== 'JSON' && formats[0] !== 'YAML') {
+      error(`stdout output for multiple files requires either JSON or YAML format but got: ${formats[0]}`);
       return { valid: false, showHelp: false };
     }
 
-    if (formats[0] === 'JSON') {
-      stdoutFormat = std.Format.JSONStream;
-    } else if (formats[0] === 'YAML') {
-      stdoutFormat = std.Format.YAMLStream;
+    if (value.length > 1) {
+      if (formats[0] === 'JSON') {
+        stdoutFormat = std.Format.JSONStream;
+      } else if (formats[0] === 'YAML') {
+        stdoutFormat = std.Format.YAMLStream;
+      }
+    } else {
+      stdoutFormat = valueFormat(value[0]);
     }
   }
 
@@ -192,8 +199,12 @@ function generate(defaultExport, params) {
     }
 
     if (params.stdout) {
-      const values = files.map(f => f.value);
-      std.write(values, '', { format: stdoutFormat });
+      if (files.length > 1) {
+        const values = files.map(f => f.value);
+        std.write(values, '', { format: stdoutFormat });
+      } else {
+        std.write(files[0].value, '', { format: stdoutFormat });
+      }
     } else {
       for (const o of files) {
         const { file, value, ...args } = o;
