@@ -37,16 +37,28 @@ func basename(testFile string) string {
 	return testFile[:len(testFile)-len(ext)]
 }
 
+// Options are options that can be specified when creating a Test.
+type Options struct {
+	// Name is the test name. This value is used as the go test name. When left
+	// empty, the script file name is used to derive the test name.
+	Name string
+}
+
 // Test is a end to end test, corresponding to one test-$testname.js file.
 type Test struct {
 	file string // name of the test-*.js test file
+	opts Options
 }
 
 // New creates a new Test wrapping the given jk script.
-func New(script string) *Test {
-	return &Test{
+func New(script string, options ...Options) *Test {
+	test := &Test{
 		file: script,
 	}
+	if len(options) > 0 {
+		test.opts = options[0]
+	}
+	return test
 }
 
 func (test *Test) jsFile() string {
@@ -59,7 +71,13 @@ func (test *Test) basename() string {
 
 // Name is the test name.
 func (test *Test) Name() string {
-	return test.file[len("test-") : len(test.file)-3]
+	if test.opts.Name != "" {
+		return test.opts.Name
+	}
+	if strings.HasPrefix(test.file, "test-") {
+		return test.file[len("test-") : len(test.file)-3]
+	}
+	return test.file[:len(test.file)-3]
 }
 
 func exists(filename string) bool {
