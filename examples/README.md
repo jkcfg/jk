@@ -7,6 +7,7 @@ The examples directory contains various examples illustrating how one can use
 
 - [Your first `jk` program](quick-start/alice)
 - [A simple terraform file](quick-start/terraform-github)
+- How to use well known libraries: [lodash](jk/lodash), [handlebars](jk/handlebars)
 
 ## Docker
 
