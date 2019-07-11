@@ -13,8 +13,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func isDir(name string) bool {
+	info, err := os.Stat(name)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
 func find(dir string) ([]string, error) {
 	var files []string
+
+	if !isDir(dir) {
+		return nil, nil
+	}
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		switch {
