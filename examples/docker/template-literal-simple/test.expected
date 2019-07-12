@@ -1,0 +1,6 @@
+FROM alpine:3.8
+
+EXPOSE 80
+
+COPY my-service /
+ENTRYPOINT /my-service

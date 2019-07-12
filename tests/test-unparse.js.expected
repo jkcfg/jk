@@ -22,5 +22,6 @@ yaml: 2
 
   "role" = "admin"
 }
+
 # Unsupported format
 Unsupported format correctly errored.
