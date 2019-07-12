@@ -77,12 +77,18 @@ function formatFromPath(path) {
   }
 }
 
+const isString = s => typeof s === 'string' || s instanceof String;
+
 // Compute the output format of a value.
 function valueFormat(o) {
-  let { file, format } = o;
+  let { file, format, value } = o;
 
   if (format === undefined || format === std.Format.FromExtension) {
-    format = formatFromPath(file);
+    if (isString(value)) {
+      format = std.Format.Raw;
+    } else {
+      format = formatFromPath(file);
+    }
   }
 
   return format;
