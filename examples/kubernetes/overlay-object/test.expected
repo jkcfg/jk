@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    team: strange
+  name: hello
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+        instance: blue
+    spec:
+      containers:
+      - image: quay.io/weaveworks/helloworld
+        name: world
+        port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    team: strange
+  name: hello-blue-svc
+  namespace: default
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: hello
+    instance: blue
