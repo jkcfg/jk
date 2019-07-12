@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-dep
+spec:
+  template:
+    labels:
+      app: hello
+    spec:
+      containers:
+        hello:
+          image: weaveworks/helloworld:v2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: hello
+  name: demo-svc
+spec:
+  selector:
+    app: hello
