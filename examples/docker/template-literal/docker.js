@@ -15,7 +15,8 @@ USER ${user(service)}
 EXPOSE ${service.port}
 
 COPY ${service.name} ${home(service)}
-ENTRYPOINT ${home(service)}/${service.name}`;
+ENTRYPOINT ${home(service)}/${service.name}
+`;
 
 export {
   Dockerfile,
