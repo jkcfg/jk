@@ -1,0 +1,5 @@
+name: helloworld
+app: hello
+image:
+  repository: weaveworks/helloworld
+  tag: v1

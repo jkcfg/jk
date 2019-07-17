@@ -13,7 +13,7 @@ import (
 func listTestFiles(t *testing.T) []string {
 	var files []string
 
-	files, err := filepath.Glob("*/*/test.cmd")
+	files, err := filepath.Glob("*/*/test*.cmd")
 	assert.NoError(t, err)
 
 	sort.Strings(files)
@@ -30,7 +30,8 @@ func cmd(script string) string {
 }
 
 func expectedOutputFile(script string) string {
-	return filepath.Join(wd(script), "test.expected")
+	basename := strings.TrimSuffix(filepath.Base(script), filepath.Ext(script))
+	return filepath.Join(wd(script), basename+".expected")
 }
 
 func TestExamples(t *testing.T) {
