@@ -1,0 +1,7 @@
+deployment:
+  name: hello-dep
+  labels:
+    app: hello
+  containers:
+  - name: hello
+    image: helloworld:v1
