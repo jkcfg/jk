@@ -5,7 +5,7 @@ all: jk
 VERSION := $(shell git describe --tags)
 
 jk: pkg/__std/lib/assets_vfsdata.go FORCE
-	GO111MODULE=on go build -o $@ -ldflags "-X main.Version=$(VERSION)"
+	GO111MODULE=on go build -a -tags netgo -o $@ -ldflags '-X main.Version=$(VERSION) -extldflags "-static"'
 
 pkg/__std/lib/assets_vfsdata.go: std/internal/__std_generated.ts std/dist/index.js
 	GO111MODULE=on go generate ./pkg/__std/lib
