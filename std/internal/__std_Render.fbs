@@ -1,0 +1,6 @@
+namespace __std;
+
+table RenderArgs {
+  pluginURL: string;
+  params: string;
+}

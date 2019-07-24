@@ -4,6 +4,8 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/flatbuffers v1.11.0
 	github.com/google/go-containerregistry v0.0.0-20200128171736-43a8003f9213
+	github.com/hashicorp/go-hclog v0.0.0-20180709165350-ff2cf002a8dd
+	github.com/hashicorp/go-plugin v1.0.1
 	github.com/hashicorp/hcl v1.0.0
 	github.com/jkcfg/v8worker2 v0.0.0-20191022163158-90e467066938
 	github.com/opencontainers/image-spec v1.0.1
@@ -20,5 +22,3 @@ require (
 	golang.org/x/tools v0.0.0-20200115165105-de0b1760071a
 	gopkg.in/yaml.v2 v2.2.4
 )
-
-go 1.13

@@ -4,6 +4,7 @@ include "__std_Read.fbs";
 include "__std_Param.fbs";
 include "__std_ParseUnparse.fbs";
 include "__std_RPC.fbs";
+include "__std_Render.fbs";
 
 namespace __std;
 
@@ -12,12 +13,16 @@ union Args {
     ReadArgs,
     ParseArgs,
     UnparseArgs,
+
     // Deferreds
     CancelArgs,
     // Params
     ParamArgs,
     // RPC
     RPCArgs,
+
+    // Plugins
+    RenderArgs,
 }
 
 table Message {
