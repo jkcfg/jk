@@ -14,7 +14,7 @@ matrix:
       services:
         - docker
       script:
-        - ./run-in-docker.sh make dep install test api-reference
+        - ./run-in-docker.sh make dep install test api-reference STATIC=yes
 
     - os: osx
       osx_image: xcode10.1
