@@ -35,6 +35,7 @@ changes and bug fixes.
    ```console
    # TODO(damien): automate this in run-release.sh
    $ git clone git@github.com:jkcfg/jkcfg.github.io.git
+   $ cd jkcfg.github.io
    $ cp -r reference/std/latest reference/std/x.y.z
    $ git add reference/std/x.y.z
    $ git commit -m '@jkcfg/std: Freeze API reference for x.y.z'
