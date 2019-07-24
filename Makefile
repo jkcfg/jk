@@ -1,6 +1,10 @@
 .PHONY: build-image std-install dep all install test api-reference FORCE
 
-all: jk
+PLUGINS =					\
+	plugins/jk-plugin-echo/jk-plugin-echo	\
+	$(NULL)
+
+all: jk $(PLUGINS)
 
 VERSION := $(shell git describe --tags)
 
@@ -35,10 +39,14 @@ $(module)/package.json: $(std_sources) std/internal/__std_generated.ts std/packa
 	cd std && npx tsc --declaration --emitDeclarationOnly --allowJs false --outdir ../$(module) || true
 	cp README.md LICENSE std/package.json std/internal/flatbuffers.d.ts $(module)
 
+plugins/jk-plugin-echo/jk-plugin-echo: FORCE
+	GO111MODULE=on go build $(RO) $(A) $(TAGS) -o $@ -ldflags '-X main.Version=$(VERSION) -s -w $(LDFLAGS)' ./$(@D)
+
 D := $(shell go env GOPATH)/bin
-install: jk
+install: all
 	mkdir -p $(D)
 	cp jk $(D)
+	$(foreach p,$(PLUGINS),cp $(p) $(D))
 
 build-image:
 	docker build -t quay.io/justkidding/build -f build/Dockerfile build/
