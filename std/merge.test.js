@@ -188,3 +188,23 @@ test('mergeFull: array of objects, merging objects identified by a key', () => {
   expect(result.spec.containers.length).toEqual(2);
   expect(result.spec.containers[1].image).toEqual('sidecar:v2');
 });
+
+test('mergeFull: pick the deep merge strategy when encountering an object as rule', () => {
+  const sidecarImage = {
+    spec: {
+      containers: [{
+        name: 'sidecar',
+        image: 'sidecar:v2',
+      }],
+    },
+  };
+
+  const result = mergeFull(pod, sidecarImage, {
+    spec: {
+      containers: deepWithKey('name'),
+    },
+  });
+
+  expect(result.spec.containers.length).toEqual(2);
+  expect(result.spec.containers[1].image).toEqual('sidecar:v2');
+});

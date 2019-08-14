@@ -87,8 +87,12 @@ function mergeFunc(rule, key, defaultFunc) {
     return defaultFunc;
   }
 
-  if (typeof f !== 'function') {
-    throw new Error(`merge: expected a function in the rules objects but found a ${typeof f}`);
+  const t = typeof f;
+  if (t === 'object' && t !== 'function') {
+    return deep(f);
+  }
+  if (t !== 'function') {
+    throw new Error(`merge: expected a function in the rules objects but found a ${t}`);
   }
 
   return f;
@@ -170,9 +174,9 @@ function arrayMergeWithKey(a, b, mergeKey, rules) {
  * };
  *
  * mergeFull(pod, sidecarImage, {
- *   spec: deep({
+ *   spec: {
  *     containers: deepWithKey('name'),
- *   }),
+ *   },
  * });
  * ```
  *
