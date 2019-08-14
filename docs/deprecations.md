@@ -2,6 +2,16 @@
 
 ## Deprecated in 0.2.x (will be removed in 0.3.0)
 
+### merge and patch std functions
+
+*Deprecated in 0.2.10*
+
+The `merge` and `patch` function of the `@jkcfg/std/merge` module have been
+deprecated in favour of the more general `mergeFull` function.
+
+- `merge` and `patch` will be removed in `0.3.0`.
+- `mergeFull` will be renamed to `merge` in `0.3.0`.
+
 ### std import
 
 *Deprecated in 0.2.5*
