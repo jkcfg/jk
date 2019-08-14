@@ -24,6 +24,7 @@
     "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
     "no-use-before-define": ["error", { "functions": false }],
     "no-shadow": 0,
-    "no-param-reassign": 0
+    "no-param-reassign": 0,
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   }
 }
