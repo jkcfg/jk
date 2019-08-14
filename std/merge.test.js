@@ -169,16 +169,16 @@ const pod = {
   },
 };
 
-test('mergeFull: array of objects, merging objects identified by a key', () => {
-  const sidecarImage = {
-    spec: {
-      containers: [{
-        name: 'sidecar',
-        image: 'sidecar:v2',
-      }],
-    },
-  };
+const sidecarImage = {
+  spec: {
+    containers: [{
+      name: 'sidecar',
+      image: 'sidecar:v2',
+    }],
+  },
+};
 
+test('mergeFull: array of objects, merging objects identified by a key', () => {
   const result = mergeFull(pod, sidecarImage, {
     spec: deep({
       containers: deepWithKey('name'),
@@ -190,15 +190,6 @@ test('mergeFull: array of objects, merging objects identified by a key', () => {
 });
 
 test('mergeFull: pick the deep merge strategy when encountering an object as rule', () => {
-  const sidecarImage = {
-    spec: {
-      containers: [{
-        name: 'sidecar',
-        image: 'sidecar:v2',
-      }],
-    },
-  };
-
   const result = mergeFull(pod, sidecarImage, {
     spec: {
       containers: deepWithKey('name'),
