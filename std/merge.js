@@ -180,7 +180,7 @@ function arrayMergeWithKey(a, b, mergeKey, rules) {
  * });
  * ```
  *
- * Will result to:
+ * Will give the result:
  *
  * ```js
  * {
