@@ -122,6 +122,46 @@ export function deep(rules) {
 }
 
 /**
+ * Merge strategy merging two values by selecting the first value.
+ *
+ * **Example**:
+ *
+ * ```js
+ * let a = {
+ *   k0: 1,
+ *   o: {
+ *     o0: 'a string',
+ *   },
+ * };
+ *
+ * let b = {
+ *   k0: 2,
+ *   k1: true,
+ *   o: {
+ *     o0: 'another string',
+ *   },
+ * };
+ *
+ * mergeFull(a, b, { o: first() });
+ * ```
+ *
+ * Will give the result:
+ *
+ * ```js
+ * {
+ *   k0: 2,
+ *   k1: true,
+ *   o: {
+ *     o0: 'a string',
+ *   },
+ * }
+ * ```
+ */
+export function first() {
+  return (a, _) => a;
+}
+
+/**
  * Merge strategy merging two values by selecting the second value.
  *
  * **Example**:
