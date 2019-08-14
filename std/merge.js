@@ -121,6 +121,47 @@ export function deep(rules) {
   return (a, b) => objectMerge2(a, b, rules);
 }
 
+/**
+ * Merge strategy merging two values by selecting the second value.
+ *
+ * **Example**:
+ *
+ * ```js
+ * let a = {
+ *   k0: 1,
+ *   o: {
+ *     o0: 'a string',
+ *     o1: 'this will go away!',
+ *   },
+ * };
+ *
+ * let b = {
+ *   k0: 2,
+ *   k1: true,
+ *   o: {
+ *     o0: 'another string',
+ *   },
+ * };
+ *
+ * mergeFull(a, b, { o: replace() });
+ * ```
+ *
+ * Will give the result:
+ *
+ * ```js
+ * {
+ *   k0: 2,
+ *   k1: true,
+ *   o: {
+ *     o0: 'another string',
+ *   },
+ * }
+ * ```
+ */
+export function replace() {
+  return (_, b) => b;
+}
+
 function arrayMergeWithKey(a, b, mergeKey, rules) {
   const r = Array.from(a);
   const toAppend = [];

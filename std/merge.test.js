@@ -1,5 +1,5 @@
 import {
-  mix, patch, merge, mergeFull, deep, deepWithKey,
+  mix, patch, merge, mergeFull, deep, replace, deepWithKey,
 } from './merge';
 
 test('mix objects', () => {
@@ -198,4 +198,15 @@ test('mergeFull: pick the deep merge strategy when encountering an object as rul
 
   expect(result.spec.containers.length).toEqual(2);
   expect(result.spec.containers[1].image).toEqual('sidecar:v2');
+});
+
+test('replace: basic', () => {
+  const result = mergeFull(pod, sidecarImage, {
+    spec: {
+      containers: replace(),
+    },
+  });
+
+  expect(result.spec.containers.length).toEqual(1);
+  expect(result.spec.containers[0].name).toEqual('sidecar');
 });
