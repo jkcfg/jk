@@ -82,11 +82,7 @@ function objectMerge(obj, mergeObj) {
 }
 
 function mergeFunc(rule, key, defaultFunc) {
-  if (rule === undefined) {
-    return defaultFunc;
-  }
-
-  const f = rule[key];
+  const f = rule && rule[key];
   if (f === undefined) {
     return defaultFunc;
   }
