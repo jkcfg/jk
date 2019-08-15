@@ -1,5 +1,5 @@
 /**
- * @module std/parse
+ * @module std
  */
 
 import { flatbuffers } from './internal/flatbuffers';
