@@ -24,7 +24,4 @@ export default {
 export { log } from './log';
 export { Format, write } from './write';
 export { Encoding, read } from './read';
-export { info, dir } from './fs';
-export { param } from './param';
-export { mix, patch, merge } from './merge';
 export { parse, unparse } from './parse';
