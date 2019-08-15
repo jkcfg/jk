@@ -200,6 +200,44 @@ test('mergeFull: pick the deep merge strategy when encountering an object as rul
   expect(result.spec.containers[1].image).toEqual('sidecar:v2');
 });
 
+test('deep: throw on wrong input type', () => {
+  const sidecarImageNotObject = {
+    spec: [{
+      containers: [{
+        name: 'sidecar',
+        image: 'sidecar:v2',
+      }],
+    }],
+  };
+
+  const rules = {
+    spec: deep({
+      containers: deepWithKey('name'),
+    }),
+  };
+
+  expect(() => mergeFull(pod, sidecarImageNotObject, rules)).toThrow();
+});
+
+test('deepWithKey: throw on wrong input type', () => {
+  const sidecarImageNotArray = {
+    spec: {
+      containers: {
+        name: 'sidecar',
+        image: 'sidecar:v2',
+      },
+    },
+  };
+
+  const rules = {
+    spec: deep({
+      containers: deepWithKey('name'),
+    }),
+  };
+
+  expect(() => mergeFull(pod, sidecarImageNotArray, rules)).toThrow();
+});
+
 test('first: basic', () => {
   const result = mergeFull(pod, sidecarImage, {
     spec: {

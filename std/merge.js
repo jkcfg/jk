@@ -108,6 +108,27 @@ function objectMerge2(a, b, rules) {
   return r;
 }
 
+function isObject(o) {
+  const t = typeof o;
+  return t === 'object' && !Array.isArray(o) && !!o;
+}
+
+function assertObject(o, prefix) {
+  if (!isObject(o)) {
+    throw new Error(`${prefix}: input value is not an object`);
+  }
+}
+
+function isArray(a) {
+  return Array.isArray(a);
+}
+
+function assertArray(o, prefix) {
+  if (!isArray(o)) {
+    throw new Error(`${prefix}: input is not an array`);
+  }
+}
+
 /**
  * Merge strategy deep merging objects.
  *
@@ -118,7 +139,11 @@ function objectMerge2(a, b, rules) {
  * strategy for some properties. See [[mergeFull]].
  */
 export function deep(rules) {
-  return (a, b) => objectMerge2(a, b, rules);
+  return (a, b) => {
+    assertObject(a, 'deep');
+    assertObject(b, 'deep');
+    return objectMerge2(a, b, rules);
+  };
 }
 
 /**
@@ -286,7 +311,11 @@ function arrayMergeWithKey(a, b, mergeKey, rules) {
  * ```
  */
 export function deepWithKey(mergeKey, rules) {
-  return (a, b) => arrayMergeWithKey(a, b, mergeKey, rules);
+  return (a, b) => {
+    assertArray(a, 'deepWithKey');
+    assertArray(b, 'deepWithKey');
+    return arrayMergeWithKey(a, b, mergeKey, rules);
+  };
 }
 
 /**
