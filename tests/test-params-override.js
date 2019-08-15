@@ -1,9 +1,10 @@
-import std from '@jkcfg/std';
+import * as std from '@jkcfg/std';
+import * as param from '@jkcfg/std/param';
 
-const b = std.param.Boolean('myBoolean', false);
-const n = std.param.Number('myNumber', 3.14);
-const s = std.param.String('myString', 'foo');
-const o = std.param.Object('myObject', {
+const b = param.Boolean('myBoolean', false);
+const n = param.Number('myNumber', 3.14);
+const s = param.String('myString', 'foo');
+const o = param.Object('myObject', {
   s: 'bar',
   b: true,
   o: {

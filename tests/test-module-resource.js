@@ -1,4 +1,4 @@
-import std from '@jkcfg/std';
+import * as std from '@jkcfg/std';
 import resource1 from './test-module-resource/resource';
 import resource2 from './test-module-resource/submodule/resource';
 import contents from './test-module-resource/fs';

@@ -2,7 +2,7 @@
 // ^ switch this rule in eslint off, since module resolution is what's under test here.
 /* eslint "import/first": [0] */
 /* eslint "import/newline-after-import": [0] */
-import std from '@jkcfg/std';
+import * as std from '@jkcfg/std';
 
 // node_modules/testcase/index.js
 import msg1 from 'testcase';

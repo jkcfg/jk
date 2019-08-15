@@ -1,8 +1,9 @@
-import std from '@jkcfg/std';
+import * as std from '@jkcfg/std';
+import * as param from '@jkcfg/std/param';
 
-const b = std.param.Boolean('myBoolean', false);
-const n = std.param.Number('myNumber', 3.14);
-const s = std.param.String('myString', 'foo');
+const b = param.Boolean('myBoolean', false);
+const n = param.Number('myNumber', 3.14);
+const s = param.String('myString', 'foo');
 
 std.log({
   myBoolean: b,
@@ -12,10 +13,10 @@ std.log({
 
 // Test default values are shining through when the parameters aren't
 // specified.
-const bD = std.param.Boolean('myBooleanD', false);
-const nD = std.param.Number('myNumberD', 3.14);
-const sD = std.param.String('myStringD', 'foo');
-const oD = std.param.Object('myObjectD', {
+const bD = param.Boolean('myBooleanD', false);
+const nD = param.Number('myNumberD', 3.14);
+const sD = param.String('myStringD', 'foo');
+const oD = param.Object('myObjectD', {
   s: 'bar',
   b: true,
   o: {

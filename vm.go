@@ -135,7 +135,6 @@ func (vm *vm) resolver() *resolve.Resolver {
 	// to call SetWorkingDir before being able to call Run* functions.
 	resolver := resolve.NewResolver(vm.worker, vm.scriptDir,
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
-		&resolve.StaticImporter{Specifier: "std", Resolved: "@jkcfg/std/index.js", Source: std.Module("index.js")},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access. We map an external
 			// module name to an internal module name to not link the file name used when

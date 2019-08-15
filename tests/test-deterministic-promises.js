@@ -1,4 +1,4 @@
-import std from '@jkcfg/std';
+import * as std from '@jkcfg/std';
 
 const resolvedOrder = [];
 const promises = [];
