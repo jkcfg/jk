@@ -2,15 +2,20 @@
 
 ## Deprecated in 0.2.x (will be removed in 0.3.0)
 
-### merge and patch std functions
+### merge, patch and mix std functions
 
 *Deprecated in 0.2.10*
 
-The `merge` and `patch` function of the `@jkcfg/std/merge` module have been
+The `merge` and `patch` functions of the `@jkcfg/std/merge` module have been
 deprecated in favour of the more general `mergeFull` function.
+
+The `mix` function has been deprecated to be redefined a bit later. Composing
+merge operations is definitely useful but we'd like to think a bit more about
+it.
 
 - `merge` and `patch` will be removed in `0.3.0`.
 - `mergeFull` will be renamed to `merge` in `0.3.0`.
+- `mix` will be removed in `0.3.0`.
 
 ### std import
 
