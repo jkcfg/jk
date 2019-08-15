@@ -1,14 +1,14 @@
 import {
-  mergeFull, deep, first, replace, deepWithKey,
+  merge, deep, first, replace, deepWithKey,
 } from './merge';
 
-test('mergeFull: default merging of primitive values', () => {
-  expect(mergeFull(1, 2)).toEqual(2);
-  expect(mergeFull('a', 'b')).toEqual('b');
-  expect(() => mergeFull('a', 1)).toThrow();
-  expect(() => mergeFull(true, 'b')).toThrow();
-  expect(mergeFull([1, 2], [3, 4])).toEqual([3, 4]);
-  expect(mergeFull({ foo: 1 }, { bar: 2 })).toEqual({ foo: 1, bar: 2 });
+test('merge: default merging of primitive values', () => {
+  expect(merge(1, 2)).toEqual(2);
+  expect(merge('a', 'b')).toEqual('b');
+  expect(() => merge('a', 1)).toThrow();
+  expect(() => merge(true, 'b')).toThrow();
+  expect(merge([1, 2], [3, 4])).toEqual([3, 4]);
+  expect(merge({ foo: 1 }, { bar: 2 })).toEqual({ foo: 1, bar: 2 });
 });
 
 const pod = {
@@ -33,8 +33,8 @@ const sidecarImage = {
   },
 };
 
-test('mergeFull: array of objects, merging objects identified by a key', () => {
-  const result = mergeFull(pod, sidecarImage, {
+test('merge: array of objects, merging objects identified by a key', () => {
+  const result = merge(pod, sidecarImage, {
     spec: deep({
       containers: deepWithKey('name'),
     }),
@@ -44,8 +44,8 @@ test('mergeFull: array of objects, merging objects identified by a key', () => {
   expect(result.spec.containers[1].image).toEqual('sidecar:v2');
 });
 
-test('mergeFull: pick the deep merge strategy when encountering an object as rule', () => {
-  const result = mergeFull(pod, sidecarImage, {
+test('merge: pick the deep merge strategy when encountering an object as rule', () => {
+  const result = merge(pod, sidecarImage, {
     spec: {
       containers: deepWithKey('name'),
     },
@@ -71,7 +71,7 @@ test('deep: throw on wrong input type', () => {
     }),
   };
 
-  expect(() => mergeFull(pod, sidecarImageNotObject, rules)).toThrow();
+  expect(() => merge(pod, sidecarImageNotObject, rules)).toThrow();
 });
 
 test('deepWithKey: throw on wrong input type', () => {
@@ -90,11 +90,11 @@ test('deepWithKey: throw on wrong input type', () => {
     }),
   };
 
-  expect(() => mergeFull(pod, sidecarImageNotArray, rules)).toThrow();
+  expect(() => merge(pod, sidecarImageNotArray, rules)).toThrow();
 });
 
 test('first: basic', () => {
-  const result = mergeFull(pod, sidecarImage, {
+  const result = merge(pod, sidecarImage, {
     spec: {
       containers: first(),
     },
@@ -106,7 +106,7 @@ test('first: basic', () => {
 });
 
 test('replace: basic', () => {
-  const result = mergeFull(pod, sidecarImage, {
+  const result = merge(pod, sidecarImage, {
     spec: {
       containers: replace(),
     },

@@ -24,7 +24,7 @@ function objectMerge2(a, b, rules) {
 
   Object.assign(r, a);
   for (const [key, value] of Object.entries(b)) {
-    r[key] = mergeFunc(rules, key, mergeFull)(a[key], value);
+    r[key] = mergeFunc(rules, key, merge)(a[key], value);
   }
   return r;
 }
@@ -57,7 +57,7 @@ function assertArray(o, prefix) {
  *
  * `deep` will deep merge objects. This is the default merging strategy of
  * objects. It's possible to provide a set of rules to override the merge
- * strategy for some properties. See [[mergeFull]].
+ * strategy for some properties. See [[merge]].
  */
 export function deep(rules) {
   return (a, b) => {
@@ -88,7 +88,7 @@ export function deep(rules) {
  *   },
  * };
  *
- * mergeFull(a, b, { o: first() });
+ * merge(a, b, { o: first() });
  * ```
  *
  * Will give the result:
@@ -129,7 +129,7 @@ export function first() {
  *   },
  * };
  *
- * mergeFull(a, b, { o: replace() });
+ * merge(a, b, { o: replace() });
  * ```
  *
  * Will give the result:
@@ -176,7 +176,7 @@ function arrayMergeWithKey(a, b, mergeKey, rules) {
  * **Example**:
  *
  * ```js
- * import { mergeFull, deep, deepWithKey } from '@jkcfg/std/merge';
+ * import { merge, deep, deepWithKey } from '@jkcfg/std/merge';
  *
  * const pod = {
  *   spec: {
@@ -200,7 +200,7 @@ function arrayMergeWithKey(a, b, mergeKey, rules) {
  *   },
  * };
  *
- * mergeFull(pod, sidecarImage, {
+ * merge(pod, sidecarImage, {
  *   spec: {
  *     containers: deepWithKey('name'),
  *   },
@@ -246,7 +246,7 @@ export function deepWithKey(mergeKey, rules) {
  * @param b Merge value.
  * @param rule Set of merge rules.
  *
- * `mergeFull` will recursively merge two values `a` and `b`. By default:
+ * `merge` will recursively merge two values `a` and `b`. By default:
  *
  * - if `a` and `b` are primitive types, `b` is the result of the merge.
  * - if `a` and `b` are arrays, `b` is the result of the merge.
@@ -254,14 +254,14 @@ export function deepWithKey(mergeKey, rules) {
  * set of default rules.
  * - the process is recursive, effectively deep merging objects.
  *
- * if `a` and `b` have different types, `mergeFull` will throw an error.
+ * if `a` and `b` have different types, `merge` will throw an error.
  *
  * **Examples**:
  *
  * Merge primitive values with the default rules:
  *
  * ```js
- * mergeFull(1, 2);
+ * merge(1, 2);
  *
  * > 2
  * ```
@@ -284,7 +284,7 @@ export function deepWithKey(mergeKey, rules) {
  *   },
  * }
  *
- * mergeFull(a, b);
+ * merge(a, b);
  *
  * >
  * {
@@ -301,24 +301,24 @@ export function deepWithKey(mergeKey, rules) {
  * It's possible to override the default merging rules by specifying a merge
  * strategy, a function that will compute the result of the merge.
  *
- * For primitive values and arrays, the third argument of `mergeFull` is a
+ * For primitive values and arrays, the third argument of `merge` is a
  * function:
  *
  * ```js
  * const add = (a, b) => a + b;
- * mergeFull(1, 2, add);
+ * merge(1, 2, add);
  *
  * > 3
  * ```
  *
  * For objects, each own property can be merged with different strategies. The
- * third argument of `mergeFull` is an object associating properties with merge
+ * third argument of `merge` is an object associating properties with merge
  * functions.
  *
  *
  * ```js
  * // merge a and b, adding the values of the `k0` property.
- * mergeFull(a, b, { k0: add });
+ * merge(a, b, { k0: add });
  *
  * >
  * {
@@ -330,7 +330,7 @@ export function deepWithKey(mergeKey, rules) {
  * }
  * ```
  */
-export function mergeFull(a, b, rule) {
+export function merge(a, b, rule) {
   const [typeA, typeB] = [typeof a, typeof b];
 
   if (a === undefined) {
