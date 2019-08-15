@@ -136,23 +136,8 @@ func (vm *vm) resolver() *resolve.Resolver {
 	resolver := resolve.NewResolver(vm.worker, vm.scriptDir,
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
 		&resolve.StdImporter{
-			// List here the modules users are allowed to access. We map an external
-			// module name to an internal module name to not link the file name used when
-			// writing the standard library to a module name visible to the user.
-			// eg.:
-			//     import * as param from '@jkcfg/std/param.';
-			// The name exposed to users is 'param.js', the file implementing this module
-			// is 'std_param.js'
-			//    { "param.js", "std_param.js" }
-			PublicModules: []resolve.StdPublicModule{{
-				ExternalName: "index.js", InternalModule: "index.js",
-			}, {
-				ExternalName: "param.js", InternalModule: "param.js",
-			}, {
-				ExternalName: "fs.js", InternalModule: "fs.js",
-			}, {
-				ExternalName: "merge.js", InternalModule: "merge.js",
-			}},
+			// List here the modules users are allowed to access.
+			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js"},
 		},
 		&resolve.FileImporter{},
 		&resolve.NodeImporter{ModuleBase: vm.scriptDir},
