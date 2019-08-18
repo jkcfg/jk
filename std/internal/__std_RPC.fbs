@@ -1,0 +1,33 @@
+namespace __std;
+
+// Definitions for generic RPC. The method name is sent as a string,
+// and each argument is encoded as a union, so that e.g., byte arrays can
+// be sent compactly. Return values are always deferreds; the
+// interpretation of the data is up to the caller.
+
+/// RPCSerialised is a `JSON.stringify`d value, used for everything but byte
+// arrays.
+table RPCSerialised {
+    value: string;
+}
+
+/// RPCBytes is a byte array, used for encoding byte buffer (Uint8Array)
+//arguments (the JSON encoding would be "[34, 56, 28, ...]").
+table RPCBytes {
+    bytes: [ubyte];
+}
+
+/// RPCValue is a union of the types that can be sent as arguments.
+union RPCValue {
+    RPCSerialised,
+    RPCBytes
+}
+
+table RPCArg {
+  arg: RPCValue;
+}
+
+table RPCArgs {
+    method: string;
+    args: [RPCArg];
+}

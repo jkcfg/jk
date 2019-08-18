@@ -1,6 +1,7 @@
 package std
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -93,7 +94,43 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 			fmt.Printf("read %s\n", path)
 		}
 		module := string(args.Module())
-		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(path, args.Format(), args.Encoding(), module) }, sendFunc(res.SendBytes))
+		ser := deferred.Register(func() ([]byte, error) {
+			return options.Root.Read(path, args.Format(), args.Encoding(), module)
+		}, sendFunc(res.SendBytes))
+		return deferredResponse(ser)
+
+	case __std.ArgsRPCArgs:
+		args := __std.RPCArgs{}
+		args.Init(union.Bytes, union.Pos)
+		method := args.Method()
+		numArgs := args.ArgsLength()
+		arguments := make([]interface{}, numArgs)
+
+		for i := 0; i < numArgs; i++ {
+			arg := __std.RPCArg{}
+			var argUnion flatbuffers.Table
+			if !args.Args(&arg, i) || !arg.Arg(&argUnion) {
+				return deferredError(fmt.Sprintf("could not decode arguments[%d]", i))
+			}
+
+			switch arg.ArgType() {
+			case __std.RPCValueRPCSerialised:
+				serialised := __std.RPCSerialised{}
+				serialised.Init(argUnion.Bytes, argUnion.Pos)
+				if err := json.Unmarshal(serialised.Value(), &arguments[i]); err != nil {
+					return deferredError(fmt.Sprintf("could not parse serialised arguments[%d]: %s", i, err.Error()))
+				}
+			case __std.RPCValueRPCBytes:
+				bytes := __std.RPCBytes{}
+				bytes.Init(argUnion.Bytes, argUnion.Pos)
+				arguments[i] = bytes.BytesBytes()
+			}
+		}
+
+		ser := deferred.Register(func() ([]byte, error) {
+			log.Printf("RPC: %s(%+v)", method, arguments)
+			return nil, nil
+		}, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 
 	case __std.ArgsParseArgs:
@@ -154,6 +191,10 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	return nil
 }
 
+// deferredResponse constructs a response containing the serial number
+// of the deferred value, to indicate to JavaScript that the request
+// has been accepted and its success or failure will be communicated
+// later.
 func deferredResponse(s deferred.Serial) []byte {
 	b := flatbuffers.NewBuilder(20)
 	__std.DeferredStart(b)
@@ -161,6 +202,22 @@ func deferredResponse(s deferred.Serial) []byte {
 	off := __std.DeferredEnd(b)
 	__std.DeferredResponseStart(b)
 	__std.DeferredResponseAddRetvalType(b, __std.DeferredRetvalDeferred)
+	__std.DeferredResponseAddRetval(b, off)
+	off = __std.DeferredResponseEnd(b)
+	b.Finish(off)
+	return b.FinishedBytes()
+}
+
+// deferredError constructs a response containing an error, to
+// indicate to JavaScript that request has not been accepted.
+func deferredError(err string) []byte {
+	b := flatbuffers.NewBuilder(512)
+	msg := b.CreateString(err)
+	__std.ErrorStart(b)
+	__std.ErrorAddMessage(b, msg)
+	off := __std.ErrorEnd(b)
+	__std.DeferredResponseStart(b)
+	__std.DeferredResponseAddRetvalType(b, __std.DeferredRetvalError)
 	__std.DeferredResponseAddRetval(b, off)
 	off = __std.DeferredResponseEnd(b)
 	b.Finish(off)
