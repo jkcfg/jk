@@ -39,6 +39,9 @@ function recv(buf) {
   callback(value);
 }
 
+// `recv` is our handler for bytes sent ad-hoc from the runtime.
+V8Worker2.recv(recv);
+
 // registerCallbacks records callbacks for the three possible outcomes
 // of a deferred, which is identified by a serial number returned from
 // Go.
@@ -50,8 +53,11 @@ function panic(msg) {
   return () => { throw new Error(msg); };
 }
 
-// TODO(michael): consider factoring the V8Worker.send(...) calls into
-// a function here as well.
+// sendRequest sends an ArrayBuffer to the jk runtime and returns the
+// ArrayBuffer response.
+function sendRequest(buf) {
+  return V8Worker2.send(buf);
+}
 
 // requestAsPromise performs the request given, and wraps the deferred
 // result in a promise. If the request provokes an error, the Promise
@@ -100,8 +106,8 @@ function requestAsPromise(req, tx) {
 // TODO
 function cancel(serial) {
   const builder = new flatbuffers.Builder(512);
-  __std.ReadArgs.startCancelArgs(builder);
-  __std.ReadArgs.addSerial(builder, serial);
+  __std.CancelArgs.startCancelArgs(builder);
+  __std.CancelArgs.addSerial(builder, serial);
   const argsOffset = __std.CancelArgs.endCancelArgs(builder);
 
   __std.Message.startMessage(builder);
@@ -109,12 +115,11 @@ function cancel(serial) {
   __std.Message.addArgs(builder, argsOffset);
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
-  return V8Worker2.send(builder.asArrayBuffer());
+  return sendRequest(builder.asArrayBuffer());
 }
-
-V8Worker2.recv(recv);
 
 export {
   requestAsPromise,
+  sendRequest,
   cancel,
 };

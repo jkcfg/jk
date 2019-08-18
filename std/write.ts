@@ -4,6 +4,7 @@
 
 import { __std } from './internal/__std_generated';
 import { flatbuffers } from './internal/flatbuffers';
+import { sendRequest } from './internal/deferred';
 
 /* we re-define Format from the generated __std.Format to document it */
 
@@ -47,5 +48,5 @@ export function write(value: any, path = '', { format = Format.FromExtension, in
   const message = __std.Message.endMessage(builder);
 
   builder.finish(message);
-  V8Worker2.send(builder.asArrayBuffer());
+  sendRequest(builder.asArrayBuffer());
 }

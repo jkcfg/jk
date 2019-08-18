@@ -2,7 +2,7 @@
  * @module std
  */
 
-import { requestAsPromise } from './internal/deferred';
+import { requestAsPromise, sendRequest } from './internal/deferred';
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
 import { Format } from './write';
@@ -68,5 +68,5 @@ export function read(path: string, opts: ReadOptions = {}): Promise<any> {
     break;
   }
 
-  return requestAsPromise((): null | ArrayBuffer => V8Worker2.send(builder.asArrayBuffer()), tx);
+  return requestAsPromise((): null | ArrayBuffer => sendRequest(builder.asArrayBuffer()), tx);
 }
