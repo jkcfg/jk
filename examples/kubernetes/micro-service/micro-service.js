@@ -1,4 +1,4 @@
-import { unparse, Format } from '@jkcfg/std';
+import { stringify, Format } from '@jkcfg/std';
 import * as k from './kubernetes';
 import { Dashboard } from './dashboard';
 import { PrometheusRule } from './alert';
@@ -7,7 +7,7 @@ export function MicroService(service) {
   const ns = service.namespace;
 
   const dashboards = {
-    dashboard: unparse(Dashboard(service), Format.JSON),
+    dashboard: stringify(Dashboard(service), Format.JSON),
   };
 
   return [

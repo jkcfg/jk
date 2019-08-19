@@ -41,7 +41,7 @@ export function parse(input: string, format?: Format): any {
   }
 }
 
-export function unparse(obj: any, format?: Format): string {
+export function stringify(obj: any, format?: Format): string {
   const builder = new flatbuffers.Builder(512);
   const inputOffset = builder.createString(JSON.stringify(obj));
 
