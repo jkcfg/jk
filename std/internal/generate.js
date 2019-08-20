@@ -10,8 +10,8 @@ const helpMsg = `
 To use generate, export a default value with the list of files to generate:
 
   export default [
-    { file: 'file1.yaml', content: value1 },
-    { file: 'file2.yaml', content: [v0, v1, v2], format: std.Format.YAMLStream },
+    { file: 'file1.yaml', value: value1 },
+    { file: 'file2.yaml', value: [v0, v1, v2], format: std.Format.YAMLStream },
     ...
   ];
 
