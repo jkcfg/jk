@@ -42,6 +42,9 @@ changes and bug fixes.
    $ git push
    ```
 
+1. Add a new link to the API reference on the [website][website] in
+`static/docs/std-api-reference.md`.
+
 1. Bump the latest version in `src/params.json` located in the [website
 repository][website] and push the result.
 
