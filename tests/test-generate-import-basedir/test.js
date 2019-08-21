@@ -1,3 +1,3 @@
 import result from 'subdir';
 
-export default [{ file: 'message.yaml', value: result }];
+export default [{ path: 'message.yaml', value: result }];

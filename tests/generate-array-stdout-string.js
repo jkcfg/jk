@@ -1,3 +1,3 @@
 export default [
-  { file: 'object0.yaml', value: 'success\n' },
+  { path: 'object0.yaml', value: 'success\n' },
 ];
