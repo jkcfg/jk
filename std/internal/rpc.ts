@@ -1,9 +1,13 @@
-import { __std } from '__std_generated';
-import { flatbuffers } from 'flatbuffers';
+/**
+ * @module std/internal
+ */
+
+import { __std } from './__std_generated';
+import { flatbuffers } from './flatbuffers';
 import { sendRequest, requestAsPromise } from './deferred';
 
 // An RPC call
-export function RPC(method, ...args) {
+export function RPC(method: string, ...args: any[]): Promise<Uint8Array> {
   const builder = new flatbuffers.Builder(512);
   const argsOffsets = [];
   for (const arg of args) {
@@ -40,5 +44,5 @@ export function RPC(method, ...args) {
   __std.Message.addArgs(builder, off);
   off = __std.Message.endMessage(builder);
   builder.finish(off);
-  return requestAsPromise(() => sendRequest(builder.asArrayBuffer()), c => c);
+  return requestAsPromise(() => sendRequest(builder.asArrayBuffer()), (c: Uint8Array) => c);
 }
