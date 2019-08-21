@@ -46,7 +46,8 @@ func (r *ModuleResources) MakeModule(basePath string) ([]byte, string) {
 	r.mu.Unlock()
 
 	code := `
-import std from '@jkcfg/std';
+import * as std from '@jkcfg/std';
+import * as fs from '@jkcfg/std/fs';
 
 const module = %q;
 
@@ -55,11 +56,11 @@ function read(path, {...rest} = {}) {
 }
 
 function dir(path) {
-  return std.dir(path, { module });
+  return fs.dir(path, { module });
 }
 
 function info(path) {
-  return std.info(path, { module });
+  return fs.info(path, { module });
 }
 
 export { read, dir, info };

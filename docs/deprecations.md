@@ -1,16 +1,47 @@
 # List of std library deprecations
 
+## Deprecated in 0.3.x (will be removed in 0.4.0)
+
+### `generate` file property is now called path
+
+The `file` property in the array of objects consumed by `jk generate` is
+deprecated in favour of the `path` property. Both names still work.
+
+**Deprecated**
+
+```
+const object = {
+  message: 'success',
+};
+
+export default [
+  { file: 'object0.yaml', value: object },
+];
+````
+
+**Use**:
+```
+export default [
+  { path: 'object0.yaml', value: object },
+];
+```
+
 ## Deprecated in 0.2.x (will be removed in 0.3.0)
 
-### merge and patch std functions
+### merge, patch and mix std functions
 
 *Deprecated in 0.2.10*
 
-The `merge` and `patch` function of the `@jkcfg/std/merge` module have been
+The `merge` and `patch` functions of the `@jkcfg/std/merge` module have been
 deprecated in favour of the more general `mergeFull` function.
+
+The `mix` function has been deprecated to be redefined a bit later. Composing
+merge operations is definitely useful but we'd like to think a bit more about
+it.
 
 - `merge` and `patch` will be removed in `0.3.0`.
 - `mergeFull` will be renamed to `merge` in `0.3.0`.
+- `mix` will be removed in `0.3.0`.
 
 ### std import
 

@@ -1,4 +1,4 @@
-import std from '@jkcfg/std';
+import * as std from '@jkcfg/std';
 
 // We can print basic types to stdout.
 std.log(1.2);

@@ -10,8 +10,8 @@ const helpMsg = `
 To use generate, export a default value with the list of files to generate:
 
   export default [
-    { file: 'file1.yaml', content: value1 },
-    { file: 'file2.yaml', content: [v0, v1, v2], format: std.Format.YAMLStream },
+    { path: 'file1.yaml', value: value1 },
+    { path: 'file2.yaml', value: [v0, v1, v2], format: std.Format.YAMLStream },
     ...
   ];
 
@@ -81,13 +81,13 @@ const isString = s => typeof s === 'string' || s instanceof String;
 
 // Compute the output format of a value.
 function valueFormat(o) {
-  let { file, format, value } = o;
+  let { path, format, value } = o;
 
   if (format === undefined || format === std.Format.FromExtension) {
     if (isString(value)) {
       format = std.Format.Raw;
     } else {
-      format = formatFromPath(file);
+      format = formatFromPath(path);
     }
   }
 
@@ -133,10 +133,15 @@ function validate(value, params) {
     return { valid: false, showHelp: true };
   }
 
-  /* an array with each element a { file, value } object */
+  /* an array with each element a { path, value } object */
   let valid = true;
   value.forEach((e, i) => {
-    ['file', 'value'].forEach((prop) => {
+    /* 'file' is the old 'path' property name. Fixup things */
+    if (e.file !== undefined) {
+      e.path = e.file;
+    }
+
+    ['path', 'value'].forEach((prop) => {
       if (!Object.prototype.hasOwnProperty.call(e, prop)) {
         error(`${nth(i + 1)} element does not have a '${prop}' property`);
         valid = false;
@@ -186,7 +191,7 @@ function validate(value, params) {
 function generate(defaultExport, params) {
   /*
    * The default export can be:
-   *  1. an array of { file, value } objects,
+   *  1. an array of { path, value } objects,
    *  2. a promise to such an array,
    *  3. a function evaluating to either 1. or 2.
    */
@@ -213,8 +218,8 @@ function generate(defaultExport, params) {
       }
     } else {
       for (const o of files) {
-        const { file, value, ...args } = o;
-        std.write(value, file, args);
+        const { path, value, ...args } = o;
+        std.write(value, path, args);
       }
     }
   });

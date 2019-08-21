@@ -1,5 +1,5 @@
 import * as param from '@jkcfg/std/param';
-import { merge } from '@jkcfg/std/merge';
+import { merge, deepWithKey } from '@jkcfg/std/merge';
 import { overlay } from '@jkcfg/kubernetes/overlay';
 import { core } from '@jkcfg/kubernetes/api';
 import { valuesForGenerate } from '@jkcfg/kubernetes/generate';
@@ -13,10 +13,18 @@ function addSidecar(maybeDeployment) {
   }
 
   return merge(maybeDeployment, {
-    'spec+': {
-      'template+': {
-        'spec+': {
-          'containers+': [{ name: 'sidecar', image: 'foobar:1.1.0' }],
+    spec: {
+      template: {
+        spec: {
+          containers: [{ name: 'sidecar', image: 'foobar:1.1.0' }],
+        },
+      },
+    },
+  }, {
+    spec: {
+      template: {
+        spec: {
+          containers: deepWithKey('name'),
         },
       },
     },

@@ -1,3 +1,3 @@
-import std from '@jkcfg/std';
+import * as param from '@jkcfg/std/param';
 
-std.param.Boolean('mybool', true);
+param.Boolean('mybool', true);

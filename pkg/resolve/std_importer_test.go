@@ -49,11 +49,7 @@ func TestStdImporter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			i := &StdImporter{
-				PublicModules: []StdPublicModule{{
-					ExternalName: "index.js", InternalModule: "index.js",
-				}, {
-					ExternalName: "param.js", InternalModule: "param.js",
-				}},
+				PublicModules: []string{"index.js", "param.js"},
 			}
 
 			source, resolved, _ := i.Import(test.base, test.specifier, test.referrer)

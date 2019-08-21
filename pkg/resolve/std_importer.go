@@ -11,31 +11,23 @@ const (
 	stdPrefix = "@jkcfg/std"
 )
 
-// StdPublicModule is a module exported by the standard library.
-type StdPublicModule struct {
-	// ExternalName is the name of the module as seen by the external world.
-	ExternalName string
-	// InternalModule is the file name of the module as embedded in the jk binary.
-	InternalModule string
-}
-
 // StdImporter is the standard library importer.
 type StdImporter struct {
 	// PublicModules are modules users are allowed to import.
-	PublicModules []StdPublicModule
+	PublicModules []string
 }
 
 func isStdModule(name string) bool {
 	return strings.HasPrefix(name, stdPrefix)
 }
 
-func (i *StdImporter) publicModule(path string) *StdPublicModule {
+func (i *StdImporter) publicModule(path string) string {
 	for _, m := range i.PublicModules {
-		if path == m.ExternalName {
-			return &m
+		if path == m {
+			return m
 		}
 	}
-	return nil
+	return ""
 }
 
 // Import implements importer.
@@ -66,7 +58,7 @@ func (i *StdImporter) Import(basePath, specifier, referrer string) ([]byte, stri
 	// Ensure we only allow users to import PublicModules. Modules from the std lib
 	// itself are allowed to import internal private modules.
 	m := i.publicModule(path)
-	if !isStdModule(referrer) && m == nil {
+	if !isStdModule(referrer) && m == "" {
 		trace(i, "'%s' is not a public module", specifier)
 		return nil, "", candidate
 	}
@@ -76,8 +68,8 @@ func (i *StdImporter) Import(basePath, specifier, referrer string) ([]byte, stri
 		directory := basePath[len(stdPrefix):]
 		source = filepath.Join(directory, path)
 	}
-	if m != nil {
-		source = m.InternalModule
+	if m != "" {
+		source = m
 	}
 	module := std.Module(source)
 	if len(module) == 0 {
