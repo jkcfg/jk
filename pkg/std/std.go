@@ -23,6 +23,11 @@ type sender interface {
 	SendBytes([]byte) error
 }
 
+// RPCFunc is a function that can be registered for dispatch. The
+// arguments each will either be []byte or JSON values; any result
+// returned will be serialised to JSON.
+type RPCFunc func([]interface{}) (interface{}, error)
+
 // ExecuteOptions global input parameters to the standards library.
 type ExecuteOptions struct {
 	// Verbose indicates if some operations, such as write, should print out what
@@ -38,6 +43,8 @@ type ExecuteOptions struct {
 	// DryRun instructs standard library functions to not complete operations that
 	// would mutate something (eg. std.write()).
 	DryRun bool
+	// Methods is where RPC methods are registered.
+	Methods map[string]RPCFunc
 }
 
 func toBool(b byte) bool {
@@ -102,7 +109,12 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	case __std.ArgsRPCArgs:
 		args := __std.RPCArgs{}
 		args.Init(union.Bytes, union.Pos)
-		method := args.Method()
+		method := string(args.Method())
+		rpcfn, ok := options.Methods[method]
+		if !ok {
+			return deferredError("RPC method not found: " + method)
+		}
+
 		numArgs := args.ArgsLength()
 		arguments := make([]interface{}, numArgs)
 
@@ -128,8 +140,11 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		}
 
 		ser := deferred.Register(func() ([]byte, error) {
-			log.Printf("RPC: %s(%+v)", method, arguments)
-			return nil, nil
+			result, err := rpcfn(arguments)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(result)
 		}, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 
