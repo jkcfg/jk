@@ -1,3 +1,5 @@
+include "__std_Deferred.fbs";
+
 namespace __std;
 
 // Definitions for generic RPC. The method name is sent as a string,
@@ -11,16 +13,10 @@ table RPCSerialised {
     value: string;
 }
 
-/// RPCBytes is a byte array, used for encoding byte buffer (Uint8Array)
-//arguments (the JSON encoding would be "[34, 56, 28, ...]").
-table RPCBytes {
-    bytes: [ubyte];
-}
-
 /// RPCValue is a union of the types that can be sent as arguments.
 union RPCValue {
     RPCSerialised,
-    RPCBytes
+    Data
 }
 
 table RPCArg {
@@ -30,4 +26,14 @@ table RPCArg {
 table RPCArgs {
     method: string;
     args: [RPCArg];
+    sync: bool;
+}
+
+union RPCSyncRetval {
+    Data,
+    Error
+}
+
+table RPCSyncResponse {
+    retval: RPCSyncRetval;
 }

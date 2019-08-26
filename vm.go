@@ -56,22 +56,24 @@ const global = `
 var global = {};
 `
 
-var rpcMethods = map[string]std.RPCFunc{
-	"debug.echo": func(args []interface{}) (interface{}, error) {
-		// json.Marshal will serialise a []byte as base64-encoded;
-		// stop it doing that by making all such args into []int
-		// before responding.
-		for i, arg := range args {
-			if bytes, ok := arg.([]byte); ok {
-				ints := make([]int, len(bytes), len(bytes))
-				for j := range bytes {
-					ints[j] = int(bytes[j])
-				}
-				args[i] = ints
+func echo(args []interface{}) (interface{}, error) {
+	// json.Marshal will serialise a []byte as base64-encoded;
+	// stop it doing that by making all such args into []int
+	// before responding.
+	for i, arg := range args {
+		if bytes, ok := arg.([]byte); ok {
+			ints := make([]int, len(bytes), len(bytes))
+			for j := range bytes {
+				ints[j] = int(bytes[j])
 			}
+			args[i] = ints
 		}
-		return args, nil
-	},
+	}
+	return args, nil
+}
+
+var rpcMethods = map[string]std.RPCFunc{
+	"debug.echo": echo,
 }
 
 type vm struct {

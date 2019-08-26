@@ -132,13 +132,24 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 				if err := json.Unmarshal(serialised.Value(), &arguments[i]); err != nil {
 					return deferredError(fmt.Sprintf("could not parse serialised arguments[%d]: %s", i, err.Error()))
 				}
-			case __std.RPCValueRPCBytes:
-				bytes := __std.RPCBytes{}
+			case __std.RPCValueData:
+				bytes := __std.Data{}
 				bytes.Init(argUnion.Bytes, argUnion.Pos)
 				arguments[i] = bytes.BytesBytes()
 			}
 		}
 
+		if args.Sync() == 1 {
+			result, err := rpcfn(arguments)
+			if err != nil {
+				return rpcError(err.Error())
+			}
+			bytes, err := json.Marshal(result)
+			if err != nil {
+				return rpcError(err.Error())
+			}
+			return rpcData(bytes)
+		}
 		ser := deferred.Register(func() ([]byte, error) {
 			result, err := rpcfn(arguments)
 			if err != nil {
@@ -235,6 +246,36 @@ func deferredError(err string) []byte {
 	__std.DeferredResponseAddRetvalType(b, __std.DeferredRetvalError)
 	__std.DeferredResponseAddRetval(b, off)
 	off = __std.DeferredResponseEnd(b)
+	b.Finish(off)
+	return b.FinishedBytes()
+}
+
+// rpcData encodes a successful synchronous RPC call
+func rpcData(data []byte) []byte {
+	b := flatbuffers.NewBuilder(1024)
+	off := b.CreateByteVector(data)
+	__std.DataStart(b)
+	__std.DataAddBytes(b, off)
+	off = __std.DataEnd(b)
+	__std.RPCSyncResponseStart(b)
+	__std.RPCSyncResponseAddRetvalType(b, __std.RPCSyncRetvalData)
+	__std.RPCSyncResponseAddRetval(b, off)
+	off = __std.RPCSyncResponseEnd(b)
+	b.Finish(off)
+	return b.FinishedBytes()
+}
+
+// rpcError encodes a failed synchronous RPC call
+func rpcError(msg string) []byte {
+	b := flatbuffers.NewBuilder(1024)
+	off := b.CreateString(msg)
+	__std.ErrorStart(b)
+	__std.ErrorAddMessage(b, off)
+	off = __std.ErrorEnd(b)
+	__std.RPCSyncResponseStart(b)
+	__std.RPCSyncResponseAddRetvalType(b, __std.RPCSyncRetvalError)
+	__std.RPCSyncResponseAddRetval(b, off)
+	off = __std.RPCSyncResponseEnd(b)
 	b.Finish(off)
 	return b.FinishedBytes()
 }
