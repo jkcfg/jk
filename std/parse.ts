@@ -4,6 +4,7 @@
 
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
+import { sendRequest } from './internal/deferred';
 
 import Format = __std.Format;
 
@@ -22,7 +23,7 @@ export function parse(input: string, format?: Format): any {
   __std.Message.addArgs(builder, argsOffset);
   builder.finish(__std.Message.endMessage(builder));
 
-  const buf = V8Worker2.send(builder.asArrayBuffer());
+  const buf = sendRequest(builder.asArrayBuffer());
   const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
   const resp = __std.ParseUnparseResponse.getRootAsParseUnparseResponse(data);
   switch (resp.retvalType()) {
@@ -56,7 +57,7 @@ export function stringify(obj: any, format?: Format): string {
   __std.Message.addArgs(builder, argsOffset);
   builder.finish(__std.Message.endMessage(builder));
 
-  const buf = V8Worker2.send(builder.asArrayBuffer());
+  const buf = sendRequest(builder.asArrayBuffer());
   const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
   const resp = __std.ParseUnparseResponse.getRootAsParseUnparseResponse(data);
   switch (resp.retvalType()) {

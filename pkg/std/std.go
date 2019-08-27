@@ -1,6 +1,7 @@
 package std
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -22,6 +23,11 @@ type sender interface {
 	SendBytes([]byte) error
 }
 
+// RPCFunc is a function that can be registered for dispatch. The
+// arguments each will either be []byte or JSON values; any result
+// returned will be serialised to JSON.
+type RPCFunc func([]interface{}) (interface{}, error)
+
 // ExecuteOptions global input parameters to the standards library.
 type ExecuteOptions struct {
 	// Verbose indicates if some operations, such as write, should print out what
@@ -37,6 +43,8 @@ type ExecuteOptions struct {
 	// DryRun instructs standard library functions to not complete operations that
 	// would mutate something (eg. std.write()).
 	DryRun bool
+	// Methods is where RPC methods are registered.
+	Methods map[string]RPCFunc
 }
 
 func toBool(b byte) bool {
@@ -93,7 +101,62 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 			fmt.Printf("read %s\n", path)
 		}
 		module := string(args.Module())
-		ser := deferred.Register(func() ([]byte, error) { return options.Root.Read(path, args.Format(), args.Encoding(), module) }, sendFunc(res.SendBytes))
+		ser := deferred.Register(func() ([]byte, error) {
+			return options.Root.Read(path, args.Format(), args.Encoding(), module)
+		}, sendFunc(res.SendBytes))
+		return deferredResponse(ser)
+
+	case __std.ArgsRPCArgs:
+		args := __std.RPCArgs{}
+		args.Init(union.Bytes, union.Pos)
+		method := string(args.Method())
+		rpcfn, ok := options.Methods[method]
+		if !ok {
+			return deferredError("RPC method not found: " + method)
+		}
+
+		numArgs := args.ArgsLength()
+		arguments := make([]interface{}, numArgs)
+
+		for i := 0; i < numArgs; i++ {
+			arg := __std.RPCArg{}
+			var argUnion flatbuffers.Table
+			if !args.Args(&arg, i) || !arg.Arg(&argUnion) {
+				return deferredError(fmt.Sprintf("could not decode arguments[%d]", i))
+			}
+
+			switch arg.ArgType() {
+			case __std.RPCValueRPCSerialised:
+				serialised := __std.RPCSerialised{}
+				serialised.Init(argUnion.Bytes, argUnion.Pos)
+				if err := json.Unmarshal(serialised.Value(), &arguments[i]); err != nil {
+					return deferredError(fmt.Sprintf("could not parse serialised arguments[%d]: %s", i, err.Error()))
+				}
+			case __std.RPCValueData:
+				bytes := __std.Data{}
+				bytes.Init(argUnion.Bytes, argUnion.Pos)
+				arguments[i] = bytes.BytesBytes()
+			}
+		}
+
+		if args.Sync() == 1 {
+			result, err := rpcfn(arguments)
+			if err != nil {
+				return rpcError(err.Error())
+			}
+			bytes, err := json.Marshal(result)
+			if err != nil {
+				return rpcError(err.Error())
+			}
+			return rpcData(bytes)
+		}
+		ser := deferred.Register(func() ([]byte, error) {
+			result, err := rpcfn(arguments)
+			if err != nil {
+				return nil, err
+			}
+			return json.Marshal(result)
+		}, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 
 	case __std.ArgsParseArgs:
@@ -154,6 +217,10 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	return nil
 }
 
+// deferredResponse constructs a response containing the serial number
+// of the deferred value, to indicate to JavaScript that the request
+// has been accepted and its success or failure will be communicated
+// later.
 func deferredResponse(s deferred.Serial) []byte {
 	b := flatbuffers.NewBuilder(20)
 	__std.DeferredStart(b)
@@ -163,6 +230,52 @@ func deferredResponse(s deferred.Serial) []byte {
 	__std.DeferredResponseAddRetvalType(b, __std.DeferredRetvalDeferred)
 	__std.DeferredResponseAddRetval(b, off)
 	off = __std.DeferredResponseEnd(b)
+	b.Finish(off)
+	return b.FinishedBytes()
+}
+
+// deferredError constructs a response containing an error, to
+// indicate to JavaScript that request has not been accepted.
+func deferredError(err string) []byte {
+	b := flatbuffers.NewBuilder(512)
+	msg := b.CreateString(err)
+	__std.ErrorStart(b)
+	__std.ErrorAddMessage(b, msg)
+	off := __std.ErrorEnd(b)
+	__std.DeferredResponseStart(b)
+	__std.DeferredResponseAddRetvalType(b, __std.DeferredRetvalError)
+	__std.DeferredResponseAddRetval(b, off)
+	off = __std.DeferredResponseEnd(b)
+	b.Finish(off)
+	return b.FinishedBytes()
+}
+
+// rpcData encodes a successful synchronous RPC call
+func rpcData(data []byte) []byte {
+	b := flatbuffers.NewBuilder(1024)
+	off := b.CreateByteVector(data)
+	__std.DataStart(b)
+	__std.DataAddBytes(b, off)
+	off = __std.DataEnd(b)
+	__std.RPCSyncResponseStart(b)
+	__std.RPCSyncResponseAddRetvalType(b, __std.RPCSyncRetvalData)
+	__std.RPCSyncResponseAddRetval(b, off)
+	off = __std.RPCSyncResponseEnd(b)
+	b.Finish(off)
+	return b.FinishedBytes()
+}
+
+// rpcError encodes a failed synchronous RPC call
+func rpcError(msg string) []byte {
+	b := flatbuffers.NewBuilder(1024)
+	off := b.CreateString(msg)
+	__std.ErrorStart(b)
+	__std.ErrorAddMessage(b, off)
+	off = __std.ErrorEnd(b)
+	__std.RPCSyncResponseStart(b)
+	__std.RPCSyncResponseAddRetvalType(b, __std.RPCSyncRetvalError)
+	__std.RPCSyncResponseAddRetval(b, off)
+	off = __std.RPCSyncResponseEnd(b)
 	b.Finish(off)
 	return b.FinishedBytes()
 }

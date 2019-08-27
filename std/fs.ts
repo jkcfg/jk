@@ -4,6 +4,7 @@
 
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
+import { sendRequest } from './internal/deferred';
 
 export class FileInfo {
   name: string;
@@ -55,7 +56,7 @@ export function info(path: string, options: InfoOptions = {}): FileInfo {
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  const bytes = <ArrayBuffer>V8Worker2.send(builder.asArrayBuffer());
+  const bytes = <ArrayBuffer>sendRequest(builder.asArrayBuffer());
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
   const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
   switch (resp.retvalType()) {
@@ -100,7 +101,7 @@ export function dir(path: string, options: DirOptions = {}): Directory {
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  const bytes = <ArrayBuffer>V8Worker2.send(builder.asArrayBuffer());
+  const bytes = <ArrayBuffer>sendRequest(builder.asArrayBuffer());
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
   const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
   switch (resp.retvalType()) {

@@ -4,6 +4,7 @@
 
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
+import { sendRequest } from './internal/deferred';
 
 import ParamType = __std.ParamType;
 
@@ -29,7 +30,7 @@ function getParameter<T>(type: ParamType, path: string, defaultValue: T): T | un
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  const bytes = <ArrayBuffer>V8Worker2.send(builder.asArrayBuffer());
+  const bytes = <ArrayBuffer>sendRequest(builder.asArrayBuffer());
 
   const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
   const resp = __std.ParamResponse.getRootAsParamResponse(buf);

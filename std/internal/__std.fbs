@@ -4,6 +4,7 @@ include "__std_Write.fbs";
 include "__std_Read.fbs";
 include "__std_Param.fbs";
 include "__std_ParseUnparse.fbs";
+include "__std_RPC.fbs";
 
 namespace __std;
 
@@ -18,6 +19,8 @@ union Args {
     FileInfoArgs,
     ListArgs,
     ParamArgs,
+    // RPC
+    RPCArgs,
 }
 
 table Message {

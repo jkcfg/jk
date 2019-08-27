@@ -2,7 +2,13 @@
  * @module std
  */
 
-import { requestAsPromise } from './internal/deferred';
+import { requestAsPromise, sendRequest } from './internal/deferred';
+import {
+  Transform,
+  ident,
+  stringFromUTF16Bytes,
+  valueFromUTF16Bytes,
+} from './internal/data';
 import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
 import { Format } from './write';
@@ -14,16 +20,6 @@ export enum Encoding {
   String= 1,
   JSON= 2,
 }
-
-function uint8ToUint16Array(bytes: Uint8Array): Uint16Array {
-  return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
-}
-
-type Data = Uint8Array | string;
-type Transform = (x: Data) => Data;
-
-const compose = (f: Transform, g: Transform): Transform => (x: Data): Data => f(g(x));
-const stringify = (bytes: Uint8Array): string => String.fromCodePoint(...uint8ToUint16Array(bytes));
 
 export interface ReadOptions {
   encoding?: Encoding;
@@ -56,17 +52,17 @@ export function read(path: string, opts: ReadOptions = {}): Promise<any> {
   const messageOffset = __std.Message.endMessage(builder);
   builder.finish(messageOffset);
 
-  let tx: Transform = (bytes: Uint8Array): Uint8Array => bytes;
+  let tx: Transform = ident;
   switch (encoding) {
   case Encoding.String:
-    tx = stringify;
+    tx = stringFromUTF16Bytes;
     break;
   case Encoding.JSON:
-    tx = compose(JSON.parse, stringify);
+    tx = valueFromUTF16Bytes;
     break;
   default:
     break;
   }
 
-  return requestAsPromise((): null | ArrayBuffer => V8Worker2.send(builder.asArrayBuffer()), tx);
+  return requestAsPromise((): null | ArrayBuffer => sendRequest(builder.asArrayBuffer()), tx);
 }

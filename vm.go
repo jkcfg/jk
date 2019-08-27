@@ -56,6 +56,26 @@ const global = `
 var global = {};
 `
 
+func echo(args []interface{}) (interface{}, error) {
+	// json.Marshal will serialise a []byte as base64-encoded;
+	// stop it doing that by making all such args into []int
+	// before responding.
+	for i, arg := range args {
+		if bytes, ok := arg.([]byte); ok {
+			ints := make([]int, len(bytes), len(bytes))
+			for j := range bytes {
+				ints[j] = int(bytes[j])
+			}
+			args[i] = ints
+		}
+	}
+	return args, nil
+}
+
+var rpcMethods = map[string]std.RPCFunc{
+	"debug.echo": echo,
+}
+
 type vm struct {
 	vmOptions
 
@@ -65,6 +85,8 @@ type vm struct {
 	worker    *v8.Worker
 	recorder  *record.Recorder
 	resources *std.ModuleResources
+
+	methods map[string]std.RPCFunc
 }
 
 func (vm *vm) onMessageReceived(msg []byte) []byte {
@@ -74,6 +96,7 @@ func (vm *vm) onMessageReceived(msg []byte) []byte {
 		OutputDirectory: vm.outputDirectory,
 		Root:            std.ReadBase{Path: vm.inputDir, Resources: vm.resources, Recorder: vm.recorder},
 		DryRun:          vm.emitDependencies,
+		Methods:         vm.methods,
 	})
 }
 
@@ -107,6 +130,8 @@ func newVM(opts *vmOptions) *vm {
 	}
 	vm.worker = worker
 
+	vm.methods = rpcMethods
+
 	resolve.Debug(opts.debugImports)
 
 	return vm
@@ -137,7 +162,7 @@ func (vm *vm) resolver() *resolve.Resolver {
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access.
-			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js"},
+			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js"},
 		},
 		&resolve.FileImporter{},
 		&resolve.NodeImporter{ModuleBase: vm.scriptDir},
