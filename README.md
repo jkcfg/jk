@@ -87,6 +87,7 @@ The `jk` executable itself is written in [Go](https://golang.org), but the JavaS
 * `go` 1.11.4 or later (modules support)
 * `nodejs`, `npm`
 * `make`
+* `pkg-config`
 
 First off, clone this repository:
 ```bash
