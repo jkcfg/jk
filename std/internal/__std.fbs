@@ -1,5 +1,4 @@
 include "__std_Deferred.fbs";
-include "__std_FileSystem.fbs";
 include "__std_Write.fbs";
 include "__std_Read.fbs";
 include "__std_Param.fbs";
@@ -15,9 +14,7 @@ union Args {
     UnparseArgs,
     // Deferreds
     CancelArgs,
-    // FileSystem
-    FileInfoArgs,
-    ListArgs,
+    // Params
     ParamArgs,
     // RPC
     RPCArgs,

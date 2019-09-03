@@ -5,89 +5,64 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-
-	"github.com/jkcfg/jk/pkg/__std"
-
-	flatbuffers "github.com/google/flatbuffers/go"
 )
+
+// FileInfo is the result from a std.fileinfo RPC (and used to
+// represent each file, within Directory)
+type FileInfo struct {
+	Name  string `json:"name"`
+	Path  string `json:"path"`
+	IsDir bool   `json:"isdir"`
+}
+
+// Directory is the result from an std.dir RPC
+type Directory struct {
+	Name  string     `json:"name"`
+	Path  string     `json:"path"`
+	Files []FileInfo `json:"files"`
+}
 
 // FileInfo returns a response to a FileInfo request, encoded ready to
 // send to the V8 worker.
-func (r ReadBase) FileInfo(path, module string) []byte {
+func (r ReadBase) FileInfo(path, module string) (FileInfo, error) {
 	base, path, err := r.getPath(path, module)
 	if err != nil {
-		return fsError(err)
+		return FileInfo{}, err
 	}
 	return fileInfo(base, path)
 }
 
 // DirectoryListing returns a response to a Dir request, encoded ready
 // to send to the V8 worker.
-func (r ReadBase) DirectoryListing(path, module string) []byte {
+func (r ReadBase) DirectoryListing(path, module string) (Directory, error) {
 	base, path, err := r.getPath(path, module)
 	if err != nil {
-		return fsError(err)
+		return Directory{}, err
 	}
 	return directoryListing(base, path)
 }
 
-func fileInfo(base, rel string) []byte {
+func fileInfo(base, rel string) (FileInfo, error) {
 	path := filepath.Join(base, rel)
 	info, err := os.Stat(path)
 	switch {
 	case err != nil:
-		return fsError(err)
+		return FileInfo{}, err
 	case !(info.IsDir() || info.Mode().IsRegular()):
-		return fsError(errors.New("not a regular file"))
+		return FileInfo{}, errors.New("not a regular file")
 	}
-	return fileInfoResponse(info.Name(), rel, info.IsDir())
+	return FileInfo{Name: info.Name(), Path: rel, IsDir: info.IsDir()}, nil
 }
 
-func fsError(err error) []byte {
-	b := flatbuffers.NewBuilder(1024)
-	off := stdError(b, err)
-	__std.FileSystemResponseStart(b)
-	__std.FileSystemResponseAddRetvalType(b, __std.FileSystemRetvalError)
-	__std.FileSystemResponseAddRetval(b, off)
-	off = __std.FileSystemResponseEnd(b)
-	b.Finish(off)
-	return b.FinishedBytes()
-}
-
-func fileInfoResponse(name, path string, isdir bool) []byte {
-	b := flatbuffers.NewBuilder(1024)
-	off := buildFileInfo(b, name, path, isdir)
-	__std.FileSystemResponseStart(b)
-	__std.FileSystemResponseAddRetvalType(b, __std.FileSystemRetvalFileInfo)
-	__std.FileSystemResponseAddRetval(b, off)
-	off = __std.FileSystemResponseEnd(b)
-	b.Finish(off)
-	return b.FinishedBytes()
-}
-
-func buildFileInfo(b *flatbuffers.Builder, name, path string, isdir bool) flatbuffers.UOffsetT {
-	nameOff := b.CreateString(name)
-	pathOff := b.CreateString(path)
-	__std.FileInfoStart(b)
-	__std.FileInfoAddName(b, nameOff)
-	__std.FileInfoAddPath(b, pathOff)
-	if isdir {
-		__std.FileInfoAddIsdir(b, 1)
-	} else {
-		__std.FileInfoAddIsdir(b, 0)
-	}
-	return __std.FileInfoEnd(b)
-}
-
-func directoryListing(base, rel string) []byte {
+func directoryListing(base, rel string) (Directory, error) {
 	path := filepath.Join(base, rel)
 	dir, err := os.Open(path)
 	if err != nil {
-		return fsError(err)
+		return Directory{}, err
 	}
 	infos, err := dir.Readdir(0)
 	if err != nil {
-		return fsError(err)
+		return Directory{}, err
 	}
 
 	// Sort the fileinfos by name, to avoid introducing non-determinism
@@ -95,32 +70,21 @@ func directoryListing(base, rel string) []byte {
 		return infos[i].Name() < infos[j].Name()
 	})
 
-	b := flatbuffers.NewBuilder(1024)
-	offsets := make([]flatbuffers.UOffsetT, 0, len(infos))
+	var files []FileInfo
+
 	for i := range infos {
 		if infos[i].IsDir() || infos[i].Mode().IsRegular() {
-			offsets = append(offsets, buildFileInfo(b, infos[i].Name(), filepath.Join(rel, infos[i].Name()), infos[i].IsDir()))
+			files = append(files, FileInfo{
+				Name:  infos[i].Name(),
+				Path:  filepath.Join(rel, infos[i].Name()),
+				IsDir: infos[i].IsDir(),
+			})
 		}
 	}
 
-	__std.DirectoryStartFilesVector(b, len(offsets))
-	for i := len(offsets) - 1; i >= 0; i-- {
-		b.PrependUOffsetT(offsets[i])
-	}
-	infoVec := b.EndVector(len(offsets))
-
-	nameOff := b.CreateString(filepath.Base(rel))
-	pathOff := b.CreateString(rel)
-	__std.DirectoryStart(b)
-	__std.DirectoryAddName(b, nameOff)
-	__std.DirectoryAddPath(b, pathOff)
-	__std.DirectoryAddFiles(b, infoVec)
-	dirOff := __std.DirectoryEnd(b)
-
-	__std.FileSystemResponseStart(b)
-	__std.FileSystemResponseAddRetvalType(b, __std.FileSystemRetvalDirectory)
-	__std.FileSystemResponseAddRetval(b, dirOff)
-	off := __std.FileSystemResponseEnd(b)
-	b.Finish(off)
-	return b.FinishedBytes()
+	return Directory{
+		Name:  filepath.Base(rel),
+		Path:  rel,
+		Files: files,
+	}, nil
 }

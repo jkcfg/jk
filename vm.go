@@ -72,7 +72,7 @@ func echo(args []interface{}) (interface{}, error) {
 	return args, nil
 }
 
-var rpcMethods = map[string]std.RPCFunc{
+var rpcExtMethods = map[string]std.RPCFunc{
 	"debug.echo": echo,
 }
 
@@ -86,7 +86,7 @@ type vm struct {
 	recorder  *record.Recorder
 	resources *std.ModuleResources
 
-	methods map[string]std.RPCFunc
+	extMethods map[string]std.RPCFunc
 }
 
 func (vm *vm) onMessageReceived(msg []byte) []byte {
@@ -96,7 +96,7 @@ func (vm *vm) onMessageReceived(msg []byte) []byte {
 		OutputDirectory: vm.outputDirectory,
 		Root:            std.ReadBase{Path: vm.inputDir, Resources: vm.resources, Recorder: vm.recorder},
 		DryRun:          vm.emitDependencies,
-		Methods:         vm.methods,
+		ExtMethods:      vm.extMethods,
 	})
 }
 
@@ -130,7 +130,7 @@ func newVM(opts *vmOptions) *vm {
 	}
 	vm.worker = worker
 
-	vm.methods = rpcMethods
+	vm.extMethods = rpcExtMethods
 
 	resolve.Debug(opts.debugImports)
 
