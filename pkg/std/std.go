@@ -43,8 +43,9 @@ type ExecuteOptions struct {
 	// DryRun instructs standard library functions to not complete operations that
 	// would mutate something (eg. std.write()).
 	DryRun bool
-	// Methods is where RPC methods are registered.
-	Methods map[string]RPCFunc
+	// ExtMethods is where extension RPC methods are registered (the
+	// standard ones are here, and take precedence)
+	ExtMethods map[string]RPCFunc
 }
 
 func toBool(b byte) bool {
@@ -60,6 +61,27 @@ func stdError(b *flatbuffers.Builder, err error) flatbuffers.UOffsetT {
 	__std.ErrorStart(b)
 	__std.ErrorAddMessage(b, off)
 	return __std.ErrorEnd(b)
+}
+
+func argsError(msg string) error {
+	return fmt.Errorf("argument error: %s", msg)
+}
+
+func requireTwoStrings(fn func(string, string) (interface{}, error)) RPCFunc {
+	return func(args []interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, argsError("expected string, string")
+		}
+		string1, ok := args[0].(string)
+		if !ok {
+			return nil, argsError("expected string as first argument")
+		}
+		string2, ok := args[1].(string)
+		if !ok {
+			return nil, argsError("expected string as second argument")
+		}
+		return fn(string1, string2)
+	}
 }
 
 // Execute parses a message from v8 and execute the corresponding function.
@@ -109,9 +131,25 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	case __std.ArgsRPCArgs:
 		args := __std.RPCArgs{}
 		args.Init(union.Bytes, union.Pos)
+
 		method := string(args.Method())
-		rpcfn, ok := options.Methods[method]
-		if !ok {
+
+		var rpcfn RPCFunc
+
+		switch method {
+		case "std.fileinfo":
+			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
+				return options.Root.FileInfo(path, module)
+			})
+		case "std.dir":
+			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
+				return options.Root.DirectoryListing(path, module)
+			})
+		default:
+			rpcfn = options.ExtMethods[method]
+		}
+
+		if rpcfn == nil {
 			return deferredError("RPC method not found: " + method)
 		}
 
@@ -170,15 +208,6 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		args.Init(union.Bytes, union.Pos)
 		out, err := Unparse(args.Object(), args.Format())
 		return parseUnparseResponse(out, err)
-
-	case __std.ArgsFileInfoArgs:
-		args := __std.FileInfoArgs{}
-		args.Init(union.Bytes, union.Pos)
-		return options.Root.FileInfo(string(args.Path()), string(args.Module()))
-	case __std.ArgsListArgs:
-		args := __std.ListArgs{}
-		args.Init(union.Bytes, union.Pos)
-		return options.Root.DirectoryListing(string(args.Path()), string(args.Module()))
 
 	case __std.ArgsParamArgs:
 		args := __std.ParamArgs{}

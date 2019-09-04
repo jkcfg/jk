@@ -2,9 +2,8 @@
  * @module std/fs
  */
 
-import { flatbuffers } from './internal/flatbuffers';
-import { __std } from './internal/__std_generated';
-import { sendRequest } from './internal/deferred';
+import { RPCSync } from './internal/rpc';
+import { valueFromUTF8Bytes } from './internal/data';
 
 export class FileInfo {
   name: string;
@@ -35,44 +34,10 @@ export interface InfoOptions {
 }
 
 export function info(path: string, options: InfoOptions = {}): FileInfo {
-  const { module } = options;
-  const builder = new flatbuffers.Builder(512);
-  const pathOffset = builder.createString(path);
-  let moduleOffset = 0;
-  if (module !== undefined) {
-    moduleOffset = builder.createString(module);
-  }
-
-  __std.FileInfoArgs.startFileInfoArgs(builder);
-  __std.FileInfoArgs.addPath(builder, pathOffset);
-  if (module !== undefined) {
-    __std.FileInfoArgs.addModule(builder, moduleOffset);
-  }
-  const argsOffset = __std.FileInfoArgs.endFileInfoArgs(builder);
-
-  __std.Message.startMessage(builder);
-  __std.Message.addArgsType(builder, __std.Args.FileInfoArgs);
-  __std.Message.addArgs(builder, argsOffset);
-  const messageOffset = __std.Message.endMessage(builder);
-  builder.finish(messageOffset);
-
-  const bytes = <ArrayBuffer>sendRequest(builder.asArrayBuffer());
-  const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
-  const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
-  switch (resp.retvalType()) {
-  case __std.FileSystemRetval.FileInfo: {
-    const f = new __std.FileInfo();
-    resp.retval(f);
-    return new FileInfo(<string>f.name(), <string>f.path(), f.isdir());
-  }
-  case __std.FileSystemRetval.Error: {
-    const err = new __std.Error();
-    resp.retval(err);
-    throw new Error(<string>err.message());
-  }
-  default:
-    throw new Error('Unexpected response to fileinfo');
-  }
+  const { module = '' } = options;
+  const response = RPCSync('std.fileinfo', path, module);
+  const { name: n, path: p, isdir: d } = valueFromUTF8Bytes(response);
+  return new FileInfo(n, p, d);
 }
 
 export interface DirOptions {
@@ -80,47 +45,13 @@ export interface DirOptions {
 }
 
 export function dir(path: string, options: DirOptions = {}): Directory {
-  const { module } = options;
-  const builder = new flatbuffers.Builder(512);
-  const pathOffset = builder.createString(path);
-  let moduleOffset = 0;
-  if (module !== undefined) {
-    moduleOffset = builder.createString(module);
+  const { module = '' } = options;
+  const response = RPCSync('std.dir', path, module);
+  const { name: n, path: p, files: fs } = valueFromUTF8Bytes(response);
+  const infos = [];
+  for (const f of fs) {
+    const { name: infoname, path: infopath, isdir: infoisdir } = f;
+    infos.push(new FileInfo(infoname, infopath, infoisdir));
   }
-
-  __std.ListArgs.startListArgs(builder);
-  __std.ListArgs.addPath(builder, pathOffset);
-  if (module !== undefined) {
-    __std.ListArgs.addModule(builder, moduleOffset);
-  }
-  const argsOffset = __std.ListArgs.endListArgs(builder);
-
-  __std.Message.startMessage(builder);
-  __std.Message.addArgsType(builder, __std.Args.ListArgs);
-  __std.Message.addArgs(builder, argsOffset);
-  const messageOffset = __std.Message.endMessage(builder);
-  builder.finish(messageOffset);
-
-  const bytes = <ArrayBuffer>sendRequest(builder.asArrayBuffer());
-  const buf = new flatbuffers.ByteBuffer(new Uint8Array(bytes));
-  const resp = __std.FileSystemResponse.getRootAsFileSystemResponse(buf);
-  switch (resp.retvalType()) {
-  case __std.FileSystemRetval.Directory: {
-    const d = new __std.Directory();
-    resp.retval(d);
-    const files = new Array<FileInfo>(d.filesLength());
-    for (let i = 0; i < files.length; i += 1) {
-      const f = d.files(i);
-      files[i] = new FileInfo(<string>f.name(), <string>f.path(), f.isdir());
-    }
-    return new Directory(<string>d.name(), <string>d.path(), files);
-  }
-  case __std.FileSystemRetval.Error: {
-    const err = new __std.Error();
-    resp.retval(err);
-    throw new Error(<string>err.message());
-  }
-  default:
-    throw new Error('Unexpected response to fileinfo');
-  }
+  return new Directory(n, p, infos);
 }
