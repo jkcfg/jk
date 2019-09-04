@@ -67,6 +67,23 @@ func argsError(msg string) error {
 	return fmt.Errorf("argument error: %s", msg)
 }
 
+func requireTwoStrings(fn func(string, string) (interface{}, error)) RPCFunc {
+	return func(args []interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, argsError("expected string, string")
+		}
+		string1, ok := args[0].(string)
+		if !ok {
+			return nil, argsError("expected string as first argument")
+		}
+		string2, ok := args[1].(string)
+		if !ok {
+			return nil, argsError("expected string as second argument")
+		}
+		return fn(string1, string2)
+	}
+}
+
 // Execute parses a message from v8 and execute the corresponding function.
 func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	message := __std.GetRootAsMessage(msg, 0)
@@ -121,35 +138,13 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 
 		switch method {
 		case "std.fileinfo":
-			rpcfn = func(args []interface{}) (interface{}, error) {
-				if len(args) != 2 {
-					return nil, argsError("expected string, string")
-				}
-				path, ok := args[0].(string)
-				if !ok {
-					return nil, argsError("expected string as first argument")
-				}
-				module, ok := args[1].(string)
-				if !ok {
-					return nil, argsError("expected string as second argument")
-				}
+			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
 				return options.Root.FileInfo(path, module)
-			}
+			})
 		case "std.dir":
-			rpcfn = func(args []interface{}) (interface{}, error) {
-				if len(args) != 2 {
-					return nil, argsError("expected string, string")
-				}
-				path, ok := args[0].(string)
-				if !ok {
-					return nil, argsError("expected string as first argument")
-				}
-				module, ok := args[1].(string)
-				if !ok {
-					return nil, argsError("expected string as second argument")
-				}
+			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
 				return options.Root.DirectoryListing(path, module)
-			}
+			})
 		default:
 			rpcfn = options.ExtMethods[method]
 		}
