@@ -6,9 +6,9 @@ VERSION := $(shell git describe --tags)
 
 jk: pkg/__std/lib/assets_vfsdata.go FORCE
 ifeq ($(STATIC),yes)
-	GO111MODULE=on go build -mod=readonly -a -tags netgo -o $@ -ldflags '-X main.Version=$(VERSION) -extldflags "-static"'
+	GO111MODULE=on go build -mod=readonly -a -tags netgo -o $@ -ldflags '-X main.Version=$(VERSION) -s -w -extldflags "-static"'
 else
-	GO111MODULE=on go build -mod=readonly -o $@ -ldflags "-X main.Version=$(VERSION)"
+	GO111MODULE=on go build -mod=readonly -o $@ -ldflags "-X main.Version=$(VERSION) -s -w"
 endif
 
 pkg/__std/lib/assets_vfsdata.go: std/internal/__std_generated.ts std/dist/index.js
