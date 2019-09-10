@@ -54,18 +54,24 @@ import * as param from '@jkcfg/std/param';
 %s;
 `
 
-var runOptions struct {
-	vmOptions
-
+type scriptOptions struct {
 	// control how the argument is interpreted; by default, it's a
 	// file to load
 	module, inline bool
 }
 
-func init() {
-	runCmd.PersistentFlags().BoolVarP(&runOptions.module, "module", "m", false, "treat argument as specifying a module to load")
-	runCmd.PersistentFlags().BoolVarP(&runOptions.inline, "exec", "c", false, "treat argument as specifying literal JavaScript to execute")
+func initScriptFlags(cmd *cobra.Command, opts *scriptOptions) {
+	cmd.PersistentFlags().BoolVarP(&opts.module, "module", "m", false, "treat first argument as specifying a module to load")
+	cmd.PersistentFlags().BoolVarP(&opts.inline, "exec", "c", false, "treat first argument as specifying literal JavaScript to execute")
+}
 
+var runOptions struct {
+	vmOptions
+	scriptOptions
+}
+
+func init() {
+	initScriptFlags(runCmd, &runOptions.scriptOptions)
 	initVMFlags(runCmd, &runOptions.vmOptions)
 
 	jk.AddCommand(runCmd)
@@ -78,21 +84,19 @@ func runArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) {
-	var (
-		scriptDir string
-	)
+func establishScriptDir(opts scriptOptions, scriptArg string) string {
+	var scriptDir string
 
 	// Before setting anything else up, we have to establish the
 	// directory relative to which modules will be resolved.
 	var err error
 	switch {
-	case runOptions.module && runOptions.inline:
+	case opts.module && runOptions.inline:
 		log.Fatal("supply one or neither of --module,-m and --exec,-c")
-	case runOptions.module || runOptions.inline || args[0] == "-":
+	case opts.module || opts.inline || scriptArg == "-":
 		scriptDir, err = filepath.Abs(".")
 	default:
-		filename := args[0]
+		filename := scriptArg
 		scriptDir, err = filepath.Abs(filepath.Dir(filename))
 	}
 
@@ -100,6 +104,11 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	return scriptDir
+}
+
+func run(cmd *cobra.Command, args []string) {
+	scriptDir := establishScriptDir(runOptions.scriptOptions, args[0])
 	vm := newVM(&runOptions.vmOptions)
 	vm.SetWorkingDirectory(scriptDir)
 
