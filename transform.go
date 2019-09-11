@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -43,9 +44,15 @@ func transformArgs(cmd *cobra.Command, args []string) error {
 }
 
 func transform(cmd *cobra.Command, args []string) {
-	scriptDir := establishScriptDir(transformOptions.scriptOptions, args[0])
+	// We must use the current directory as the working directory (for
+	// the purpose of resolving modules), because we're potentially
+	// going to supply a path _relative to here_ as an import.
 	vm := newVM(&transformOptions.vmOptions)
-	vm.SetWorkingDirectory(scriptDir)
+	cwd, err := filepath.Abs(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	vm.SetWorkingDirectory(cwd)
 
 	// Encode the inputs as a map of path to .. the same path (for
 	// now). This is in part to get around the limitations of
@@ -58,7 +65,14 @@ func transform(cmd *cobra.Command, args []string) {
 	}
 	vm.parameters.Set("jk.transform.input", inputs)
 
-	if err := vm.Run("<transform>", fmt.Sprintf(string(std.Module("internal/transform.js")), args[0])); err != nil {
+	var module string
+	switch {
+	case transformOptions.inline:
+		module = fmt.Sprintf(string(std.Module("internal/transform-exec.js")), args[0])
+	default:
+		module = fmt.Sprintf(string(std.Module("internal/transform-module.js")), args[0])
+	}
+	if err := vm.Run("<transform>", module); err != nil {
 		log.Fatal(err)
 	}
 }
