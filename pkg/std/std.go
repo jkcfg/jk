@@ -120,7 +120,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		args.Init(union.Bytes, union.Pos)
 		path := string(args.Path())
 		if path != "" && options.Verbose {
-			fmt.Printf("read %s\n", path)
+			fmt.Printf("read (as %s) %s\n", __std.EnumNamesFormat[args.Format()], path)
 		}
 		module := string(args.Module())
 		ser := deferred.Register(func() ([]byte, error) {

@@ -64,6 +64,7 @@ func transform(cmd *cobra.Command, args []string) {
 		inputs[f] = f
 	}
 	vm.parameters.Set("jk.transform.input", inputs)
+	vm.parameters.Set("jk.transform.stdout", transformOptions.stdout)
 
 	var module string
 	switch {

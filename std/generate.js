@@ -1,10 +1,4 @@
 import * as std from '@jkcfg/std';
-import * as param from '@jkcfg/std/param';
-import generateDefinition from '%s';
-
-const inputParams = {
-  stdout: param.Boolean('jk.generate.stdout', false),
-};
 
 const helpMsg = `
 To use generate, export a default value with the list of files to generate:
@@ -203,8 +197,10 @@ function generate(defaultExport, params) {
   Promise.resolve(definition).then((files) => {
     /* values can be promises as well */
     const values = files.map(f => f.value);
-    Promise.all(values).then(resolved => {
-      resolved.map((v, i) => files[i].value = v);
+    Promise.all(values).then((resolved) => {
+      resolved.forEach((v, i) => {
+        files[i].value = v;
+      });
 
       const { valid, stdoutFormat, showHelp } = validate(files, params);
       if (showHelp) {
@@ -231,4 +227,4 @@ function generate(defaultExport, params) {
   });
 }
 
-generate(generateDefinition, inputParams);
+export { generate };
