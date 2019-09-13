@@ -194,6 +194,8 @@ function generate(defaultExport, params) {
     definition = definition();
   }
 
+  const { stdout = false, overwrite = false } = params;
+
   Promise.resolve(definition).then((files) => {
     /* values can be promises as well */
     const values = files.map(f => f.value);
@@ -210,7 +212,7 @@ function generate(defaultExport, params) {
         throw new Error('jk-internal-skip: validation failed');
       }
 
-      if (params.stdout) {
+      if (stdout) {
         if (files.length > 1) {
           const values = files.map(f => f.value);
           std.write(values, '', { format: stdoutFormat });
@@ -220,10 +222,10 @@ function generate(defaultExport, params) {
       } else {
         for (const o of files) {
           const { path, value, ...args } = o;
-          std.write(value, path, args);
+          std.write(value, path, { overwrite, ...args });
         }
       }
-    })
+    });
   });
 }
 

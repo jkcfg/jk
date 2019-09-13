@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -24,15 +23,15 @@ const transformExamples = `
 var transformOptions struct {
 	vmOptions
 	scriptOptions
-	stdout  bool // print everything to stdout
-	inplace bool // permit the overwriting of input files
+	stdout    bool // print everything to stdout
+	overwrite bool // permit the overwriting of input files
 }
 
 func init() {
 	initScriptFlags(transformCmd, &transformOptions.scriptOptions)
 	initVMFlags(transformCmd, &transformOptions.vmOptions)
 	transformCmd.PersistentFlags().BoolVar(&transformOptions.stdout, "stdout", true, "print the resulting values to stdout")
-	transformCmd.PersistentFlags().BoolVar(&transformOptions.inplace, "inplace", false, "allow input file(s) to be overwritten by output file(s)")
+	transformCmd.PersistentFlags().BoolVar(&transformOptions.overwrite, "overwrite", false, "allow input file(s) to be overwritten by output file(s)")
 	jk.AddCommand(transformCmd)
 }
 
@@ -48,11 +47,7 @@ func transform(cmd *cobra.Command, args []string) {
 	// the purpose of resolving modules), because we're potentially
 	// going to supply a path _relative to here_ as an import.
 	vm := newVM(&transformOptions.vmOptions)
-	cwd, err := filepath.Abs(".")
-	if err != nil {
-		log.Fatal(err)
-	}
-	vm.SetWorkingDirectory(cwd)
+	vm.SetWorkingDirectory(".")
 
 	// Encode the inputs as a map of path to .. the same path (for
 	// now). This is in part to get around the limitations of
@@ -65,6 +60,7 @@ func transform(cmd *cobra.Command, args []string) {
 	}
 	vm.parameters.Set("jk.transform.input", inputs)
 	vm.parameters.Set("jk.transform.stdout", transformOptions.stdout)
+	vm.parameters.Set("jk.transform.overwrite", transformOptions.overwrite)
 
 	var module string
 	switch {
