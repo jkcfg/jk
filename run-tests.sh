@@ -46,7 +46,8 @@ echo
 echo "==> Running jk tests"
 go test -v ./...
 
-echo
-echo "==> Checking committed generated files are up to date"
-git diff --exit-code
-
+if [ -n "$CI" ]; then
+  echo
+  echo "==> Checking committed generated files are up to date"
+  git diff --exit-code
+fi
