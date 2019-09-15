@@ -4,15 +4,19 @@ all: jk
 
 VERSION := $(shell git describe --tags)
 
+ifneq ($(RW),yes)
+	RO = -mod=readonly
+endif
+
 jk: pkg/__std/lib/assets_vfsdata.go FORCE
 ifeq ($(STATIC),yes)
-	GO111MODULE=on go build -mod=readonly -a -tags netgo -o $@ -ldflags '-X main.Version=$(VERSION) -s -w -extldflags "-static"'
+	GO111MODULE=on go build $(RO) -a -tags netgo -o $@ -ldflags '-X main.Version=$(VERSION) -s -w -extldflags "-static"'
 else
-	GO111MODULE=on go build -mod=readonly -o $@ -ldflags "-X main.Version=$(VERSION) -s -w"
+	GO111MODULE=on go build $(RO) -o $@ -ldflags "-X main.Version=$(VERSION) -s -w"
 endif
 
 pkg/__std/lib/assets_vfsdata.go: std/internal/__std_generated.ts std/dist/index.js
-	GO111MODULE=on go generate -mod=readonly ./pkg/__std/lib
+	GO111MODULE=on go generate $(RO) ./pkg/__std/lib
 
 std/internal/__std_generated.ts: std/internal/*.fbs std/package.json std/generate.sh
 	std/generate.sh
