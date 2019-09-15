@@ -13,5 +13,5 @@ const template = handlebars.compile(source);
 const context = { title: 'My New Post', body: 'This is my first post!' };
 
 export default [
-  { file: 'index.html', value: template(context) },
+  { path: 'index.html', value: template(context) },
 ];

@@ -18,5 +18,5 @@ ENTRYPOINT /${service.name}
 // Instruct generate to produce a Dockerfile with the value returned by the
 // Dockerfile function.
 export default [
-  { file: 'Dockerfile', value: Dockerfile(input) },
+  { path: 'Dockerfile', value: Dockerfile(input) },
 ];
