@@ -13,5 +13,5 @@ const alice = {
 
 // Instruct to write the alice object as a YAML file.
 export default [
-  { value: alice, file: `developers/${alice.name.toLowerCase()}.yaml` },
+  { value: alice, path: `developers/${alice.name.toLowerCase()}.yaml` },
 ];

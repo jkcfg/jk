@@ -24,5 +24,5 @@ for (const dev of developers) {
 }
 
 export default [
-  { value: config, file: 'github.tf' },
+  { value: config, path: 'github.tf' },
 ];

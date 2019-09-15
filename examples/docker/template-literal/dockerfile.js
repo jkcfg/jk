@@ -6,5 +6,5 @@ const myService = {
 };
 
 export default [
-  { file: 'Dockerfile', value: Dockerfile(myService) },
+  { path: 'Dockerfile', value: Dockerfile(myService) },
 ];
