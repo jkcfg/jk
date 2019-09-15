@@ -161,9 +161,18 @@ func exists(path string) bool {
 	return true
 }
 
-func write(value []byte, path string, format __std.Format, indent int, overwrite bool) {
-	if !overwrite && exists(path) {
-		return
+func write(value []byte, path string, format __std.Format, indent int, overwrite __std.Overwrite) error {
+	switch overwrite {
+	case __std.OverwriteWrite:
+		break
+	case __std.OverwriteSkip:
+		if exists(path) {
+			return nil
+		}
+	case __std.OverwriteErr:
+		if exists(path) {
+			return fmt.Errorf("file %s already exists", path)
+		}
 	}
 
 	w, close := writer(path)
@@ -185,11 +194,12 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 	case __std.FormatRaw:
 		out = writeRaw
 	default:
-		log.Fatalf("write: unknown output format (%d)", int(format))
+		return fmt.Errorf("write: unknown output format (%d)", int(format))
 	}
 
 	defer close()
 	if err := out(w, value, indent); err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
