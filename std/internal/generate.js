@@ -201,27 +201,33 @@ function generate(defaultExport, params) {
   }
 
   Promise.resolve(definition).then((files) => {
-    const { valid, stdoutFormat, showHelp } = validate(files, params);
-    if (showHelp) {
-      help();
-    }
-    if (!valid) {
-      throw new Error('jk-internal-skip: validation failed');
-    }
+    /* values can be promises as well */
+    const values = files.map(f => f.value);
+    Promise.all(values).then(resolved => {
+      resolved.map((v, i) => files[i].value = v);
 
-    if (params.stdout) {
-      if (files.length > 1) {
-        const values = files.map(f => f.value);
-        std.write(values, '', { format: stdoutFormat });
+      const { valid, stdoutFormat, showHelp } = validate(files, params);
+      if (showHelp) {
+        help();
+      }
+      if (!valid) {
+        throw new Error('jk-internal-skip: validation failed');
+      }
+
+      if (params.stdout) {
+        if (files.length > 1) {
+          const values = files.map(f => f.value);
+          std.write(values, '', { format: stdoutFormat });
+        } else {
+          std.write(files[0].value, '', { format: stdoutFormat });
+        }
       } else {
-        std.write(files[0].value, '', { format: stdoutFormat });
+        for (const o of files) {
+          const { path, value, ...args } = o;
+          std.write(value, path, args);
+        }
       }
-    } else {
-      for (const o of files) {
-        const { path, value, ...args } = o;
-        std.write(value, path, args);
-      }
-    }
+    })
   });
 }
 
