@@ -18,6 +18,10 @@ var transformCmd = &cobra.Command{
 }
 
 const transformExamples = `
+  running the default export of a module (or file) on each input document
+    jk transform -o outputdir/ ./script.js ./inputdir/*.json
+  running a function on each input, and printing the results to stdout
+    jk transform --stdout -c '({ name: n, ...fields }) => ({ name: n + "-dev", ...fields })' inputdir/*.yaml
 `
 
 var transformOptions struct {
