@@ -4,7 +4,7 @@ import { generate } from '@jkcfg/std/generate';
 
 const inputParams = {
   stdout: param.Boolean('jk.transform.stdout', false),
-  overwrite: param.Boolean('jk.transform.overwrite', false),
+  overwrite: param.Boolean('jk.transform.overwrite', false) ? std.Overwrite.Write : std.Overwrite.Err,
 };
 
 function readFormatFromPath(path) {
