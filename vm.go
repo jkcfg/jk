@@ -18,6 +18,10 @@ import (
 	v8 "github.com/jkcfg/v8worker2"
 )
 
+// vmOptions are the options common (mostly) to all subcommands. Not
+// all will be used (and thereby have a command-lin flag),
+// necessarily; for example, `jk transform` doesn't use
+// `inputDirectory`.
 type vmOptions struct {
 	verbose          bool
 	outputDirectory  string
@@ -29,12 +33,17 @@ type vmOptions struct {
 	debugImports bool
 }
 
-func initVMFlags(cmd *cobra.Command, opts *vmOptions) {
+// initInputFlags adds flags controlling input, to the given command
+func initInputFlags(cmd *cobra.Command, opts *vmOptions) {
+	cmd.PersistentFlags().StringVarP(&opts.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
+}
+
+// initExecFlags adds flags controlling execution, to the given command
+func initExecFlags(cmd *cobra.Command, opts *vmOptions) {
 	opts.parameters = std.NewParams()
 
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "where to output generated files")
-	cmd.PersistentFlags().StringVarP(&opts.inputDirectory, "input-directory", "i", "", "where to find files read in the script; if not set, the directory containing the script is used")
 	cmd.PersistentFlags().VarP(parameters(opts, paramSourceCommandLine), "parameter", "p", "set input parameters")
 	parameterFlag := cmd.PersistentFlags().VarPF(parameters(opts, paramSourceFile), "parameters", "f", "load parameters from a JSON or YAML file")
 	parameterFlag.Annotations = map[string][]string{
@@ -43,6 +52,11 @@ func initVMFlags(cmd *cobra.Command, opts *vmOptions) {
 	cmd.PersistentFlags().BoolVarP(&opts.emitDependencies, "emit-dependencies", "d", false, "emit script dependencies")
 	cmd.PersistentFlags().BoolVar(&opts.debugImports, "debug-imports", false, "trace import logic")
 	cmd.PersistentFlags().MarkHidden("debug-imports")
+}
+
+func initAllVMFlags(cmd *cobra.Command, opts *vmOptions) {
+	initInputFlags(cmd, opts)
+	initExecFlags(cmd, opts)
 }
 
 const errorHandler = `

@@ -72,7 +72,7 @@ var runOptions struct {
 
 func init() {
 	initScriptFlags(runCmd, &runOptions.scriptOptions)
-	initVMFlags(runCmd, &runOptions.vmOptions)
+	initAllVMFlags(runCmd, &runOptions.vmOptions)
 
 	jk.AddCommand(runCmd)
 }

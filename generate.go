@@ -40,7 +40,7 @@ var generateOptions struct {
 }
 
 func init() {
-	initVMFlags(generateCmd, &generateOptions.vmOptions)
+	initAllVMFlags(generateCmd, &generateOptions.vmOptions)
 
 	generateCmd.PersistentFlags().BoolVar(&generateOptions.stdout, "stdout", false, "print values on stdout")
 

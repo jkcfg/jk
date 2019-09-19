@@ -33,7 +33,7 @@ var transformOptions struct {
 
 func init() {
 	initScriptFlags(transformCmd, &transformOptions.scriptOptions)
-	initVMFlags(transformCmd, &transformOptions.vmOptions)
+	initExecFlags(transformCmd, &transformOptions.vmOptions)
 	transformCmd.PersistentFlags().BoolVar(&transformOptions.stdout, "stdout", false, "print the resulting values to stdout")
 	transformCmd.PersistentFlags().BoolVar(&transformOptions.overwrite, "overwrite", false, "allow input file(s) to be overwritten by output file(s); otherwise, an error will be thrown")
 	jk.AddCommand(transformCmd)
