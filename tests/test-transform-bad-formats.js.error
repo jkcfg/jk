@@ -1,0 +1,2 @@
+Expect error because the formats are different and can't be
+output as a stream to stdout

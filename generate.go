@@ -40,7 +40,7 @@ var generateOptions struct {
 }
 
 func init() {
-	initVMFlags(generateCmd, &generateOptions.vmOptions)
+	initAllVMFlags(generateCmd, &generateOptions.vmOptions)
 
 	generateCmd.PersistentFlags().BoolVar(&generateOptions.stdout, "stdout", false, "print values on stdout")
 
@@ -61,18 +61,18 @@ func generateArgs(cmd *cobra.Command, args []string) error {
 func generate(cmd *cobra.Command, args []string) {
 	if generateOptions.inputDirectory == "" {
 		filename := args[0]
-		intputDir, err := filepath.Abs(filepath.Dir(filename))
+		inputDir, err := filepath.Abs(filepath.Dir(filename))
 		if err != nil {
 			log.Fatal(err)
 		}
-		generateOptions.inputDirectory = intputDir
+		generateOptions.inputDirectory = inputDir
 	}
 
 	vm := newVM(&generateOptions.vmOptions)
 	vm.parameters.SetBool("jk.generate.stdout", generateOptions.stdout)
 	vm.SetWorkingDirectory(".")
 
-	if err := vm.Run("<generate>", fmt.Sprintf(string(std.Module("internal/generate.js")), args[0])); err != nil {
+	if err := vm.Run("<generate>", fmt.Sprintf(string(std.Module("internal/generate-module.js")), args[0])); err != nil {
 		if !skipException(err) {
 			log.Fatal(err)
 		}

@@ -48,13 +48,6 @@ type ExecuteOptions struct {
 	ExtMethods map[string]RPCFunc
 }
 
-func toBool(b byte) bool {
-	if b == 0 {
-		return false
-	}
-	return true
-}
-
 // stdError builds an Error flatbuffer we can return to the javascript side.
 func stdError(b *flatbuffers.Builder, err error) flatbuffers.UOffsetT {
 	off := b.CreateString(err.Error())
@@ -112,7 +105,12 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 			break
 		}
 
-		write(args.Value(), path, args.Format(), int(args.Indent()), toBool(args.Overwrite()))
+		if err := write(args.Value(), path, args.Format(), int(args.Indent()), args.Overwrite()); err != nil {
+			b := flatbuffers.NewBuilder(512)
+			off := stdError(b, err)
+			b.Finish(off)
+			return b.FinishedBytes()
+		}
 		return nil
 
 	case __std.ArgsReadArgs:
@@ -120,7 +118,7 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		args.Init(union.Bytes, union.Pos)
 		path := string(args.Path())
 		if path != "" && options.Verbose {
-			fmt.Printf("read %s\n", path)
+			fmt.Printf("read (as %s) %s\n", __std.EnumNamesFormat[args.Format()], path)
 		}
 		module := string(args.Module())
 		ser := deferred.Register(func() ([]byte, error) {

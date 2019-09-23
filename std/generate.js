@@ -1,10 +1,4 @@
 import * as std from '@jkcfg/std';
-import * as param from '@jkcfg/std/param';
-import generateDefinition from '%s';
-
-const inputParams = {
-  stdout: param.Boolean('jk.generate.stdout', false),
-};
 
 const helpMsg = `
 To use generate, export a default value with the list of files to generate:
@@ -200,11 +194,15 @@ function generate(defaultExport, params) {
     definition = definition();
   }
 
+  const { stdout = false, overwrite = false } = params;
+
   Promise.resolve(definition).then((files) => {
     /* values can be promises as well */
     const values = files.map(f => f.value);
-    Promise.all(values).then(resolved => {
-      resolved.map((v, i) => files[i].value = v);
+    Promise.all(values).then((resolved) => {
+      resolved.forEach((v, i) => {
+        files[i].value = v;
+      });
 
       const { valid, stdoutFormat, showHelp } = validate(files, params);
       if (showHelp) {
@@ -214,7 +212,7 @@ function generate(defaultExport, params) {
         throw new Error('jk-internal-skip: validation failed');
       }
 
-      if (params.stdout) {
+      if (stdout) {
         if (files.length > 1) {
           const values = files.map(f => f.value);
           std.write(values, '', { format: stdoutFormat });
@@ -224,11 +222,11 @@ function generate(defaultExport, params) {
       } else {
         for (const o of files) {
           const { path, value, ...args } = o;
-          std.write(value, path, args);
+          std.write(value, path, { overwrite, ...args });
         }
       }
-    })
+    });
   });
 }
 
-generate(generateDefinition, inputParams);
+export { generate };

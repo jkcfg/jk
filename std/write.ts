@@ -18,15 +18,28 @@ export enum Format {
   HCL= 6,
 }
 
+export enum Overwrite {
+  Skip= 0,
+  Write= 1,
+  Err= 2,
+}
+
 export interface WriteOptions {
   format?: Format;
   indent?: number;
-  overwrite?: boolean;
+  overwrite?: Overwrite | boolean;
 }
 
-export function write(value: any, path = '', { format = Format.FromExtension, indent = 2, overwrite = true }: WriteOptions = {}): void {
+export function write(value: any, path = '', { format = Format.FromExtension, indent = 2, overwrite = Overwrite.Write }: WriteOptions = {}): void {
   if (value === undefined) {
     throw TypeError('cannot write undefined value');
+  }
+
+  let overwriteVal: Overwrite;
+  if (typeof overwrite === 'boolean') {
+    overwriteVal = overwrite ? Overwrite.Write : Overwrite.Skip;
+  } else {
+    overwriteVal = overwrite;
   }
 
   const builder = new flatbuffers.Builder(1024);
@@ -39,7 +52,7 @@ export function write(value: any, path = '', { format = Format.FromExtension, in
   __std.WriteArgs.addPath(builder, pathOff);
   __std.WriteArgs.addFormat(builder, format);
   __std.WriteArgs.addIndent(builder, indent);
-  __std.WriteArgs.addOverwrite(builder, overwrite);
+  __std.WriteArgs.addOverwrite(builder, overwriteVal);
   const args = __std.WriteArgs.endWriteArgs(builder);
 
   __std.Message.startMessage(builder);
@@ -48,5 +61,11 @@ export function write(value: any, path = '', { format = Format.FromExtension, in
   const message = __std.Message.endMessage(builder);
 
   builder.finish(message);
-  sendRequest(builder.asArrayBuffer());
+  const buf = sendRequest(builder.asArrayBuffer());
+  if (buf === undefined) {
+    return;
+  }
+  const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
+  const resp = __std.Error.getRootAsError(data);
+  throw new Error(resp.message());
 }

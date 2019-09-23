@@ -1,0 +1,2 @@
+Expected to raise an error because there already exists a file at the
+destination, and --overwrite wasn't passed.

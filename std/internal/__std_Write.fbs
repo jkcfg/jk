@@ -2,10 +2,16 @@ include "__std_Format.fbs";
 
 namespace __std;
 
+enum Overwrite : byte {
+  Skip,  // skip any write that would overwrite
+  Write, // overwrite files with abandon
+  Err,   // return an error if a write would overwrite a file
+}
+
 table WriteArgs {
     path: string;
     value: string;
     format: Format;
     indent: byte;
-    overwrite: bool;
+    overwrite: Overwrite;
 }
