@@ -144,7 +144,7 @@ function usedFormats(summary: number[]): string[] {
   }, []);
 }
 
-function validate(values: RealisedValue[], params: GenerateParams) {
+function validateFormat(values: RealisedValue[], params: GenerateParams) {
   /* we have an array */
   if (!Array.isArray(values)) {
     error('default value is not an array');
@@ -232,12 +232,24 @@ function generate(definition: ValueArg, params: GenerateParams) {
         files[i].value = v;
       });
 
-      const { valid, stdoutFormat, showHelp } = validate(files, params);
+      const { valid: formatValid, stdoutFormat, showHelp } = validateFormat(files, params);
       if (showHelp) {
         help();
       }
-      if (!valid) {
-        throw new Error('jk-internal-skip: validation failed');
+      if (!formatValid) {
+        throw new Error('jk-internal-skip: format invalid');
+      }
+
+      let valuesValid = true;
+      files.forEach(({ value, validate = (_ => 'ok') }) => {
+        const validationResult = validate(value);
+        if (validationResult !== 'ok') {
+          valuesValid = false;
+          error(validationResult);
+        }
+      });
+      if (!valuesValid) {
+        throw new Error('values failed validation');
       }
 
       if (stdout) {
