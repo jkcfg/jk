@@ -17,12 +17,16 @@ than produce invalid output.
 
 This example script combines the use of a (hypothetical) libary
 providing a function for constructing configuration, and a custom
-validation function, to generate validated configuration.
+validation function, to generate validated configuration. In this
+case, for a configuration to be valid, all names must start with
+`'my-'`. Since the configuration incorporates user input via
+parameters, the validate hook lets us make sure it complies with that
+rule.
 
 ```js
 // config.js
 import * as param from '@jkcfg/std/param';
-import { generateChart } from '@example.com/charts/mychart';
+import { long } from '@jkcfg/kubernetes/short';
 
 function checkMyName(value) {
   if (!value.metadata.name.startsWith('my-')) {
@@ -31,21 +35,62 @@ function checkMyName(value) {
   return 'ok';
 }
 
-function addValidation({ ...fields }) {
-  return { validate: checkMyName, ...fields };
+function generateConfig() {
+  const appName = param.String('name', 'my-app');
+  const dep = {
+    name: `${appName}-deploy`,
+    labels: { app: appName },
+    containers: [{ name: 'main', image: param.String('image', 'helloworld') }],
+  };
+  const svc = {
+    name: `${appName}-svc`,
+    selector: { app: appName },
+  };
+
+  return [
+    {
+      path: 'deployment.yaml',
+      value: long({ deployment: dep }),
+      validate: checkMyName,
+    },
+    {
+      path: 'service.yaml',
+      value: long({ service: svc }),
+      validate: checkMyName,
+    },
+  ];
 }
 
-const values = generateChart(param);
-export default Promise.resolve(values).then(vals => vals.map(addValidation));
+export default generateConfig;
 ```
 
 When used with
 
-    jk generate ./config.js
+    jk generate ./config.js -p name=<name>
 
-this will instantiate the chart, and check each generated value passes
-the validation as given in `checkMyName`. If any values fail
-validation, the command fails and prints out the validation errors.
+this will generate the values given the parameter `<name>`, then check
+each generated value passes the validation as given in
+`checkMyName`. If any values fail validation, the command fails and
+prints out the validation errors.
+
+A successful generate invocation:
+
+```sh
+$ jk generate -v ./config.js -p name=my-foo
+wrote deployment.yaml
+wrote service.yaml
+```
+
+An unsuccessful generate invocation:
+
+```sh
+$ jk generate -v ./config.js -p name=foo
+deployment.yaml: name does not start with my-
+service.yaml: name does not start with my-
+Promise rejected at @jkcfg/std/generate.js 0:0
+Error: values failed validation
+    at Promise.all.then (@jkcfg/std/generate.js:208:23)
+```
 
 ## Motivation
 
@@ -170,10 +215,6 @@ single value, and is only supplied that value when invoked.
 
 ## Alternatives
 
-_Explain other designs or formulations that were considered (including
-doing nothing, if not already covered above), and why the proposed
-design is superior._
-
 **Run validation as a separate command**
 
 E.g., `jk validate`, which validates files (or stdin), given a script
@@ -217,7 +258,13 @@ require those libraries to do the validation, before returning the
 values?
 
 One reason is that it would make it harder for users to interpose
-their own validation, unless that were also built into each library.
+their own validation, unless that facility were also built into each
+library.
+
+Another is that it means intermediate results may get mistakenly
+validated -- if you are generating configuration from a chart, then
+adding your own customisations, you would usually want the final
+result to be validated rather that at some earlier point.
 
 ## Unresolved questions
 
@@ -234,3 +281,7 @@ does not need to be answered_ yet _._
    `false` for "fail non-specifically", or a list of validation
    errors)? Or just `string[]` with an empty list meaning none?
 
+
+ - The error reporting could be a bit cleaner -- it shows a promise
+   being rejected (probably ok?) but the reported site of the
+   exception is not that useful.
