@@ -1,6 +1,6 @@
 import * as std from '../index';
 import * as param from '../param';
-import { generate, Value, GenerateParams } from './generate';
+import { generate, File, GenerateParams } from './generate';
 
 type TransformFn = (value: any) => any | void;
 
@@ -22,7 +22,7 @@ function readFormatFromPath(path: string): std.Format {
   }
 }
 
-function transformOne(fn: TransformFn, file: string, obj: any): Value {
+function transformOne(fn: TransformFn, file: string, obj: any): File {
   let txObj = fn(obj);
   txObj = (txObj === undefined) ? obj : txObj;
   return {
@@ -36,17 +36,17 @@ function transform(fn: TransformFn): void {
   const outputs = [];
   for (const file of Object.keys(inputFiles)) {
     const format = readFormatFromPath(file);
-    outputs.push(std.read(file, { format }).then((obj): Value[] => {
+    outputs.push(std.read(file, { format }).then((obj): File[] => {
       switch (format) {
       case std.Format.YAMLStream:
       case std.Format.JSONStream:
-        return obj.map((v: any): Value => transformOne(fn, file, v));
+        return obj.map((v: any): File => transformOne(fn, file, v));
       default:
         return [transformOne(fn, file, obj)];
       }
     }));
   }
-  generate(Promise.all(outputs).then((vs): Value[] => Array.prototype.concat(...vs)), inputParams);
+  generate(Promise.all(outputs).then((vs): File[] => Array.prototype.concat(...vs)), inputParams);
 }
 
 export default transform;

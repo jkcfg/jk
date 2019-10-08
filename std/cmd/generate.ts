@@ -2,15 +2,25 @@ import * as std from '../index';
 
 /* eslint @typescript-eslint/explicit-function-return-type: "off" */
 
-type ValidateFn = (value: any) => string;
+// ValidateFn is a function that accepts a value, and returns either
+// 'ok' indicating a valid value, or a array of validation error
+// messages.
+type ValidateFn = (value: any) => 'ok' | string[];
 
-export interface Value {
+/**
+ * File is the basic unit of input for generate; it represents a
+ * configuration item to output to a file.
+ */
+export interface File {
   path: string;
   value: any | Promise<any>;
   format?: std.Format;
   validate?: ValidateFn;
 }
 
+/*
+ * GenerateParams types the optional arguments to generate.
+ */
 export interface GenerateParams {
   stdout?: boolean;
   overwrite?: std.Overwrite;
@@ -89,16 +99,16 @@ function formatFromPath(path: string): std.Format {
 
 const isString = (s: any): boolean => typeof s === 'string' || s instanceof String;
 
-// represents a value that has has any promises resolved
-interface RealisedValue {
+// represents a file spec that has its promise resolved, if necessary
+interface RealisedFile {
   value: any;
   format?: std.Format;
   file?: string;
   path?: string;
 }
 
-// Compute the output format of a value.
-function valueFormat(o: RealisedValue): std.Format {
+// Compute the output format of a file spec.
+function fileFormat(o: RealisedFile): std.Format {
   let { path, format, value } = o;
 
   if (format === undefined || format === std.Format.FromExtension) {
@@ -112,11 +122,11 @@ function valueFormat(o: RealisedValue): std.Format {
   return format;
 }
 
-function formatSummary(values: RealisedValue[]): number[] {
+function formatSummary(files: RealisedFile[]): number[] {
   const formats = Array(Object.keys(std.Format).length).fill(0);
 
-  values.forEach((e): void => {
-    formats[valueFormat(e)] += 1;
+  files.forEach((e): void => {
+    formats[fileFormat(e)] += 1;
   });
 
   return formats;
@@ -144,16 +154,16 @@ function usedFormats(summary: number[]): string[] {
   }, []);
 }
 
-function validateFormat(values: RealisedValue[], params: GenerateParams) {
+function validateFormat(files: RealisedFile[], params: GenerateParams) {
   /* we have an array */
-  if (!Array.isArray(values)) {
+  if (!Array.isArray(files)) {
     error('default value is not an array');
     return { valid: false, showHelp: true };
   }
 
   /* an array with each element a { path, value } object */
   let valid = true;
-  values.forEach((e, i) => {
+  files.forEach((e, i) => {
     /* 'file' is the old 'path' property name. Fixup things */
     if (e.file !== undefined) {
       e.path = e.file;
@@ -175,7 +185,7 @@ function validateFormat(values: RealisedValue[], params: GenerateParams) {
   let stdoutFormat;
   if (params.stdout === true) {
     /* there's a single output format defined */
-    const summary = formatSummary(values);
+    const summary = formatSummary(files);
     const formats = usedFormats(summary);
     if (formats.length > 1) {
       error(`stdout output requires using a single format but got: ${formats.join(',')}`);
@@ -186,35 +196,40 @@ function validateFormat(values: RealisedValue[], params: GenerateParams) {
      * If we have more than one file to generate, make sure it's either JSON or
      * YAML so we can output a stream of documents.
      */
-    if (values.length > 1 && formats[0] !== 'JSON' && formats[0] !== 'YAML') {
+    if (files.length > 1 && formats[0] !== 'JSON' && formats[0] !== 'YAML') {
       error(`stdout output for multiple files requires either JSON or YAML format but got: ${formats[0]}`);
       return { valid: false, showHelp: false };
     }
 
-    if (values.length > 1) {
+    if (files.length > 1) {
       if (formats[0] === 'JSON') {
         stdoutFormat = std.Format.JSONStream;
       } else if (formats[0] === 'YAML') {
         stdoutFormat = std.Format.YAMLStream;
       }
     } else {
-      stdoutFormat = valueFormat(values[0]);
+      stdoutFormat = fileFormat(files[0]);
     }
   }
 
   return { valid: true, stdoutFormat, showHelp: false };
 }
 
-type ValueArg = Value[] | Promise<Value[]> | (() => Value[]);
+type GenerateArg = File[] | Promise<File[]> | (() => File[]);
 
-function generate(definition: ValueArg, params: GenerateParams) {
+/**
+ * generate is the entry point for the module; it accepts the input
+ * configuration, and outputs validated values to the files as
+ * specified.
+ */
+export function generate(definition: GenerateArg, params: GenerateParams) {
   /*
    * The default export can be:
    *  1. an array of { path, value } objects,
    *  2. a promise to such an array,
    *  3. a function evaluating to either 1. or 2.
    */
-  let inputs: Promise<Value[]>;
+  let inputs: Promise<File[]>;
   if (typeof definition === 'function') {
     inputs = Promise.resolve(definition());
   } else {
@@ -241,11 +256,15 @@ function generate(definition: ValueArg, params: GenerateParams) {
       }
 
       let valuesValid = true;
-      files.forEach(({ value, validate = (_ => 'ok') }) => {
+      files.forEach(({ path, value, validate = (() => 'ok') }) => {
         const validationResult = validate(value);
         if (validationResult !== 'ok') {
           valuesValid = false;
-          error(validationResult);
+          if (Array.isArray(validationResult)) {
+            validationResult.forEach(err => error(`${path}: ${err}`));
+          } else {
+            error(`${path}: ${validationResult}`);
+          }
         }
       });
       if (!valuesValid) {
@@ -267,5 +286,3 @@ function generate(definition: ValueArg, params: GenerateParams) {
     });
   });
 }
-
-export { generate };

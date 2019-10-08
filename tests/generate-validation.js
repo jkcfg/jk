@@ -4,7 +4,7 @@ function fooIsBar(v) {
   if (v.foo === 'bar') {
     return 'ok';
   }
-  return 'foo is not bar';
+  return ['foo is not bar'];
 }
 
 export default [

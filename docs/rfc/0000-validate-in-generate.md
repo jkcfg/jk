@@ -123,13 +123,13 @@ Presently, `jk generate` expects a default export of type (in
 TypeScript notation)
 
 ```typescript
-interface Value {
+interface File {
     path: string;
     value: any | Promise<any>;
     format?: std.Format;
 }
 
-type ValueArg = Value[] | Promise<Value[]> | () => Value[];
+type GenerateArg = File[] | Promise<File[]> | () => File[];
 ```
 
 In other words: either an array, or the promise of an array, or a
@@ -140,9 +140,9 @@ The proposal is to add another optional field to each object, for a
 validation function:
 
 ```
-type ValidateFn = (value: any) => string[];
+type ValidateFn = (value: any) => "ok" | string[];
 
-interface Value {
+interface File {
     path: string;
     value: any | Promise<any>;
     format?: std.Format;
@@ -212,6 +212,22 @@ values; for example, to make sure that for each Kubernetes Deployment
 there is a corresponding Service. This proposal does not provide for
 that kind of calculation, since the validate procedure accompanies a
 single value, and is only supplied that value when invoked.
+
+An extension of the idea given in this RFC would be to make the
+generate type:
+
+```js
+type ValidateGlobalFn = (values: any[]) => "ok" | string[];
+
+interface FilesObj {
+  files: File[];
+  validate?: ValidateGlobalFn;
+};
+
+type Files = File[] | FilesObj
+
+type GenerateArg = Files | Promise<Files> | () => Files;
+```
 
 ## Alternatives
 
