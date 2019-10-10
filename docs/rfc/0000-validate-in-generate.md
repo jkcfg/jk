@@ -229,6 +229,37 @@ type Files = File[] | FilesObj
 type GenerateArg = Files | Promise<Files> | () => Files;
 ```
 
+**Validations do not always compose**
+
+It's not in general going to be the case that you can take a value
+along with its validate function, transform the value, and still be
+able to use the validate function. If I have a value which adheres to
+a schema, then I make the value part of a composite value, the
+composite is not going to follow the schema.
+
+This is mitigated by observing that most of the time, you would be
+composing values _before_ putting them with validation. For instance,
+if I took the output of instantiating a chart, then wanted to filter
+or adapt the configuration, I would do so _before_ deciding which
+files the final configuration went in, and what validation to apply.
+
+However this does mean libraries are of less help in this situation,
+unless they take care to provide access to validation procedures
+independently of generating configurations, so they can be wrapped
+around at the end:
+
+```
+// kubernetes/generate.js
+
+function generateArgs(values) {
+  return map(v => ({
+    path: `${nameFromResource(v)}.yaml`,
+    value: v,
+    validate: validateResourceByKind(v),
+  }));
+}
+```
+
 ## Alternatives
 
 **Run validation as a separate command**
@@ -282,6 +313,22 @@ validated -- if you are generating configuration from a chart, then
 adding your own customisations, you would usually want the final
 result to be validated rather that at some earlier point.
 
+**Use validation based on schemas given in the values themselves**
+
+Most plausibly: let libraries output values with a `$schema` field
+refering to a JSON Schema, and validate against the schema when it's
+present.
+
+This has similar properties to the proposed scheme, except that it
+doesn't require an extension to the generate protocol, just a
+convention for the values (and maybe some post-processing, to remove
+the extra field).
+
+Were schema validation built into the standard library, much of the
+burden of validation could be done with this alternative
+proposal. There would still be validation that wasn't expressible in a
+schema, for which this proposal could act as an escape hatch.
+
 ## Unresolved questions
 
 _Keep track here of questions that come up while this is a draft.
@@ -289,15 +336,9 @@ Ideally, there will be nothing unresolved by the time the RFC is
 accepted. It is OK to resolve a question by explaining why it
 does not need to be answered_ yet _._
 
- - Better to use some other type for the validate return value?
-
-       type ValidateFn = (value: any) => boolean | string[]
-
-   (that is, the result is either `true` for "pass validation",
-   `false` for "fail non-specifically", or a list of validation
-   errors)? Or just `string[]` with an empty list meaning none?
-
-
  - The error reporting could be a bit cleaner -- it shows a promise
    being rejected (probably ok?) but the reported site of the
    exception is not that useful.
+
+ - errors should really be logged to stderr, but std doesn't have a
+   facility for that
