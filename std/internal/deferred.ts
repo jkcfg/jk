@@ -1,9 +1,21 @@
-import { __std } from '__std_generated';
-import { flatbuffers } from 'flatbuffers';
+import { __std } from './__std_generated';
+import { Transform } from './data';
+import { flatbuffers } from './flatbuffers';
 
-const deferreds = {};
+type Callback = (bytes: Uint8Array) => void;
+type ErrorCallback = (err: Error) => void;
 
-function recv(buf) {
+type Serial = number;
+
+interface Deferred {
+  data: Callback;
+  end: Callback;
+  error: ErrorCallback;
+}
+
+const deferreds: Map<Serial, Deferred> = new Map();
+
+function recv(buf: ArrayBuffer): void {
   const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
   const reso = __std.Fulfilment.getRootAsFulfilment(data);
   const ser = reso.serial().toFloat64();
@@ -11,21 +23,25 @@ function recv(buf) {
   let value;
   switch (reso.valueType()) {
   case __std.FulfilmentValue.Data: {
-    ({ data: callback } = deferreds[ser]);
+    ({ data: callback } = deferreds.get(ser));
     const val = new __std.Data();
     reso.value(val);
     value = val.bytesArray();
     break;
   }
   case __std.FulfilmentValue.Error: {
-    ({ error: callback } = deferreds[ser]);
+    const { error: errorCallback } = deferreds.get(ser);
+    if (errorCallback === undefined) {
+      return;
+    }
     const err = new __std.Error();
     reso.value(err);
-    value = new Error(err.message());
-    break;
+    const error = new Error(err.message());
+    errorCallback(error);
+    return;
   }
   case __std.FulfilmentValue.EndOfStream:
-    ({ end: callback } = deferreds[ser]);
+    ({ end: callback } = deferreds.get(ser));
     break;
   default:
     throw new Error('Unknown message received from runtime');
@@ -45,17 +61,17 @@ V8Worker2.recv(recv);
 // registerCallbacks records callbacks for the three possible outcomes
 // of a deferred, which is identified by a serial number returned from
 // Go.
-function registerCallbacks(serial, onData, onError, onEnd) {
-  deferreds[serial] = { data: onData, error: onError, end: onEnd };
+function registerCallbacks(serial: Serial, onData: Callback, onError: ErrorCallback, onEnd: Callback): void {
+  deferreds.set(serial, { data: onData, error: onError, end: onEnd });
 }
 
-function panic(msg) {
+function panic(msg: string): ((_: ArrayBuffer) => never) {
   return () => { throw new Error(msg); };
 }
 
 // sendRequest sends an ArrayBuffer to the jk runtime and returns the
 // ArrayBuffer response.
-function sendRequest(buf) {
+function sendRequest(buf: ArrayBuffer): ArrayBuffer {
   return V8Worker2.send(buf);
 }
 
@@ -63,7 +79,7 @@ function sendRequest(buf) {
 // result in a promise. If the request provokes an error, the Promise
 // is rejected immediately; otherwise, the Promise will later be
 // resolved or rejected depending on what is sent by the runtime.
-function requestAsPromise(req, tx) {
+function requestAsPromise(req: () => ArrayBuffer, tx: Transform): Promise<any> {
   const buf = req();
   const data = new flatbuffers.ByteBuffer(new Uint8Array(buf));
   const resp = __std.DeferredResponse.getRootAsDeferredResponse(data);
@@ -79,17 +95,17 @@ function requestAsPromise(req, tx) {
     resp.retval(defer);
     const ser = defer.serial().toFloat64();
     return new Promise((resolve, reject) => {
-      function removeThenCall(v) {
-        delete deferreds[ser];
+      function removeThenCall<V>(v: V) {
+        deferreds.delete(ser);
         return this(v);
       }
-      function rejectWithStack(err) {
+      function rejectWithStack(err: Error) {
         /* eslint-disable no-param-reassign */
         err.stack += stackCapture.stack.substring(stackCapture.stack.indexOf('\n'));
         /* eslint-enable */
         reject(err);
       }
-      const ondata = bytes => resolve(tx(bytes));
+      const ondata = (bytes: Uint8Array) => resolve(tx(bytes));
       registerCallbacks(
         ser,
         removeThenCall.bind(ondata),
@@ -104,10 +120,10 @@ function requestAsPromise(req, tx) {
 }
 
 // TODO
-function cancel(serial) {
+function cancel(serial: Serial): ArrayBuffer {
   const builder = new flatbuffers.Builder(512);
   __std.CancelArgs.startCancelArgs(builder);
-  __std.CancelArgs.addSerial(builder, serial);
+  __std.CancelArgs.addSerial(builder, builder.createLong(serial, 0));
   const argsOffset = __std.CancelArgs.endCancelArgs(builder);
 
   __std.Message.startMessage(builder);
