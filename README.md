@@ -48,8 +48,8 @@ doesn't support environment variables nor has any networking capability.
 `jk` provides an unopinionated data templating layer. On top of the `jk`
 runtime, libraries provide APIs for users to write configuration.
 
-- [mixins][mixins]: build and compose configuration objects
 - [kubernetes][kubernetes]: build Kubernetes objects
+- [grafana][grafana]: build dashboard configs for Grafana
 
 ## Roadmap
 
@@ -63,7 +63,7 @@ This project is still in early stages but future (exciting!) plans include:
 [v8]: https://v8.dev/
 [blog-0]: https://damien.lespiau.name/posts/2019-06-12-jk-configuration-as-code/
 [quick-start]: https://jkcfg.github.io/#/documentation/quick-start
-[mixins]: https://github.com/jkcfg/mixins
+[grafana]: https://github.com/jkcfg/grafana
 [kubernetes]: https://github.com/jkcfg/kubernetes
 [guestbook-ts]: https://github.com/jkcfg/kubernetes/blob/master/examples/guestbook-ts
 [mixins-example]: https://github.com/jkcfg/mixins/blob/master/examples/mix-simple/namespace.js
