@@ -9,6 +9,7 @@ import (
 	"github.com/jkcfg/jk/pkg/__std"
 	"github.com/jkcfg/jk/pkg/__std/lib"
 	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/schema"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 )
@@ -142,6 +143,10 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		case "std.dir":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
 				return options.Root.DirectoryListing(path, module)
+			})
+		case "std.validate.schema":
+			rpcfn = requireTwoStrings(func(v, s string) (interface{}, error) {
+				return schema.ValidateWithObject(v, s)
 			})
 		default:
 			rpcfn = options.ExtMethods[method]
