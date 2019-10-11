@@ -23,8 +23,8 @@ For more context head to our [introduction blog post][blog-0]!
 ## More complex examples
 
 - [A Kubernetes deployment written in Typescript][guestbook-ts]
-- [Mutating objects with mixins][mixins-example]
-- [Kustomize-like behavior][kustomize]
+- [Generating Kubernetes objects, using e.g., kustomize-like behavior][k8s-examples]
+- [Using jk with JavaScript libraries][js-examples]
 
 ## Architecture & design
 
@@ -66,8 +66,8 @@ This project is still in early stages but future (exciting!) plans include:
 [grafana]: https://github.com/jkcfg/grafana
 [kubernetes]: https://github.com/jkcfg/kubernetes
 [guestbook-ts]: https://github.com/jkcfg/kubernetes/blob/master/examples/guestbook-ts
-[mixins-example]: https://github.com/jkcfg/mixins/blob/master/examples/mix-simple/namespace.js
-[kustomize]: https://github.com/jkcfg/kubernetes/tree/master/examples/overlay
+[js-examples]: https://github.com/jkcfg/jk/tree/master/examples
+[k8s-examples]: https://github.com/jkcfg/jk/tree/master/examples/kubernetes
 [v8worker2]: https://github.com/ry/v8worker2
 [flatbuffers]: https://github.com/google/flatbuffers
 
