@@ -109,6 +109,8 @@ $ make dep
 $ git clone https://github.com/jkcfg/prebuilt.git
 $ cd ./prebuilt
 
+# these following put files in /usr/local, so you may need sudo
+
 # x64 Linux:
 $ make install-linux-amd64
 
