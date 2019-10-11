@@ -1,7 +1,6 @@
-export type Data = Uint8Array | string;
-export type Transform = (x: Data) => Data;
+export type Transform = (x: Uint8Array) => any;
 
-export const ident : Transform = (x: Data): Data => x;
+export const ident : Transform = (x: Uint8Array): any => x;
 
 function uint8ToUint16Array(bytes: Uint8Array): Uint16Array {
   return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);

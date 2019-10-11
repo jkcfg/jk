@@ -5,6 +5,7 @@
 import { __std } from './__std_generated';
 import { flatbuffers } from './flatbuffers';
 import { sendRequest, requestAsPromise } from './deferred';
+import { ident } from './data';
 
 function encode(method: string, args: any[], sync: boolean): ArrayBuffer {
   const builder = new flatbuffers.Builder(512);
@@ -49,7 +50,7 @@ function encode(method: string, args: any[], sync: boolean): ArrayBuffer {
 
 // An asynchronous RPC call
 export function RPC(method: string, ...args: any[]): Promise<Uint8Array> {
-  return requestAsPromise(() => sendRequest(encode(method, args, false)), (c: Uint8Array) => c);
+  return requestAsPromise(() => sendRequest(encode(method, args, false)), ident);
 }
 
 // A synchronous RPC call
