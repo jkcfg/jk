@@ -23,8 +23,8 @@ For more context head to our [introduction blog post][blog-0]!
 ## More complex examples
 
 - [A Kubernetes deployment written in Typescript][guestbook-ts]
-- [Mutating objects with mixins][mixins-example]
-- [Kustomize-like behavior][kustomize]
+- [Generating Kubernetes objects, using e.g., kustomize-like behavior][k8s-examples]
+- [Using jk with JavaScript libraries][js-examples]
 
 ## Architecture & design
 
@@ -48,8 +48,8 @@ doesn't support environment variables nor has any networking capability.
 `jk` provides an unopinionated data templating layer. On top of the `jk`
 runtime, libraries provide APIs for users to write configuration.
 
-- [mixins][mixins]: build and compose configuration objects
 - [kubernetes][kubernetes]: build Kubernetes objects
+- [grafana][grafana]: build dashboard configs for Grafana
 
 ## Roadmap
 
@@ -63,11 +63,11 @@ This project is still in early stages but future (exciting!) plans include:
 [v8]: https://v8.dev/
 [blog-0]: https://damien.lespiau.name/posts/2019-06-12-jk-configuration-as-code/
 [quick-start]: https://jkcfg.github.io/#/documentation/quick-start
-[mixins]: https://github.com/jkcfg/mixins
+[grafana]: https://github.com/jkcfg/grafana
 [kubernetes]: https://github.com/jkcfg/kubernetes
 [guestbook-ts]: https://github.com/jkcfg/kubernetes/blob/master/examples/guestbook-ts
-[mixins-example]: https://github.com/jkcfg/mixins/blob/master/examples/mix-simple/namespace.js
-[kustomize]: https://github.com/jkcfg/kubernetes/tree/master/examples/overlay
+[js-examples]: https://github.com/jkcfg/jk/tree/master/examples
+[k8s-examples]: https://github.com/jkcfg/jk/tree/master/examples/kubernetes
 [v8worker2]: https://github.com/ry/v8worker2
 [flatbuffers]: https://github.com/google/flatbuffers
 
@@ -108,6 +108,8 @@ $ make dep
 # download the prebuilt artifacts from GitHub:
 $ git clone https://github.com/jkcfg/prebuilt.git
 $ cd ./prebuilt
+
+# these following put files in /usr/local, so you may need sudo
 
 # x64 Linux:
 $ make install-linux-amd64
