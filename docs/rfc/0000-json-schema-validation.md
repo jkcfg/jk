@@ -19,6 +19,7 @@ mechanism, for dealing with schemas and values.
 ```js
 import { read, log } from '@jkcfg/std';
 import { dir, info } from '@jkcfg/fs';
+import { withModuleRef } from '@jkcfg/std/resource';
 import { validateByResource } from '@jkcfg/std/validate/schema';
 
 // validate all the YAML files in $PWD, against the schema in
@@ -32,7 +33,8 @@ const yamls = d.files.filter(f => f.path.endsWith('.yaml'));
 // File reads and validation are both async, but we can do them concurrently per file.
 async function validateFile(path) {
   const obj = await read(path);
-  const validation = await validateByResource(obj, schemaFile);
+  // withModuleRef is needed so that validateByResource can resolve the path relative to this module
+  const validation = await withModuleRef(ref => validateByResource(obj, schemaFile, ref));
   return { path, validation };
 }
 
@@ -71,11 +73,7 @@ encouraging more widespread validation.
 
 ## Design
 
-_Describe here the design of the change._
-
- - _What is the user interface or API? Give examples if you can._
- - _How will it work, technically?_
- - _What are the corner cases, and how are they covered?_
+### Discussion
 
 **Synchronisation**
 
@@ -88,50 +86,11 @@ asynchronous, though:
  - resolving references may involve network requests, and those are
    naturally represented as asynchronous.
 
-**API in JavaScript**
-
-The result of a schema check is either that everything was OK, or that
-there were some specific problems.
-
-```typescript
-type ValidationResult = 'ok' | string[];
-```
-
-Either `'ok'` or `string[]` indicates a successful validation call, so
-either can appear as the resolution to a promise. A promise will be
-rejected if there's an error in the validation process itself -- for
-example, a file cannot be found.
-
-The obvious mode of use is to supply the value and the schema, as
-JavaScript objects:
-
-```typescript
-validateBySchema: (value: any, schemaObj: any) => Promise<ValidationResult>
-```
-
-This isn't necessarily the most useful though; it will often be more
-useful to be able to refer to a file, either an input (relative to the
-`jk` invocation) or a resource (relative to the module). At first
-glance, you'd expect this latter could be implemented by simply
-reading the file with `read`, then using `validateBySchema`; but,
-resolving `$ref`s may need a base path, and this will only be
-available if the path (or module reference) is supplied to the
-runtime.
-
-```typescript
-validateByFile: (value: any, path: string) => Promise<ValidationResult>
-validateByResource: (value: any, path: string) => Promise<ValidationResult>
-```
-
-Getting the module reference will require a bit of extra machinery in
-the runtime. Adding the module reference to the RPC protocol, and
-having a module-specific RPC would be one way to enable it. There are
-surely similar, more general schemes -- the important point being that
-it should remain an internal mechanism.
-
 **Resolving schemas**
 
- - `$schema` values will likely refer to public URIs
+ - `$schema` values will likely refer to public URIs (but this RFC
+   says nothing about respecting `$schema`; that could follow in
+   another RFC, perhaps).
  - schemas will often refer to other schemas with `$ref: <json
    pointer>`, which can come from the same file, or from a file
    relative to the current file, or a URI (though it's not required to
@@ -150,10 +109,72 @@ during a run (e.g., the schema for a Kubernetes Deployment). It would
 be good to work in sympathy with any caching in the library, where
 possible.
 
-**Corner case: Kubernetes API schema**
+### API in JavaScript
 
-The Kubernetes API schema has some non-standard constructs (see
-kubeval, openapi2jsonschema).
+The result of a schema check is either that everything was OK, or that
+there were some specific problems.
+
+```typescript
+type ValidationResult = 'ok' | string[];
+```
+
+Either `'ok'` or `string[]` indicates a successful validation call, so
+either can appear as the resolution to a promise. A promise will be
+rejected if there's an error in the validation process itself -- for
+example, a file cannot be found.
+
+The obvious mode of use is to supply the value and the schema, as
+JavaScript objects:
+
+```typescript
+validateBySchema: (value: any, schemaObj: any) => ValidationResult;
+```
+
+This isn't necessarily the most useful though; it will often be more
+useful to be able to refer to a file, either an input (relative to the
+`jk` invocation) or a resource (relative to the module). At first
+glance, you'd expect this latter could be implemented by simply
+reading the file with `read`, then using `validateBySchema`; but,
+resolving `$ref`s may need a base path, and this will only be
+available if the path (or module reference) is supplied to the
+runtime.
+
+```typescript
+validateByFile: (value: any, path: string) => Promise<ValidationResult>
+validateByResource: (value: any, path: string) => Promise<ValidationResult>
+```
+
+Getting the module reference will require a bit of extra machinery in
+the runtime. Adding a module reference argument to the RPC protocol,
+and making the value available via the `@jkcfg/std/resource` magic
+import would be one way to enable it. There are surely similar,
+general schemes -- the important point being that it should remain an
+internal mechanism as much as possible.
+
+### Changes to the runtime
+
+The generated resource module in `std/resource.go` needs to provide a
+way for `validateByResource(...)` to refer to resources; i.e., to the
+base path of the _importing_ module. To date, the generated module
+exports functions that close over the hash referring to the
+module. But this approach doesn't suffice: we don't want to put
+validateByResource (and future procedures with a similar requirement)
+in the generated module.
+
+A general mechanism is to make the module reference itself
+available. This means that module X can import `@jkcfg/std/resource`,
+then supply its own module reference (-> access to its resources) to a
+procedure from elsewhere. The module reference is just a value, though
+an opaque one -- it can be passed around, and e.g., used with
+`read(...)` to read files from the module's directory. But that's
+already true with `@jkcfg/std/resource#read` itself -- a module can
+"give away" access to its files by supplying that to another module,
+by design.
+
+```typescript
+type ModuleRef = string;
+withModuleRef<T>: ((ref: ModuleRef) => T) => T;
+```
 
 ## Backward compatibility
 
@@ -162,23 +183,15 @@ values that previously worked would break. But since those values are
 invalid, this ought to be considered a good thing, like a new compiler
 release finding a type error it was overlooking before.
 
-_Enumerate any backward-compatibility concerns:_
-
- - _Will people have to change their existing code?_
- - _If they don't, what might happen?_
-
-_If the change will be backward-compatible, explain why._
-
 ## Drawbacks and limitations
 
-_What are the drawbacks of adopting this proposal; e.g.,_
+The main downsides to adding JSON schema validation to the runtime
+are:
 
- - _Does it require more engineering work from users (for an
-   equivalent result)?_
- - _Are there performance concerns?_
- - _Will it close off other possibilities?_
- - _Does it add significant complexity to the runtime or standard library?_
- - _Does it make understanding `jk` harder?_
+ - it's a bit more code, and another dependency
+ - it identifies JSON schema as a preferred schema language, which if
+   it turns out to be a poor choice, might need deprecation (and
+   nobody likes dealing with deprecation).
 
 ## Alternatives
 
@@ -219,6 +232,16 @@ let binaries be distributed with libraries would enable a json-schema
 library, that other libraries could then use for their own validation,
 etc.
 
+However: with schema validation built in, `jk` can have a command that
+will validate directly against a schema:
+
+    jk validate --schema ./definition.json -R ./config/
+
+whereas supporting schema validation only via a library would mean _at
+least_ that the user has to fetch the dependencies first, and probably
+write a shim (similar to the example right at the top) to use the
+library.
+
 This comes down to judging whether JSON schema validation will be
 important and useful enough to include as a core part of the
 runtime. In its favour:
@@ -229,13 +252,21 @@ runtime. In its favour:
    stick around
  - we think validation is a core use of jk
 
-_Explain other designs or formulations that were considered (including
-doing nothing, if not already covered above), and why the proposed
-design is superior._
+Ultimately, this RFC argues that schema validation is a force
+multiplier -- it can enhance other features (like guarding config
+generation or transformations) -- and making this convenient is worthy
+of being a first-class feature.
 
-## Unresolved questions
+**Use a JavaScript implementation of JSON Schema, from libraries**
 
-_Keep track here of questions that come up while this is a draft.
-Ideally, there will be nothing unresolved by the time the RFC is
-accepted. It is OK to resolve a question by explaining why it
-does not need to be answered_ yet _._
+There is [at least one decent-looking
+implementation](https://www.npmjs.com/package/jsonschema) of JSON
+Schema in JavaScript, with no apparent dependency on Node.JS standard
+lib. Instead of building JSON schema into the runtime, libraries that
+were interested in using JSON schema to validate things could depend
+on that implementation.
+
+The argument against this runs similarly to that above regarding
+plugins: each library using schema validation would have to depend on
+the jsonschema library; and, there would be no route to ad-hoc schema
+validation.
