@@ -19,7 +19,7 @@ mechanism, for dealing with schemas and values.
 ```js
 import { read, log } from '@jkcfg/std';
 import { dir, info } from '@jkcfg/fs';
-import { validateBySchemaResource } from '@jkcfg/std/validate/schema';
+import { validateByResource } from '@jkcfg/std/validate/schema';
 
 // validate all the YAML files in $PWD, against the schema in
 // 'schema.json', relative to this module.
@@ -32,7 +32,7 @@ const yamls = d.files.filter(f => f.path.endsWith('.yaml'));
 // File reads and validation are both async, but we can do them concurrently per file.
 async function validateFile(path) {
   const obj = await read(path);
-  const validation = await validateBySchemaResource(obj, schemaFile);
+  const validation = await validateByResource(obj, schemaFile);
   return { path, validation };
 }
 
@@ -119,8 +119,8 @@ available if the path (or module reference) is supplied to the
 runtime.
 
 ```typescript
-validateBySchemaFile: (value: any, path: string) => Promise<ValidationResult>
-validateBySchemaResource: (value: any, path: string) => Promise<ValidationResult>
+validateByFile: (value: any, path: string) => Promise<ValidationResult>
+validateByResource: (value: any, path: string) => Promise<ValidationResult>
 ```
 
 Getting the module reference will require a bit of extra machinery in

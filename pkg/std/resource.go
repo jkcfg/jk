@@ -63,7 +63,11 @@ function info(path) {
   return fs.info(path, { module });
 }
 
-export { read, dir, info };
+function withModuleRef(fn) {
+  return fn(module);
+};
+
+export { read, dir, info, withModuleRef };
 `
 	return []byte(fmt.Sprintf(code, moduleHash)), "resource:" + basePath
 }

@@ -22,6 +22,9 @@ type ReadBase struct {
 	Recorder  *record.Recorder
 }
 
+// getPath resolves a path and an optional module reference; to an
+// base path (either the input directory or the module directory), and
+// a path relative to that.
 func (r ReadBase) getPath(path, module string) (string, string, error) {
 	base := r.Path
 	if module != "" {
