@@ -60,7 +60,7 @@ export function join(base: string, name: string): string {
   return `${base}/${name}`;
 }
 
-export function* walkDir(path: string): IterableIterator<Directory> {
+export function* walk(path: string): IterableIterator<Directory> {
   const stack = [path];
   while (stack.length > 0) {
     const p = stack.pop();
@@ -75,7 +75,7 @@ export function* walkDir(path: string): IterableIterator<Directory> {
 }
 
 export function* walkInfo(path: string): IterableIterator<FileInfo> {
-  for (const d of walkDir(path)) {
+  for (const d of walk(path)) {
     yield* d.files;
   }
 }
