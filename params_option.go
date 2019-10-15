@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -50,10 +49,7 @@ func (p *paramsOption) setFromFile(s string) error {
 }
 
 func (p *paramsOption) setFromCommandline(s string) error {
-	parts := strings.Split(s, "=")
-	if len(parts) != 2 {
-		return errors.New("input parameters are of the form name=value")
-	}
+	parts := strings.SplitN(s, "=", 2)
 	path := parts[0]
 	v := parts[1]
 
