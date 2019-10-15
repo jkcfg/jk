@@ -70,7 +70,7 @@ func directoryListing(base, rel string) (Directory, error) {
 		return infos[i].Name() < infos[j].Name()
 	})
 
-	var files []FileInfo
+	files := make([]FileInfo, 0, len(infos))
 
 	for i := range infos {
 		if infos[i].IsDir() || infos[i].Mode().IsRegular() {
