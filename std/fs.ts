@@ -60,22 +60,27 @@ export function join(base: string, name: string): string {
   return `${base}/${name}`;
 }
 
-export function* walk(path: string): IterableIterator<Directory> {
-  const stack = [path];
+export function* walk(path: string): IterableIterator<FileInfo> {
+  const top = dir(path);
+  // the stack is going to keep lists of files to examine
+  const stack = [top.files];
   while (stack.length > 0) {
-    const p = stack.pop();
-    const d = dir(p);
-    for (const f of d.files) {
+    const next = stack.pop();
+    for (let i = 0; i < next.length; i += 1) {
+      const f = next[i];
       if (f.isdir) {
-        stack.push(f.path);
+        const d = dir(f.path);
+        // If we need to recurse into the subdirectory, push the work
+        // yet to do here, then the subdirectory's files. If not, we
+        // can just continue as before.
+        if (d.files.length > 0) {
+          if (i < next.length - 1) stack.push(next.slice(i + 1));
+          stack.push(d.files);
+          yield f;
+          break;
+        }
       }
+      yield f;
     }
-    yield d;
-  }
-}
-
-export function* walkInfo(path: string): IterableIterator<FileInfo> {
-  for (const d of walk(path)) {
-    yield* d.files;
   }
 }

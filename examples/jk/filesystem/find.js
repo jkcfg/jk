@@ -2,7 +2,7 @@
 // library to find YAML files under a directory.
 import { read, log } from '@jkcfg/std';
 import * as param from '@jkcfg/std/param';
-import { walkInfo } from '@jkcfg/std/fs';
+import { walk } from '@jkcfg/std/fs';
 
 /* eslint-disable no-new-func, no-await-in-loop */
 
@@ -17,7 +17,7 @@ async function find() {
   const pred = makePredicate();
   const filter = makeFilter();
 
-  for (const f of walkInfo(top)) {
+  for (const f of walk(top)) {
     if (!f.isdir && filter(f.name)) {
       const obj = await read(f.path);
       if (pred(obj)) {
