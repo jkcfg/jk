@@ -55,3 +55,27 @@ export function dir(path: string, options: DirOptions = {}): Directory {
   }
   return new Directory(n, p, infos);
 }
+
+export function join(base: string, name: string): string {
+  return `${base}/${name}`;
+}
+
+export function* walkDir(path: string): IterableIterator<Directory> {
+  const stack = [path];
+  while (stack.length > 0) {
+    const p = stack.pop();
+    const d = dir(p);
+    for (const f of d.files) {
+      if (f.isdir) {
+        stack.push(f.path);
+      }
+    }
+    yield d;
+  }
+}
+
+export function* walkInfo(path: string): IterableIterator<FileInfo> {
+  for (const d of walkDir(path)) {
+    yield* d.files;
+  }
+}
