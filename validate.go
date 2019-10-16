@@ -43,7 +43,7 @@ func validate(cmd *cobra.Command, args []string) {
 	vm.SetWorkingDirectory(".")
 
 	inputs := make(map[string]interface{})
-	for _, f := range args[:1] {
+	for _, f := range args[1:] {
 		inputs[f] = f
 	}
 	vm.parameters.Set("jk.validate.input", inputs)
@@ -51,11 +51,11 @@ func validate(cmd *cobra.Command, args []string) {
 	var module string
 	switch {
 	case validateOptions.inline:
-		module = fmt.Sprintf(string(std.Module("internal/validate-exec.js")), args[0])
+		module = fmt.Sprintf(string(std.Module("cmd/validate-exec.js")), args[0])
 	default:
-		module = fmt.Sprintf(string(std.Module("internal/validate-module.js")), args[0])
+		module = fmt.Sprintf(string(std.Module("cmd/validate-module.js")), args[0])
 	}
-	if err := vm.Run("<validate>", module); err != nil {
+	if err := vm.Run("@jkcfg/std/cmd/<validate>", module); err != nil {
 		log.Fatal(err)
 	}
 }
