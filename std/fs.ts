@@ -55,3 +55,49 @@ export function dir(path: string, options: DirOptions = {}): Directory {
   }
   return new Directory(n, p, infos);
 }
+
+export function join(base: string, name: string): string {
+  return `${base}/${name}`;
+}
+
+const always = (_: FileInfo): boolean => true;
+const noop = (): void => {};
+
+interface WalkOpts {
+  pre?: (f: FileInfo) => boolean;
+  post?: () => void;
+}
+
+export function* walk(path: string, opts: WalkOpts = {}): IterableIterator<FileInfo> {
+  const { pre = always, post = noop } = opts;
+  const top = dir(path);
+  // the stack is going to keep lists of files to examine
+  const stack: FileInfo[][] = [];
+  let next = top.files;
+  while (next !== undefined) {
+    let i = 0;
+    for (; i < next.length; i += 1) {
+      const f = next[i];
+      if (f.isdir && pre(f)) {
+        const d = dir(f.path);
+        // If we need to recurse into the subdirectory, push the work
+        // yet to do here, then the subdirectory's files. If not, we
+        // can just continue as before.
+        if (d.files.length > 0) {
+          if (i < next.length - 1) stack.push(next.slice(i + 1));
+          stack.push(d.files);
+          yield f;
+          break;
+        } else {
+          yield f;
+          post();
+          continue;
+        }
+      }
+      yield f;
+    }
+    // If we've exhausted the slice, we're popping a directory
+    if (i === next.length) post();
+    next = stack.pop();
+  }
+}
