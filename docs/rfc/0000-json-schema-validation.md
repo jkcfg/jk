@@ -34,7 +34,7 @@ const yamls = d.files.filter(f => f.path.endsWith('.yaml'));
 async function validateFile(path) {
   const obj = await read(path);
   // withModuleRef is needed so that validateByResource can resolve the path relative to this module
-  const validation = await withModuleRef(ref => validateByResource(obj, schemaFile, ref));
+  const validation = await withModuleRef(ref => validateWithResource(obj, schemaFile, ref));
   return { path, validation };
 }
 
@@ -47,7 +47,7 @@ results.then(function(rs) {
     }
     // otherwise, it's a list of errors
     for (err of validation) {
-      log(`${path}: error: ${err}`);
+      log(`${path}: error at ${err.path}: ${err.msg}`);
     }
   }
 });
@@ -91,8 +91,8 @@ asynchronous, though:
  - `$schema` values will likely refer to public URIs (but this RFC
    says nothing about respecting `$schema`; that could follow in
    another RFC, perhaps).
- - schemas will often refer to other schemas with `$ref: <json
-   pointer>`, which can come from the same file, or from a file
+ - schemas will often refer to other schemas with a  e.g.,
+   `$ref: <json pointer>`, which can come from the same file, or from a file
    relative to the current file, or a URI (though it's not required to
    be a network locator, i.e., it's up to the library how to process
    it)
@@ -115,10 +115,22 @@ The result of a schema check is either that everything was OK, or that
 there were some specific problems.
 
 ```typescript
-type ValidationResult = 'ok' | string[];
+interface Location {
+  line: number;
+  col: number;
+}
+
+interface SchemaValidationError {
+  msg: string; // what was wrong
+  path?: string; // JSON pointer path in value
+  start?: Location; // line/col of start of invalid section
+  end?: Location; // line/col of end of invalid section
+}
+
+type ValidationResult = 'ok' | SchemaValidationError[];
 ```
 
-Either `'ok'` or `string[]` indicates a successful validation call, so
+Either type in the union indicates a successful validation call, so
 either can appear as the resolution to a promise. A promise will be
 rejected if there's an error in the validation process itself -- for
 example, a file cannot be found.
@@ -127,7 +139,7 @@ The obvious mode of use is to supply the value and the schema, as
 JavaScript objects:
 
 ```typescript
-validateBySchema: (value: any, schemaObj: any) => ValidationResult;
+validateWithObject: (value: any, schemaObj: any) => ValidationResult;
 ```
 
 This isn't necessarily the most useful though; it will often be more
@@ -140,8 +152,8 @@ available if the path (or module reference) is supplied to the
 runtime.
 
 ```typescript
-validateByFile: (value: any, path: string) => Promise<ValidationResult>
-validateByResource: (value: any, path: string) => Promise<ValidationResult>
+validateWithFile: (value: any, path: string) => Promise<ValidationResult>
+validateWithResource: (value: any, path: string) => Promise<ValidationResult>
 ```
 
 Getting the module reference will require a bit of extra machinery in
@@ -154,7 +166,7 @@ internal mechanism as much as possible.
 ### Changes to the runtime
 
 The generated resource module in `std/resource.go` needs to provide a
-way for `validateByResource(...)` to refer to resources; i.e., to the
+way for `validateWithResource(...)` to refer to resources; i.e., to the
 base path of the _importing_ module. To date, the generated module
 exports functions that close over the hash referring to the
 module. But this approach doesn't suffice: we don't want to put

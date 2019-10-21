@@ -1,15 +1,20 @@
 import { read, log } from '@jkcfg/std';
-import { validateBySchema, validateByFile } from '@jkcfg/std/schema';
+import { validateWithObject, validateWithFile } from '@jkcfg/std/schema';
 import validate from './validate-schema-files/module';
+
+function stringifyResult(result) {
+  if (result === 'ok') return result;
+  return result.map(err => `${err.path}: ${err.msg}`);
+}
 
 export default async function doTest(value) {
   log('Object:');
   const schema = await read('./validate-schema-files/person.json');
-  log(validateBySchema(value, schema));
+  log(stringifyResult(validateWithObject(value, schema)));
 
   log('File:');
-  log(await validateByFile(value, 'validate-schema-files/person.json'));
+  log(stringifyResult(await validateWithFile(value, 'validate-schema-files/person.json')));
 
   log('Module:');
-  log(await validate(value));
+  log(stringifyResult(await validate(value)));
 }
