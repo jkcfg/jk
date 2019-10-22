@@ -61,8 +61,8 @@ func initAllVMFlags(cmd *cobra.Command, opts *vmOptions) {
 
 const errorHandler = `
 function onerror(msg, src, line, col, err) {
-  V8Worker2.print("Promise rejected at", src, line + ":" + col);
-  V8Worker2.print(err.stack);
+  V8Worker2.log("Promise rejected at", src, line + ":" + col);
+  V8Worker2.log(err.stack);
 }
 `
 

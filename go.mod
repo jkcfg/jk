@@ -5,7 +5,7 @@ require (
 	github.com/google/flatbuffers v1.10.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/jkcfg/v8worker2 v0.0.0-20190228210604-6677fe93c5c2
+	github.com/jkcfg/v8worker2 v0.0.0-20191022163158-90e467066938
 	github.com/pkg/errors v0.8.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
