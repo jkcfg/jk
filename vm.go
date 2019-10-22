@@ -176,7 +176,7 @@ func (vm *vm) resolver() *resolve.Resolver {
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access.
-			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "transform.js", "generate.js"},
+			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "transform.js", "generate.js", "schema.js"},
 		},
 		&resolve.FileImporter{},
 		&resolve.NodeImporter{ModuleBase: vm.scriptDir},

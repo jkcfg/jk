@@ -9,6 +9,7 @@ import (
 	"github.com/jkcfg/jk/pkg/__std"
 	"github.com/jkcfg/jk/pkg/__std/lib"
 	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/schema"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 )
@@ -77,6 +78,27 @@ func requireTwoStrings(fn func(string, string) (interface{}, error)) RPCFunc {
 	}
 }
 
+func requireThreeStrings(fn func(string, string, string) (interface{}, error)) RPCFunc {
+	return func(args []interface{}) (interface{}, error) {
+		if len(args) != 3 {
+			return nil, argsError("expected string, string, string")
+		}
+		string1, ok := args[0].(string)
+		if !ok {
+			return nil, argsError("expected string as first argument")
+		}
+		string2, ok := args[1].(string)
+		if !ok {
+			return nil, argsError("expected string as second argument")
+		}
+		string3, ok := args[2].(string)
+		if !ok {
+			return nil, argsError("expected string as third argument")
+		}
+		return fn(string1, string2, string3)
+	}
+}
+
 // Execute parses a message from v8 and execute the corresponding function.
 func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 	message := __std.GetRootAsMessage(msg, 0)
@@ -142,6 +164,18 @@ func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
 		case "std.dir":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
 				return options.Root.DirectoryListing(path, module)
+			})
+		case "std.validate.schema":
+			rpcfn = requireTwoStrings(func(v, s string) (interface{}, error) {
+				return schema.ValidateWithObject(v, s)
+			})
+		case "std.validate.schemafile":
+			rpcfn = requireThreeStrings(func(v, path, moduleRef string) (interface{}, error) {
+				base, rel, err := options.Root.getPath(path, moduleRef)
+				if err != nil {
+					return nil, err
+				}
+				return schema.ValidateWithFile(v, filepath.Join(base, rel))
 			})
 		default:
 			rpcfn = options.ExtMethods[method]
