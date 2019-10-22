@@ -12,7 +12,7 @@ const o = param.Object('myObject', {
   },
 });
 
-std.log({
+std.print({
   myBoolean: b,
   myNumber: n,
   myString: s,

@@ -1,4 +1,4 @@
-import { read, log } from '@jkcfg/std';
+import { read, print } from '@jkcfg/std';
 import { validateWithObject, validateWithFile } from '@jkcfg/std/schema';
 import validate from './validate-schema-files/module';
 
@@ -8,13 +8,13 @@ function stringifyResult(result) {
 }
 
 export default async function doTest(value) {
-  log('Object:');
+  print('Object:');
   const schema = await read('./validate-schema-files/person.json');
-  log(stringifyResult(validateWithObject(value, schema)));
+  print(stringifyResult(validateWithObject(value, schema)));
 
-  log('File:');
-  log(stringifyResult(await validateWithFile(value, 'validate-schema-files/person.json')));
+  print('File:');
+  print(stringifyResult(await validateWithFile(value, 'validate-schema-files/person.json')));
 
-  log('Module:');
-  log(stringifyResult(await validate(value)));
+  print('Module:');
+  print(stringifyResult(await validate(value)));
 }

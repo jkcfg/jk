@@ -12,9 +12,9 @@ const o = param.Object('myObject', {
   },
 });
 
-std.log({
+std.write({
   myBoolean: b,
   myNumber: n,
   myString: s,
   myObject: o,
-});
+}, '');

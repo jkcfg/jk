@@ -5,7 +5,7 @@ const b = param.Boolean('myBoolean', false);
 const n = param.Number('myNumber', 3.14);
 const s = param.String('myString', 'foo');
 
-std.log({
+std.print({
   myBoolean: b,
   myNumber: n,
   myString: s,
@@ -24,7 +24,7 @@ const oD = param.Object('myObjectD', {
   },
 });
 
-std.log({
+std.print({
   myBoolean: bD,
   myNumber: nD,
   myString: sD,
