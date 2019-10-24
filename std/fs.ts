@@ -60,7 +60,7 @@ export function join(base: string, name: string): string {
   return `${base}/${name}`;
 }
 
-const always = (_: FileInfo): boolean => true;
+const always = (): boolean => true;
 const noop = (): void => {};
 
 interface WalkOpts {
