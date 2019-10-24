@@ -1,3 +1,9 @@
+/**
+ * @module std/debug
+ *
+ * debug exists to help with testing the runtime.
+ */
+
 import { valueFromUTF8Bytes } from './internal/data';
 import { RPC, RPCSync } from './internal/rpc';
 
