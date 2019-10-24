@@ -18,6 +18,14 @@ var validateCmd = &cobra.Command{
 }
 
 const validateExamples = `
+  validating YAML files using a module's default export
+    jk validate -m '@example.com/validate' *.{yaml,yml}
+
+  validating YAMLs and JSONs using a local script's default export
+    jk validate ./valid.js *.{yaml,yml,json}
+
+  validating a specific file with an inline validation function
+    jk validate -c 'v => v.name === "correctName"' config.json
 `
 
 var validateOptions struct {
