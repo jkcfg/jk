@@ -1,5 +1,5 @@
 import * as param from '@jkcfg/std/param';
-import { generate } from '@jkcfg/std/generate';
+import { generate } from '@jkcfg/std/cmd/generate';
 import generateDefinition from '%s';
 
 const inputParams = {

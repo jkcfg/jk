@@ -22,6 +22,7 @@
     "excludeExternals": true,
     "externalPattern": [
       "internal/**/*.{ts,js}",
+      "cmd/**/*.{ts,js}",
       "docs/**/*.{ts,js}",
       "dist/**/*.{ts.js}",
       "index.ts"

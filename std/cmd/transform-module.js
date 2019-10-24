@@ -1,4 +1,4 @@
-import transform from '@jkcfg/std/transform';
+import transform from '@jkcfg/std/cmd/transform';
 import fn from '%s';
 
 if (typeof fn !== 'function') {

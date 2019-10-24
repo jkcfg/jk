@@ -1,4 +1,4 @@
-import * as std from './index';
+import * as std from '../index';
 
 /* eslint @typescript-eslint/explicit-function-return-type: "off" */
 

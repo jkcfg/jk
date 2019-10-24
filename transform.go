@@ -69,11 +69,11 @@ func transform(cmd *cobra.Command, args []string) {
 	var module string
 	switch {
 	case transformOptions.inline:
-		module = fmt.Sprintf(string(std.Module("internal/transform-exec.js")), args[0])
+		module = fmt.Sprintf(string(std.Module("cmd/transform-exec.js")), args[0])
 	default:
-		module = fmt.Sprintf(string(std.Module("internal/transform-module.js")), args[0])
+		module = fmt.Sprintf(string(std.Module("cmd/transform-module.js")), args[0])
 	}
-	if err := vm.Run("<transform>", module); err != nil {
+	if err := vm.Run("@jkcfg/std/cmd/<transform>", module); err != nil {
 		log.Fatal(err)
 	}
 }
