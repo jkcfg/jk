@@ -1,5 +1,5 @@
-import * as std from './index';
-import * as param from './param';
+import * as std from '../index';
+import * as param from '../param';
 import { generate, Value, GenerateParams } from './generate';
 
 type TransformFn = (value: any) => any | void;

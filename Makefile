@@ -17,14 +17,16 @@ pkg/__std/lib/assets_vfsdata.go: std/internal/__std_generated.ts std/dist/index.
 std/internal/__std_generated.ts: std/internal/*.fbs std/package.json std/generate.sh
 	std/generate.sh
 
-std_sources = std/*.js std/*.ts std/internal/*.ts std/internal/*.js
+std_sources = std/*.js std/*.ts std/internal/*.ts std/internal/*.js std/cmd/*.ts std/cmd/*.js
 
 std/dist/index.js: $(std_sources)
+	rm -rf ./std/dist
+	mkdir -p std/dist
 	cd std && npm run build
 
 module = @jkcfg/std
 module: $(module)/package.json
-$(module)/package.json: std/*.js std/*.ts std/internal/__std_generated.ts std/package.json
+$(module)/package.json: $(std_sources) std/internal/__std_generated.ts std/package.json
 	cd std && npx tsc --outDir ../$(module)
 	cd std && npx tsc --declaration --emitDeclarationOnly --allowJs false --outdir ../$(module) || true
 	cp README.md LICENSE std/package.json std/internal/flatbuffers.d.ts $(module)
