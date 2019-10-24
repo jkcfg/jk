@@ -2,12 +2,14 @@
  * @module std
  */
 
-import { write, WriteOptions } from './write';
-
-export function log(value: any, options?: WriteOptions): void {
+export function log(value: any): void {
   if (value === undefined) {
-    V8Worker2.print('undefined');
+    V8Worker2.log('undefined');
     return;
   }
-  write(value, '', options);
+  if (typeof value === 'string') {
+    V8Worker2.log(value);
+    return;
+  }
+  V8Worker2.log(JSON.stringify(value));
 }

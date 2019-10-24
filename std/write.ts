@@ -69,3 +69,12 @@ export function write(value: any, path = '', { format = Format.FromExtension, in
   const resp = __std.Error.getRootAsError(data);
   throw new Error(resp.message());
 }
+
+// print is a convenience for printing any value to stdout
+export function print(value: any, opts: WriteOptions): void {
+  if (value === undefined) {
+    write('undefined\n', '', { format: Format.Raw });
+    return;
+  }
+  write(value, '', opts);
+}

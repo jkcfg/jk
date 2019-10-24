@@ -2,23 +2,4 @@
 foo
 undefined
 null
-{
-  "foo": 1.2,
-  "kind": "Bar"
-}
-{
-    "foo": 1.2,
-    "kind": "Bar"
-}
-{
-  "foo": 1.2,
-  "kind": "Bar"
-}
-foo:
-  number: 1.2
-  string: mystring
-kind: Bar
-foo:
-  number: 1.2
-  string: mystring
-kind: Bar
+{"kind":"Bar","foo":1.2}
