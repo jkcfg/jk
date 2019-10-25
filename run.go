@@ -109,8 +109,7 @@ func establishScriptDir(opts scriptOptions, scriptArg string) string {
 
 func run(cmd *cobra.Command, args []string) {
 	scriptDir := establishScriptDir(runOptions.scriptOptions, args[0])
-	vm := newVM(&runOptions.vmOptions)
-	vm.SetWorkingDirectory(scriptDir)
+	vm := newVM(&runOptions.vmOptions, scriptDir)
 
 	var runErr error
 

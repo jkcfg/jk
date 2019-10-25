@@ -98,28 +98,28 @@ type vm struct {
 
 	worker    *v8.Worker
 	recorder  *record.Recorder
+	std       *std.Std
 	resources *std.ModuleResources
-
-	extMethods map[string]std.RPCFunc
 }
 
 func (vm *vm) onMessageReceived(msg []byte) []byte {
-	return std.Execute(msg, vm.worker, std.ExecuteOptions{
-		Verbose:         vm.verbose,
-		Parameters:      vm.parameters,
-		OutputDirectory: vm.outputDirectory,
-		Root:            std.ReadBase{Path: vm.inputDir, Resources: vm.resources, Recorder: vm.recorder},
-		DryRun:          vm.emitDependencies,
-		ExtMethods:      vm.extMethods,
-	})
+	return vm.std.Execute(msg, vm.worker)
 }
 
-func newVM(opts *vmOptions) *vm {
+func newVM(opts *vmOptions, workingDirectory string) *vm {
 	vm := &vm{
 		vmOptions: *opts,
 		resources: std.NewModuleResources(),
 	}
 
+	/*
+	 * Set scriptDir/inputDir based on workingDirectory and global options.
+	 * This needs to be done early on as these values are used by both the
+	 * stdlib and the module resolving mechanism.
+	 */
+	vm.setWorkingDirectory(workingDirectory)
+
+	/* Setup a recorder object to gather the list of dependencies */
 	if opts.emitDependencies {
 		recorder := &record.Recorder{}
 		// Add the parameter files to the list of dependencies.
@@ -135,6 +135,16 @@ func newVM(opts *vmOptions) *vm {
 		vm.recorder = recorder
 	}
 
+	/* create the stdlib */
+	vm.std = std.NewStd(std.Options{
+		Verbose:         vm.verbose,
+		Parameters:      vm.parameters,
+		OutputDirectory: vm.outputDirectory,
+		Root:            std.ReadBase{Path: vm.inputDir, Resources: vm.resources, Recorder: vm.recorder},
+		DryRun:          vm.emitDependencies,
+		ExtMethods:      rpcExtMethods,
+	})
+
 	worker := v8.New(vm.onMessageReceived)
 	if err := worker.Load("errorHandler", errorHandler); err != nil {
 		log.Fatal(err)
@@ -144,14 +154,12 @@ func newVM(opts *vmOptions) *vm {
 	}
 	vm.worker = worker
 
-	vm.extMethods = rpcExtMethods
-
 	resolve.Debug(opts.debugImports)
 
 	return vm
 }
 
-func (vm *vm) SetWorkingDirectory(dir string) {
+func (vm *vm) setWorkingDirectory(dir string) {
 	scriptDir, err := filepath.Abs(dir)
 	if err != nil {
 		log.Fatal(err)
