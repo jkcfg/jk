@@ -1,0 +1,8 @@
+{
+  "name": "echo",
+  "version": "0.1.0",
+  "binaries": {
+    "linux-amd64": "jk-plugin-echo",
+    "darwin-amd64": "jk-plugin-echo"
+  }
+}
