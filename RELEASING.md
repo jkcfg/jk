@@ -2,6 +2,13 @@
 
 Steps to produce a new `jk` version:
 
+0. Decide on a version number:
+
+ - While the major version is `0`, minor releases indicate breaking
+   changes. If there are none, a patch release is appropriate.
+ - Check [docs/deprecations.md][deprecations] for anything that is due
+   to be deprecated in a particular (minor) release.
+
 1. Checkout the master branch and make sure it reflects the latest `origin/master`:
 
    ```console
