@@ -178,8 +178,6 @@ func (vm *vm) setWorkingDirectory(dir string) {
 }
 
 func (vm *vm) resolver() *resolve.Resolver {
-	// TODO(damien): there's an ugly dependency here. The user of the vm object has
-	// to call SetWorkingDir before being able to call Run* functions.
 	resolver := resolve.NewResolver(vm.worker, vm.scriptDir,
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
 		&resolve.StdImporter{
