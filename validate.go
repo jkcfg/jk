@@ -47,8 +47,7 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 }
 
 func validate(cmd *cobra.Command, args []string) {
-	vm := newVM(&validateOptions.vmOptions)
-	vm.SetWorkingDirectory(".")
+	vm := newVM(&validateOptions.vmOptions, ".")
 
 	inputs := make(map[string]interface{})
 	for _, f := range args[1:] {
