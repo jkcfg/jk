@@ -84,7 +84,7 @@ export function* walk(path: string, opts: WalkOpts = {}): IterableIterator<FileI
         // yet to do here, then the subdirectory's files. If not, we
         // can just continue as before.
         if (d.files.length > 0) {
-          if (i < next.length - 1) stack.push(next.slice(i + 1));
+          stack.push(next.slice(i + 1));
           stack.push(d.files);
           yield f;
           break;
