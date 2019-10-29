@@ -1,3 +1,3 @@
-import { log, read } from '@jkcfg/std'
+import { print, read } from '@jkcfg/std'
 
-read('package.json').then(p => log(p.version));
+read('package.json').then(p => print(p.version));
