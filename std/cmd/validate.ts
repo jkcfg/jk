@@ -8,9 +8,10 @@ type ValidateResult = 'ok' | string[];
 // ValidateFnResult is the range of results we accept from an ad-hoc
 // procedure given to us.
 type ValidateFnResult = boolean | string | string[];
-type ValidateFn = (obj: any) => ValidateFnResult;
+type ValidateFn = (obj: any) => ValidateFnResult | Promise<ValidateFnResult>;
 
-function normaliseResult(result: ValidateFnResult): ValidateResult {
+async function normaliseResult(val: Promise<ValidateFnResult>): Promise<ValidateResult> {
+  const result = await val;
   switch (typeof result) {
   case 'string':
     if (result === 'ok') return result;
@@ -37,7 +38,8 @@ export default function validate(fn: ValidateFn): void {
 
   const validateFile = async function vf(path: string): Promise<FileResult> {
     const obj = await std.read(path);
-    return { path, result: normaliseResult(fn(obj)) };
+    const result = await normaliseResult(Promise.resolve(fn(obj)));
+    return { path, result };
   };
 
   const objects = files.map(validateFile);
