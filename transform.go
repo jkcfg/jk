@@ -50,8 +50,7 @@ func transform(cmd *cobra.Command, args []string) {
 	// We must use the current directory as the working directory (for
 	// the purpose of resolving modules), because we're potentially
 	// going to supply a path _relative to here_ as an import.
-	vm := newVM(&transformOptions.vmOptions)
-	vm.SetWorkingDirectory(".")
+	vm := newVM(&transformOptions.vmOptions, ".")
 
 	// Encode the inputs as a map of path to .. the same path (for
 	// now). This is in part to get around the limitations of

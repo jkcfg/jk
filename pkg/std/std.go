@@ -29,8 +29,9 @@ type sender interface {
 // returned will be serialised to JSON.
 type RPCFunc func([]interface{}) (interface{}, error)
 
-// ExecuteOptions global input parameters to the standards library.
-type ExecuteOptions struct {
+// Options are global configuration options to tweak the behavior of the
+// standard library.
+type Options struct {
 	// Verbose indicates if some operations, such as write, should print out what
 	// they are doing.
 	Verbose bool
@@ -47,6 +48,18 @@ type ExecuteOptions struct {
 	// ExtMethods is where extension RPC methods are registered (the
 	// standard ones are here, and take precedence)
 	ExtMethods map[string]RPCFunc
+}
+
+// Std represents the standard library.
+type Std struct {
+	options Options
+}
+
+// NewStd creates a new instance of the standard library.
+func NewStd(options Options) *Std {
+	return &Std{
+		options: options,
+	}
 }
 
 // stdError builds an Error flatbuffer we can return to the javascript side.
@@ -100,7 +113,9 @@ func requireThreeStrings(fn func(string, string, string) (interface{}, error)) R
 }
 
 // Execute parses a message from v8 and execute the corresponding function.
-func Execute(msg []byte, res sender, options ExecuteOptions) []byte {
+func (std *Std) Execute(msg []byte, res sender) []byte {
+	options := std.options
+
 	message := __std.GetRootAsMessage(msg, 0)
 
 	union := flatbuffers.Table{}
