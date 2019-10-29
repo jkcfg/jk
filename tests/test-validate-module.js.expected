@@ -1,3 +1,2 @@
-./validate-files/invalid.yaml:
-  error: object name is not "Valid"
+./validate-files/invalid.yaml: object name is not "Valid"
 ./validate-files/valid.yaml: ok
