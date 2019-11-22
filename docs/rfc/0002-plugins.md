@@ -3,7 +3,7 @@
 ## Summary
 
 We have found a number of use cases where we'd like to extend the
-functionality of `jk` but don't want to link the core runtime w specific
+functionality of `jk` but don't want to link the core runtime with specific
 libraries.
 
 With a plugin system, we could implement these features outside of the
