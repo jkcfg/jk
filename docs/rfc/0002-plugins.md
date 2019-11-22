@@ -7,7 +7,7 @@ functionality of `jk` but don't want to link the core runtime with specific
 libraries.
 
 With a plugin system, we could implement these features outside of the
-runtime with and provide simple way to extend `jk` and experiment with ideas.
+runtime and provide a simple way to extend `jk` and experiment with ideas.
 
 The proposal is to:
 
