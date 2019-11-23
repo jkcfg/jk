@@ -11,7 +11,7 @@ import (
 	"github.com/jkcfg/jk/pkg/record"
 )
 
-// This is how the module loading works with V8Worker: You can ask a
+// This is how the module loading works with V8Worker2: You can ask a
 // worker to load a module by calling `worker.LoadModule`. To this,
 // you have to supply the specifier for the module (the name that was
 // used to refer to it), the code in the module as a string, and a
@@ -26,10 +26,9 @@ import (
 //  - there's no worker passed in the callback, so it has to be in the
 //  closure, or otherwise accessed.
 //
-//  - the V8Worker code expects LoadModule to be called with the
+//  - the V8Worker2 code expects LoadModule to be called with the
 //  specifier it gave, otherwise it will treat it as a failure to load
-//  the module (NB this seems to mean you have to load a module
-//  referred to by different paths once for each path)
+//  the module
 //
 //  - the referrer for an import will be the previous specifier; this
 //  means you need to carry any directory context around with you,

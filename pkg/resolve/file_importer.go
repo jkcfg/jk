@@ -5,10 +5,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // FileImporter is an importer sourcing from a filesystem.
 type FileImporter struct {
+	ModuleBase string
 }
 
 const (
@@ -29,6 +31,14 @@ func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, st
 		path = filepath.Join(basePath, specifier)
 	}
 
+	rel, err := filepath.Rel(fi.ModuleBase, path)
+	if err != nil {
+		return nil, "", candidates
+	}
+	if strings.HasPrefix(rel, "../") { // outside the root
+		return nil, "", candidates
+	}
+
 	if filepath.Ext(path) == "" {
 		candidates = append(candidates, Candidate{path + ".js", extensionRule})
 		_, err := os.Stat(path + ".js")
@@ -45,7 +55,6 @@ func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, st
 		candidates = append(candidates, Candidate{path, verbatimRule})
 	}
 
-	// TODO don't allow climbing out of the base directory with '../../...'
 	if _, err := os.Stat(path); err != nil {
 		return nil, "", candidates
 	}

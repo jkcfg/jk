@@ -59,7 +59,7 @@ by
 // algorithm adapted from Node.JS's, in order to support modules installed
 // with npm.
 type NodeImporter struct {
-	// ModulesPath is the top-level directory at which to stop looking
+	// ModuleBase is the top-level directory at which to stop looking
 	// for "module paths" (those that don't start with `/`, `./`, or
 	// `../`).
 	ModuleBase string
@@ -107,6 +107,12 @@ func (n *NodeImporter) loadGuessedFile(path string) ([]byte, string, []Candidate
 // loadAsPath attempts to load a path when it's unknown whether it
 // refers to a file or a directory.
 func (n *NodeImporter) loadAsPath(path string) ([]byte, string, []Candidate) {
+	// guard against paths that break out of the ModuleBase
+	rel, err := filepath.Rel(n.ModuleBase, path)
+	if err != nil || strings.HasPrefix(rel, "../") {
+		return nil, "", nil
+	}
+
 	bytes, resolvedPath, fileCandidates := n.loadAsFile(path)
 	if bytes != nil {
 		return bytes, resolvedPath, fileCandidates
