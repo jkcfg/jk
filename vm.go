@@ -26,6 +26,7 @@ type vmOptions struct {
 	verbose          bool
 	outputDirectory  string
 	inputDirectory   string
+	modulePaths      []string
 	parameters       std.Params
 	parameterFiles   []string // list of files specified on the command line with -f.
 	emitDependencies bool
@@ -42,6 +43,7 @@ func initInputFlags(cmd *cobra.Command, opts *vmOptions) {
 func initExecFlags(cmd *cobra.Command, opts *vmOptions) {
 	opts.parameters = std.NewParams()
 
+	cmd.PersistentFlags().StringSliceVarP(&opts.modulePaths, "include", "I", nil, "module search path")
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	cmd.PersistentFlags().VarP(parameters(opts, paramSourceCommandLine), "parameter", "p", "set input parameters")
@@ -96,6 +98,8 @@ type vm struct {
 	scriptDir string
 	inputDir  string
 
+	moduleSearchPath []string
+
 	worker    *v8.Worker
 	recorder  *record.Recorder
 	std       *std.Std
@@ -110,6 +114,14 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 	vm := &vm{
 		vmOptions: *opts,
 		resources: std.NewModuleResources(),
+	}
+
+	for _, path := range opts.modulePaths {
+		modulePath, err := filepath.Abs(path)
+		if err != nil {
+			log.Fatal("vm: unable to make absolute path from import search path:", path, ":", err)
+		}
+		vm.moduleSearchPath = append(vm.moduleSearchPath, modulePath)
 	}
 
 	/*
@@ -178,7 +190,7 @@ func (vm *vm) setWorkingDirectory(dir string) {
 }
 
 func (vm *vm) resolver() *resolve.Resolver {
-	resolver := resolve.NewResolver(vm.worker, vm.scriptDir,
+	resolvers := []resolve.Importer{
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access.
@@ -186,7 +198,13 @@ func (vm *vm) resolver() *resolve.Resolver {
 		},
 		&resolve.FileImporter{ModuleBase: vm.scriptDir},
 		&resolve.NodeImporter{ModuleBase: vm.scriptDir},
-	)
+	}
+	for _, path := range vm.moduleSearchPath {
+		resolvers = append(resolvers, &resolve.FileImporter{ModuleBase: path})
+		resolvers = append(resolvers, &resolve.NodeImporter{ModuleBase: path})
+	}
+
+	resolver := resolve.NewResolver(vm.worker, vm.scriptDir, resolvers...)
 	resolver.SetRecorder(vm.recorder)
 	return resolver
 }

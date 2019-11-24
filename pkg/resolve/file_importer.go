@@ -8,7 +8,18 @@ import (
 	"strings"
 )
 
-// FileImporter is an importer sourcing from a filesystem.
+// FileImporter is an importer sourcing from a filesystem, with the simple rules:
+//  - an absolute path (starting with `/`) is not allowed
+//  - a path starting with `./` or `../` is treated as a file relative
+//  to the base path (previous resolution)
+//  - any other path is treated as referring to a file relative to the
+//  ModuleBase
+//
+//  A path `x/y/z` will resolve to
+//   - the file `x/y/z`, if it exists
+//   - the file `x/y/z.js` if it exists
+//   - the file `x/y/z/index.js` if it exists
+//  otherwise, nothing.
 type FileImporter struct {
 	ModuleBase string
 }
@@ -27,10 +38,18 @@ func (fi *FileImporter) Import(basePath, specifier, referrer string) ([]byte, st
 	var candidates []Candidate
 
 	path := specifier
-	if !filepath.IsAbs(path) {
-		path = filepath.Join(basePath, specifier)
+	if filepath.IsAbs(path) {
+		log.Fatalf("absolute import path %q not allowed in %q", specifier, referrer)
 	}
 
+	// `import ... from 'foo/bar' -> treat as a module relative to ModuleBase
+	// `import ... from './foo/bar' -> treat as a file relative to importer
+	base := fi.ModuleBase
+	if strings.HasPrefix(specifier, "./") || strings.HasPrefix(specifier, "../") {
+		base = basePath
+	}
+
+	path = filepath.Join(base, specifier)
 	rel, err := filepath.Rel(fi.ModuleBase, path)
 	if err != nil {
 		return nil, "", candidates
