@@ -52,13 +52,13 @@ func TestStdImporter(t *testing.T) {
 				PublicModules: []string{"index.js", "param.js"},
 			}
 
-			source, resolved, _ := i.Import(test.base, test.specifier, test.referrer)
+			source, resolved, _ := i.Import(ScriptBase(test.base), test.specifier, test.referrer)
 			if !test.valid {
 				assert.Empty(t, source)
 				return
 			}
 			assert.NotEmpty(t, source)
-			assert.Equal(t, test.resolved, resolved)
+			assert.Equal(t, test.resolved, resolved.Path)
 		})
 	}
 }

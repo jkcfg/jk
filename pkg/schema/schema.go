@@ -4,6 +4,8 @@
 package schema
 
 import (
+	"net/http"
+
 	jsonschema "github.com/xeipuuv/gojsonschema"
 )
 
@@ -41,8 +43,8 @@ func ValidateWithObject(valueStr, schemaStr string) ([]Error, error) {
 
 // ValidateWithFile validates a value (as JSON stringified) against
 // the schema at the path given.
-func ValidateWithFile(valueStr, path string) ([]Error, error) {
+func ValidateWithFile(valueStr string, vfs http.FileSystem, p string) ([]Error, error) {
 	valueLoader := jsonschema.NewStringLoader(valueStr)
-	schemaLoader := jsonschema.NewReferenceLoader("file://" + path)
+	schemaLoader := jsonschema.NewReferenceLoaderFileSystem("file://"+p, vfs)
 	return validate(valueLoader, schemaLoader)
 }

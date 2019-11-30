@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -140,7 +141,7 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 		Verbose:         vm.verbose,
 		Parameters:      vm.parameters,
 		OutputDirectory: vm.outputDirectory,
-		Root:            std.ReadBase{Path: vm.inputDir, Resources: vm.resources, Recorder: vm.recorder},
+		Root:            std.ReadBase{Base: resolve.ScriptBase(vm.inputDir), Resources: vm.resources, Recorder: vm.recorder},
 		DryRun:          vm.emitDependencies,
 		ExtMethods:      rpcExtMethods,
 	})
@@ -178,14 +179,16 @@ func (vm *vm) setWorkingDirectory(dir string) {
 }
 
 func (vm *vm) resolver() *resolve.Resolver {
-	resolver := resolve.NewResolver(vm.worker, vm.scriptDir,
+	resolver := resolve.NewResolver(vm.worker,
+		resolve.ScriptBase(vm.scriptDir),
+		&resolve.Relative{},
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access.
 			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "schema.js"},
 		},
-		&resolve.FileImporter{},
-		&resolve.NodeImporter{ModuleBase: vm.scriptDir},
+		resolve.NewFileImporter(http.Dir(vm.scriptDir)),
+		resolve.NewNodeImporter(http.Dir(vm.scriptDir)),
 	)
 	resolver.SetRecorder(vm.recorder)
 	return resolver

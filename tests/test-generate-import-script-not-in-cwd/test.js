@@ -1,4 +1,4 @@
-import { s } from 'test-string.js';
+import { s } from './test-string.js';
 import * as std from '@jkcfg/std';
 
 export default [

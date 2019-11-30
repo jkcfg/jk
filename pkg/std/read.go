@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 
 	"golang.org/x/text/encoding/unicode"
 
@@ -88,8 +89,8 @@ func readRaw(in io.Reader) ([]byte, error) {
 
 type readFunc func(io.Reader) ([]byte, error)
 
-func readerByPath(path string) readFunc {
-	switch filepath.Ext(path) {
+func readerByPath(p string) readFunc {
+	switch path.Ext(p) {
 	case ".yml", ".yaml":
 		return readYAML
 	case ".json":
@@ -100,32 +101,32 @@ func readerByPath(path string) readFunc {
 
 // Read returns the contents of the file at `path`, relative to the
 // root path or if given, the module directory identified by `module`.
-func (r ReadBase) Read(path string, format __std.Format, encoding __std.Encoding, module string) ([]byte, error) {
+func (r ReadBase) Read(relPath string, format __std.Format, encoding __std.Encoding, module string) ([]byte, error) {
 	// Special case for reading from stdin
-	if path == "" {
-		return read("", format, encoding)
+	if relPath == "" {
+		return read(nil, "", format, encoding)
 	}
 
-	base, path, err := r.getPath(path, module)
+	base, rel, err := r.getPath(relPath, module)
 	if err != nil {
 		return nil, err
 	}
-	fullpath := filepath.Join(base, path)
+	fullpath := path.Join(base.Path, rel)
 	if r.Recorder != nil {
 		r.Recorder.Record(record.ReadFile, record.Params{
 			"path": fullpath,
-		})
+		}) // TODO account for location in here
 	}
-	return read(fullpath, format, encoding)
+	return read(base.Vfs, fullpath, format, encoding)
 }
 
-func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, error) {
+func read(vfs http.FileSystem, p string, format __std.Format, encoding __std.Encoding) ([]byte, error) {
 	var reader readFunc = readRaw
 
 	if encoding == __std.EncodingJSON {
 		switch format {
 		case __std.FormatFromExtension:
-			reader = readerByPath(path)
+			reader = readerByPath(p)
 		case __std.FormatYAML:
 			reader = readYAML
 		case __std.FormatYAMLStream:
@@ -140,10 +141,10 @@ func read(path string, format __std.Format, encoding __std.Encoding) ([]byte, er
 	}
 
 	var in io.Reader
-	if path == "" {
+	if p == "" {
 		in = os.Stdin
 	} else {
-		f, err := os.Open(path)
+		f, err := vfs.Open(p)
 		if err != nil {
 			return nil, err
 		}
