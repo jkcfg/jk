@@ -1,7 +1,6 @@
 package resolve
 
 import (
-	"net/http"
 	"path"
 
 	"github.com/shurcooL/httpfs/vfsutil"
@@ -18,11 +17,11 @@ import (
 //   - `/foo/bar.{js,mjs}`
 //   - `/foo/bar/index.{js,mjs}
 type FileImporter struct {
-	vfs http.FileSystem
+	vfs vfs.FileSystem
 }
 
 // NewFileImporter constructs a FileImport given a filesystem
-func NewFileImporter(vfs http.FileSystem) *FileImporter {
+func NewFileImporter(vfs vfs.FileSystem) *FileImporter {
 	return &FileImporter{vfs: vfs}
 }
 
@@ -45,7 +44,7 @@ func (fi *FileImporter) Import(base vfs.Location, specifier, referrer string) ([
 }
 
 // resolvePath tries the rules as given above
-func resolvePath(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
+func resolvePath(fs vfs.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
 	bytes, loc, fileCandidates := resolveFile(fs, p)
 	if bytes != nil {
 		return bytes, loc, fileCandidates
@@ -56,7 +55,7 @@ func resolvePath(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidat
 
 // resolveFile tries to load a path as though it referred to a
 // file. No bytes returned means failure.
-func resolveFile(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
+func resolveFile(fs vfs.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
 	candidates := []Candidate{{p, verbatimRule}}
 	bytes, err := vfsutil.ReadFile(fs, p)
 	if err == nil {
@@ -69,7 +68,7 @@ func resolveFile(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidat
 
 // resolveGuessedFile tries to apply the rule `specifier ->
 // specifier.{js,mjs} to resolve a path p within filesystem fs.
-func resolveGuessedFile(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
+func resolveGuessedFile(fs vfs.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
 	var candidates []Candidate
 	for _, ext := range moduleExtensions {
 		f := p + ext
@@ -84,7 +83,7 @@ func resolveGuessedFile(fs http.FileSystem, p string) ([]byte, vfs.Location, []C
 
 // resolveIndex tries to load the default index files, assuming the path
 // is a directory.
-func resolveIndex(fs http.FileSystem, base string) ([]byte, vfs.Location, []Candidate) {
+func resolveIndex(fs vfs.FileSystem, base string) ([]byte, vfs.Location, []Candidate) {
 	var candidates []Candidate
 	for _, ext := range moduleExtensions {
 		p := path.Join(base, "index"+ext)

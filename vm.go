@@ -16,6 +16,7 @@ import (
 	"github.com/jkcfg/jk/pkg/record"
 	"github.com/jkcfg/jk/pkg/resolve"
 	"github.com/jkcfg/jk/pkg/std"
+	"github.com/jkcfg/jk/pkg/vfs"
 	v8 "github.com/jkcfg/v8worker2"
 )
 
@@ -187,8 +188,8 @@ func (vm *vm) resolver() *resolve.Resolver {
 			// List here the modules users are allowed to access.
 			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "schema.js"},
 		},
-		resolve.NewFileImporter(http.Dir(vm.scriptDir)),
-		resolve.NewNodeImporter(http.Dir(vm.scriptDir)),
+		resolve.NewFileImporter(vfs.User(http.Dir(vm.scriptDir))),
+		resolve.NewNodeImporter(vfs.User(http.Dir(vm.scriptDir))),
 	)
 	resolver.SetRecorder(vm.recorder)
 	return resolver

@@ -1,7 +1,6 @@
 package resolve
 
 import (
-	"net/http"
 	"os"
 	"testing"
 )
@@ -9,7 +8,7 @@ import (
 func TestNodeModuleImport(t *testing.T) {
 	// Depends on the layout of directories and files under `./testfiles`
 
-	node := NewNodeImporter(http.Dir("testfiles"))
+	node := NewNodeImporter(ScriptBase("testfiles").Vfs)
 
 	// referrer is not important, since the context is captured in
 	// basePath.
@@ -43,7 +42,7 @@ func TestNodeModuleDotBase(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.Chdir("..")
-	node := NewNodeImporter(http.Dir("."))
+	node := NewNodeImporter(ScriptBase(".").Vfs)
 
 	test := func(name, base, path string) {
 		t.Run(name, func(t *testing.T) {
@@ -63,7 +62,7 @@ func TestNodeModuleDotBase(t *testing.T) {
 
 func TestNodeModuleFail(t *testing.T) {
 	// Test that we _can't resolve a module that's not under the ModuleBase
-	node := NewNodeImporter(http.Dir("testfiles/pkg"))
+	node := NewNodeImporter(ScriptBase("testfiles/pkg").Vfs)
 	bytes, loc, _ := node.Import(ScriptBase("testfiles/pkg"), "modfoo", "stdin")
 	if bytes != nil || loc.Path != "" {
 		t.Errorf("Expected failure to resolve modfoo, but found at %s", loc.Path)

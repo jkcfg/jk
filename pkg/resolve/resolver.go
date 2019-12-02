@@ -50,7 +50,7 @@ func Debug(debug bool) {
 // the initial base for resolving modules relative to the script being
 // run.
 func ScriptBase(path string) vfs.Location {
-	return vfs.Location{Vfs: http.Dir(path), Path: "/"}
+	return vfs.Location{Vfs: vfs.User(http.Dir(path)), Path: "/"}
 }
 
 // Resolver implements module resolution by deferring to the set of
@@ -89,11 +89,6 @@ func trace(i Importer, f string, args ...interface{}) {
 	log.Printf("debug: % 6s: %s", importerName(i), msg)
 }
 
-func isInternalImporter(i Importer) bool {
-	name := importerName(i)
-	return name == "Std" || name == "Magic" || name == "Static"
-}
-
 // ResolveModule imports the specifier from an import statement located in the
 // referrer module.
 func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
@@ -108,7 +103,7 @@ func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 		if len(data) == 0 {
 			trace(importer, "✘ import %s from %s (base=%s)", specifier, referrer, r.base.Path) // TODO give a full account of the path
 		} else {
-			if r.recorder != nil && !isInternalImporter(importer) {
+			if r.recorder != nil && !loc.Vfs.IsInternal() {
 				r.recorder.Record(record.ImportFile, record.Params{
 					"specifier": specifier,
 					"path":      loc.Path,

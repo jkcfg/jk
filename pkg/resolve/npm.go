@@ -3,7 +3,6 @@ package resolve
 import (
 	"encoding/json"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -62,16 +61,12 @@ for file_importer.
 // algorithm adapted from Node.JS's, in order to support modules installed
 // with npm.
 type NodeImporter struct {
-	vfs http.FileSystem
+	vfs vfs.FileSystem
 }
 
 // NewNodeImporter constructs a NodeImporter using the given filesystem
-func NewNodeImporter(vfs http.FileSystem) *NodeImporter {
+func NewNodeImporter(vfs vfs.FileSystem) *NodeImporter {
 	return &NodeImporter{vfs: vfs}
-}
-
-func (n *NodeImporter) locationAt(path string) vfs.Location {
-	return vfs.Location{Vfs: n.vfs, Path: path}
 }
 
 // Import is the entry point into the module resolution algorithm.

@@ -9,9 +9,54 @@ import (
 	"os"
 )
 
+// FileSystem is an interface for filesystems used to source modules,
+// files, and resources.
+type FileSystem interface {
+	http.FileSystem
+	// IsInternal returns true if a filesystem should be considered
+	// internal to the system, and therefore not recorded
+	IsInternal() bool
+}
+
+// UserFileSystem is a way to wrap a "regular" filesystem (e.g., as
+// constructed by `http.Dir`) so it is marked as a non-system
+// filesystem.
+type UserFileSystem struct {
+	http.FileSystem
+}
+
+// IsInternal implements the method of FileSystem, in the negative by
+// definition.
+func (u UserFileSystem) IsInternal() bool {
+	return false
+}
+
+// User is a convenience for creating a user (non-system) filesystem
+func User(fs http.FileSystem) UserFileSystem {
+	return UserFileSystem{FileSystem: fs}
+}
+
+// InternalFileSystem is a way to wrap a regular http.FileSystem so
+// that it appears to be internal to the workings of the runtime,
+// e.g., so reads don't get recorded.
+type InternalFileSystem struct {
+	http.FileSystem
+}
+
+// IsInternal implements the method of FileSystem, in the positive by
+// definition.
+func (f InternalFileSystem) IsInternal() bool {
+	return true
+}
+
+// Internal is a convenience for creating an internal (system) filesystem
+func Internal(fs http.FileSystem) InternalFileSystem {
+	return InternalFileSystem{FileSystem: fs}
+}
+
 // Location is a path within a specific filesystem.
 type Location struct {
-	Vfs  http.FileSystem
+	Vfs  FileSystem
 	Path string
 }
 
@@ -26,5 +71,7 @@ func (empty EmptyFileSystem) Open(p string) (http.File, error) {
 	return nil, &os.PathError{Op: "open", Path: p, Err: os.ErrNotExist}
 }
 
-// Empty is an empty filesystem
-var Empty = EmptyFileSystem{}
+// Empty is an empty filesystem. It is marked as internal, since it is
+// an implementation detail used to prevent relative resolution of
+// (module) paths.
+var Empty = InternalFileSystem{EmptyFileSystem{}}
