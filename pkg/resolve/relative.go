@@ -20,7 +20,7 @@ type Relative struct {
 // Import implements Importer with the relative import rules.
 func (r Relative) Import(base vfs.Location, specifier, referrer string) ([]byte, vfs.Location, []Candidate) {
 	if isRelative(specifier) {
-		return resolveFile(base.Vfs, path.Join(base.Path, specifier))
+		return resolvePath(base.Vfs, path.Join(base.Path, specifier))
 	}
 	return nil, vfs.Nowhere, nil
 }

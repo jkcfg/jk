@@ -1,9 +1,7 @@
 package resolve
 
 import (
-	"log"
 	"net/http"
-	"os"
 	"path"
 
 	"github.com/shurcooL/httpfs/vfsutil"
@@ -17,8 +15,8 @@ import (
 // `foo/bar` will be resolved to (in the order attempted):
 //
 //   - `/foo/bar`
-//   - `/foo/bar.js`
-//   - `/foo/bar/index.js
+//   - `/foo/bar.{js,mjs}`
+//   - `/foo/bar/index.{js,mjs}
 type FileImporter struct {
 	vfs http.FileSystem
 }
@@ -30,12 +28,11 @@ func NewFileImporter(vfs http.FileSystem) *FileImporter {
 
 const (
 	extensionRulePrefix = "<path> -> <path>"
-	expectedExtension   = ".js"
-	extensionRule       = extensionRulePrefix + expectedExtension
 	indexRulePrefix     = "<path> -> <path>/index"
-	indexRule           = indexRulePrefix + expectedExtension
 	verbatimRule        = "verbatim"
 )
+
+var moduleExtensions = []string{".mjs", ".js"}
 
 // Import implements importer. Note that the file import only ever
 // cares to look in the root of the given filesystem. It doesn't care
@@ -44,35 +41,88 @@ func (fi *FileImporter) Import(base vfs.Location, specifier, referrer string) ([
 	if isRelative(specifier) {
 		return nil, vfs.Nowhere, nil
 	}
-	return resolveFile(fi.vfs, specifier)
+	return resolvePath(fi.vfs, specifier)
 }
 
-// resolveFile applies the resolution logic above to a filesystem,
-// given a path. It's also used for the Relative resolver.
-func resolveFile(base http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
+// resolvePath tries the rules as given above
+func resolvePath(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
+	bytes, loc, fileCandidates := resolveFile(fs, p)
+	if bytes != nil {
+		return bytes, loc, fileCandidates
+	}
+	bytes, loc, indexCandidates := resolveIndex(fs, p)
+	return bytes, loc, append(fileCandidates, indexCandidates...)
+}
+
+// resolveFile tries to load a path as though it referred to a
+// file. No bytes returned means failure.
+func resolveFile(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
+	candidates := []Candidate{{p, verbatimRule}}
+	bytes, err := vfsutil.ReadFile(fs, p)
+	if err == nil {
+		return bytes, vfs.Location{Vfs: fs, Path: p}, candidates
+	}
+
+	bytes, loc, extCandidates := resolveGuessedFile(fs, p)
+	return bytes, loc, append(candidates, extCandidates...)
+}
+
+// resolveGuessedFile tries to apply the rule `specifier ->
+// specifier.{js,mjs} to resolve a path p within filesystem fs.
+func resolveGuessedFile(fs http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
 	var candidates []Candidate
-	if path.Ext(p) == "" {
-		candidates = append(candidates, Candidate{p + ".js", extensionRule})
-		_, err := vfsutil.Stat(base, p+".js")
-		switch {
-		case os.IsNotExist(err):
-			p = path.Join(p, "index.js")
-			candidates = append(candidates, Candidate{p, indexRule})
-		case err != nil:
-			return nil, vfs.Nowhere, candidates
-		default:
-			p = p + ".js"
+	for _, ext := range moduleExtensions {
+		f := p + ext
+		candidates = append(candidates, Candidate{f, extensionRulePrefix + ext})
+		bytes, err := vfsutil.ReadFile(fs, f)
+		if err == nil {
+			return bytes, vfs.Location{Vfs: fs, Path: f}, candidates
 		}
-	} else {
-		candidates = append(candidates, Candidate{p, verbatimRule})
 	}
-
-	if _, err := vfsutil.Stat(base, p); err != nil {
-		return nil, vfs.Nowhere, candidates
-	}
-	codeBytes, err := vfsutil.ReadFile(base, p)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return codeBytes, vfs.Location{Vfs: base, Path: p}, candidates
+	return nil, vfs.Nowhere, candidates
 }
+
+// resolveIndex tries to load the default index files, assuming the path
+// is a directory.
+func resolveIndex(fs http.FileSystem, base string) ([]byte, vfs.Location, []Candidate) {
+	var candidates []Candidate
+	for _, ext := range moduleExtensions {
+		p := path.Join(base, "index"+ext)
+		candidates = append(candidates, Candidate{p, indexRulePrefix + ext})
+		bytes, err := vfsutil.ReadFile(fs, p)
+		if err == nil {
+			return bytes, vfs.Location{Vfs: fs, Path: p}, candidates
+		}
+	}
+	return nil, vfs.Nowhere, candidates
+}
+
+// // resolveFile applies the resolution logic above to a filesystem,
+// // given a path. It's also used for the Relative resolver.
+// func resolveFile(base http.FileSystem, p string) ([]byte, vfs.Location, []Candidate) {
+// 	var candidates []Candidate
+// 	if path.Ext(p) == "" {
+// 		candidates = append(candidates, Candidate{p + ".js", extensionRule})
+// 		_, err := vfsutil.Stat(base, p+".js")
+// 		switch {
+// 		case os.IsNotExist(err):
+// 			p = path.Join(p, "index.js")
+// 			candidates = append(candidates, Candidate{p, indexRule})
+// 		case err != nil:
+// 			return nil, vfs.Nowhere, candidates
+// 		default:
+// 			p = p + ".js"
+// 		}
+// 	} else {
+// 		candidates = append(candidates, Candidate{p, verbatimRule})
+// 	}
+
+// 	if _, err := vfsutil.Stat(base, p); err != nil {
+// 		return nil, vfs.Nowhere, candidates
+// 	}
+// 	codeBytes, err := vfsutil.ReadFile(base, p)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return codeBytes, vfs.Location{Vfs: base, Path: p}, candidates
+// }

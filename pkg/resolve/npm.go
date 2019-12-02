@@ -51,6 +51,11 @@ by
  - not looking for node_modules directories above the directory given
    as the top-level.
 
+The "standard" rules for resolving a path to a file are delegated to
+resolveFile and resolveIndex; but, since NPM resolution also has to
+account for package.json files, they are not used in the same way as
+for file_importer.
+
 */
 
 // NodeImporter is an implementation of Importer that uses a resolution
@@ -80,38 +85,10 @@ func (n *NodeImporter) Import(base vfs.Location, specifier, referrer string) ([]
 	return n.loadAsModule(specifier, base.Path)
 }
 
-var moduleExtensions = []string{".mjs", ".js"}
-
-// loadAsFile tries to load a path as though it referred to a file. No
-// bytes returned means failure.
-func (n *NodeImporter) loadAsFile(path string) ([]byte, vfs.Location, []Candidate) {
-	candidates := []Candidate{{path, verbatimRule}}
-	bytes, err := vfsutil.ReadFile(n.vfs, path)
-	if err == nil {
-		return bytes, n.locationAt(path), candidates
-	}
-
-	bytes, loc, extCandidates := n.loadGuessedFile(path)
-	return bytes, loc, append(candidates, extCandidates...)
-}
-
-func (n *NodeImporter) loadGuessedFile(path string) ([]byte, vfs.Location, []Candidate) {
-	var candidates []Candidate
-	for _, ext := range moduleExtensions {
-		p := path + ext
-		candidates = append(candidates, Candidate{p, extensionRulePrefix + ext})
-		bytes, err := vfsutil.ReadFile(n.vfs, p)
-		if err == nil {
-			return bytes, n.locationAt(p), candidates
-		}
-	}
-	return nil, vfs.Nowhere, candidates
-}
-
 // loadAsPath attempts to load a path when it's unknown whether it
 // refers to a file or a directory.
 func (n *NodeImporter) loadAsPath(path string) ([]byte, vfs.Location, []Candidate) {
-	bytes, loc, fileCandidates := n.loadAsFile(path)
+	bytes, loc, fileCandidates := resolveFile(n.vfs, path)
 	if bytes != nil {
 		return bytes, loc, fileCandidates
 	}
@@ -119,7 +96,7 @@ func (n *NodeImporter) loadAsPath(path string) ([]byte, vfs.Location, []Candidat
 	info, err := vfsutil.Stat(n.vfs, path)
 	switch {
 	case os.IsNotExist(err):
-		// loadAsFile will already have included the possibility of
+		// resolveFile will already have included the possibility of
 		// the path as-is as a candidate
 		return nil, vfs.Nowhere, fileCandidates
 	case err != nil:
@@ -130,21 +107,6 @@ func (n *NodeImporter) loadAsPath(path string) ([]byte, vfs.Location, []Candidat
 		return bytes, loc, append(fileCandidates, dirCandidates...)
 	}
 	return nil, vfs.Nowhere, fileCandidates
-}
-
-// loadIndex tries to load the default index files, assuming the path
-// is a directory.
-func (n *NodeImporter) loadIndex(base string) ([]byte, vfs.Location, []Candidate) {
-	var candidates []Candidate
-	for _, ext := range moduleExtensions {
-		p := path.Join(base, "index"+ext)
-		candidates = append(candidates, Candidate{p, indexRulePrefix + ext})
-		bytes, err := vfsutil.ReadFile(n.vfs, p)
-		if err == nil {
-			return bytes, n.locationAt(p), candidates
-		}
-	}
-	return nil, vfs.Nowhere, candidates
 }
 
 // loadAsDir attempts to load a path which is known to be a directory.
@@ -158,17 +120,14 @@ func (n *NodeImporter) loadAsDir(dir string) ([]byte, vfs.Location, []Candidate)
 		if err := json.Unmarshal(packageJSON, &pkg); err == nil && pkg.Module != "" {
 			module := path.Join(dir, pkg.Module)
 			// .module is treated as through it were a file (but not a directory)
-			bytes, loc, pkgCandidates := n.loadAsFile(module)
-			// TODO(michael) consider transformating these candidates
-			// (and below) to reflect the indirection through
-			// package.json
+			bytes, loc, pkgCandidates := resolveFile(n.vfs, module)
 			qualifyCandidates(pkgCandidates, "via .module in "+packageJSONPath)
 			candidates = append(candidates, pkgCandidates...)
 			if bytes != nil {
 				return bytes, loc, candidates
 			}
 			// .. or a directory with an index (but not another package.json)
-			bytes, loc, modIndexCandidates := n.loadIndex(module)
+			bytes, loc, modIndexCandidates := resolveIndex(n.vfs, module)
 			qualifyCandidates(modIndexCandidates, "via .module in "+packageJSONPath)
 			candidates = append(candidates, modIndexCandidates...)
 			if bytes != nil {
@@ -176,7 +135,7 @@ func (n *NodeImporter) loadAsDir(dir string) ([]byte, vfs.Location, []Candidate)
 			}
 		}
 	}
-	bytes, loc, indexCandidates := n.loadIndex(dir)
+	bytes, loc, indexCandidates := resolveIndex(n.vfs, dir)
 	return bytes, loc, append(candidates, indexCandidates...)
 }
 
