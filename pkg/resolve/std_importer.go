@@ -1,7 +1,6 @@
 package resolve
 
 import (
-	"path"
 	"strings"
 
 	"github.com/jkcfg/jk/pkg/__std/lib"
@@ -36,10 +35,11 @@ func (i *StdImporter) publicModule(path string) string {
 func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]byte, vfs.Location, []Candidate) {
 	candidate := []Candidate{{specifier, staticRule}}
 
-	// Short circuit the lookup when:
-	//  - we're not trying to load a @jkcfg/std.* module
-	//  - we're not inside the std library resolution
-	if !isStdModule(specifier) && !strings.HasPrefix(base.Path, stdPrefix) {
+	// Short circuit the lookup when we're not trying to load a
+	// @jkcfg/std.* module. `Relative` should take care of loading
+	// imports on relative paths when the importing module is also a
+	// std module.
+	if !isStdModule(specifier) {
 		return nil, vfs.Nowhere, candidate
 	}
 
@@ -55,10 +55,9 @@ func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]b
 		p += ".js"
 	}
 
-	// fmt.Printf("import %s from %s (basePath=%s, path=%s)\n", specifier, referrer, basePath, path)
-
-	// Ensure we only allow users to import PublicModules. Modules from the std lib
-	// itself are allowed to import internal private modules.
+	// Ensure we only allow users to import PublicModules. Modules
+	// from the std lib itself are allowed to import internal private
+	// modules.
 	m := i.publicModule(p)
 	if !isStdModule(referrer) && m == "" {
 		trace(i, "'%s' is not a public module", specifier)
@@ -66,10 +65,6 @@ func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]b
 	}
 
 	sourcePath := p
-	if isStdModule(base.Path) {
-		directory := base.Path[len(stdPrefix):]
-		sourcePath = path.Join(directory, p)
-	}
 	if m != "" {
 		sourcePath = m
 	}
@@ -80,5 +75,5 @@ func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]b
 		return nil, vfs.Nowhere, candidate
 	}
 
-	return src, vfs.Location{Vfs: lib.Assets, Path: path.Join(stdPrefix, sourcePath)}, candidate
+	return src, vfs.Location{Vfs: lib.Assets, Path: sourcePath}, candidate
 }
