@@ -75,5 +75,5 @@ func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]b
 		return nil, vfs.Nowhere, candidate
 	}
 
-	return src, vfs.Location{Vfs: vfs.Internal(lib.Assets), Path: sourcePath}, candidate
+	return src, vfs.Location{Vfs: vfs.Internal(stdPrefix, lib.Assets), Path: sourcePath}, candidate
 }

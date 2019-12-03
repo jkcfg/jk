@@ -188,8 +188,8 @@ func (vm *vm) resolver() *resolve.Resolver {
 			// List here the modules users are allowed to access.
 			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "schema.js"},
 		},
-		resolve.NewFileImporter(vfs.User(http.Dir(vm.scriptDir))),
-		resolve.NewNodeImporter(vfs.User(http.Dir(vm.scriptDir))),
+		resolve.NewFileImporter(vfs.User(vm.scriptDir, http.Dir(vm.scriptDir))),
+		resolve.NewNodeImporter(vfs.User(vm.scriptDir, http.Dir(vm.scriptDir))),
 	)
 	resolver.SetRecorder(vm.recorder)
 	return resolver

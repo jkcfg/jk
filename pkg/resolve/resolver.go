@@ -50,7 +50,7 @@ func Debug(debug bool) {
 // the initial base for resolving modules relative to the script being
 // run.
 func ScriptBase(path string) vfs.Location {
-	return vfs.Location{Vfs: vfs.User(http.Dir(path)), Path: "/"}
+	return vfs.Location{Vfs: vfs.User(path, http.Dir(path)), Path: "/"}
 }
 
 // Resolver implements module resolution by deferring to the set of
@@ -101,15 +101,16 @@ func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 		data, loc, considered := importer.Import(r.base, specifier, referrer)
 
 		if len(data) == 0 {
-			trace(importer, "✘ import %s from %s (base=%s)", specifier, referrer, r.base.Path) // TODO give a full account of the path
+			trace(importer, "✘ import %s from %s (base=%s)", specifier, referrer, r.base.CanonicalPath())
 		} else {
+			fullpath := loc.CanonicalPath()
 			if r.recorder != nil && !loc.Vfs.IsInternal() {
 				r.recorder.Record(record.ImportFile, record.Params{
 					"specifier": specifier,
-					"path":      loc.Path,
+					"path":      fullpath,
 				})
 			}
-			trace(importer, "✔ import %s from %s (base=%s) -> %s", specifier, referrer, r.base.Path, loc.Path) // TODO give a full account of the path
+			trace(importer, "✔ import %s from %s (base=%s) -> %s", specifier, referrer, r.base.CanonicalPath(), fullpath)
 		}
 
 		candidates = append(candidates, considered...)
@@ -135,9 +136,10 @@ func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 	nextResolver.base = vfs.Location{Vfs: resolved.Vfs, Path: path.Dir(resolved.Path)}
 	// TODO the path will be used to uniquify modules, so it needs to
 	// be uniquified itself, by the location, somehow
-	if err := r.loader.LoadModule(resolved.Path, source, nextResolver.ResolveModule); err != nil {
+	fullpath := resolved.CanonicalPath()
+	if err := r.loader.LoadModule(fullpath, source, nextResolver.ResolveModule); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return "", 1
 	}
-	return resolved.Path, 0
+	return fullpath, 0
 }

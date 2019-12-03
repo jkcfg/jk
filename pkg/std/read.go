@@ -114,7 +114,7 @@ func (r ReadBase) Read(relPath string, format __std.Format, encoding __std.Encod
 	fullpath := path.Join(base.Path, rel)
 	if r.Recorder != nil {
 		r.Recorder.Record(record.ReadFile, record.Params{
-			"path": fullpath,
+			"path": base.Vfs.QualifyPath(fullpath),
 		}) // TODO account for location in here
 	}
 	return read(base.Vfs, fullpath, format, encoding)
