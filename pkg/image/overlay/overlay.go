@@ -1,4 +1,4 @@
-package image
+package overlay
 
 // Treat a set of layers as a filesystem, for e.g., putting in the
 // module search path.
@@ -26,8 +26,8 @@ type Overlay struct {
 	layers []http.FileSystem
 }
 
-// NewOverlay constructs an overlay filesystem given the layers
-func NewOverlay(layers ...http.FileSystem) *Overlay {
+// New constructs an overlay filesystem given the layers
+func New(layers ...http.FileSystem) *Overlay {
 	return &Overlay{
 		layers: layers,
 	}

@@ -1,4 +1,4 @@
-package image
+package overlay
 
 import (
 	"io/ioutil"
@@ -17,7 +17,7 @@ func newMapFS(files map[string]string) http.FileSystem {
 // Test the simplest case: can I read a file from a single layer
 func TestSingleLayerSingleFile(t *testing.T) {
 	files := map[string]string{"foo": "here is the text"}
-	fs := NewOverlay(newMapFS(files))
+	fs := New(newMapFS(files))
 	assert.NotNil(t, fs)
 	file, err := fs.Open("foo")
 	assert.NoError(t, err)
@@ -33,7 +33,7 @@ func TestSingleFile(t *testing.T) {
 	files1 := map[string]string{"bar": "not the text"}
 	files2 := map[string]string{"foo": "here is the text"}
 
-	fs := NewOverlay(newMapFS(files1), newMapFS(files2))
+	fs := New(newMapFS(files1), newMapFS(files2))
 	assert.NotNil(t, fs)
 	file, err := fs.Open("foo")
 	assert.NoError(t, err)
@@ -90,7 +90,7 @@ func TestReaddir(t *testing.T) {
 	files5 := map[string]string{
 		"dir/boo": "unimportant",
 	}
-	fs := NewOverlay(
+	fs := New(
 		newMapFS(files1),
 		newMapFS(files2),
 		newMapFS(files3),
@@ -127,7 +127,7 @@ func TestReadDuplicates(t *testing.T) {
 		"dir/baz": "fresh file",
 	}
 
-	fs := NewOverlay(newMapFS(files1), newMapFS(files2))
+	fs := New(newMapFS(files1), newMapFS(files2))
 	assert.NotNil(t, fs)
 
 	dir, err := fs.Open("/dir")

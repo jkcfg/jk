@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "config": {
+    "@comment": "a required property, but ignored in the course of the test"
+  },
+  "layers": [
+    {
+      "mediaType": "required in schema but unused in test",
+      "digest": "sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b"
+    },
+    {
+      "mediaType": "required in schema but unused in test",
+      "digest": "sha512:401b09eab3c013d4ca54922bb802bec8fd5318192b0a75f201d8b372742"
+    }
+  ]
+}
