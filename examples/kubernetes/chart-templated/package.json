@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@jkcfg/kubernetes": "^0.5.0",
-    "handlebars": "^4.1.2"
+    "handlebars": "^4.3.0"
   },
   "devDependencies": {},
   "scripts": {
