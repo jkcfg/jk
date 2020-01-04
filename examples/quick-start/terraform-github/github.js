@@ -11,13 +11,16 @@ const config = {
   provider: {
     github: {
       organization,
+      anonymous: true
     },
   },
-  github_membership: {},
+  resource: {
+    github_membership: {},
+  }
 };
 
 for (const dev of developers) {
-  config.github_membership[membershipId(dev)] = {
+  config.resource.github_membership[membershipId(dev)] = {
     username: dev.github.handle,
     role: role(dev),
   };
