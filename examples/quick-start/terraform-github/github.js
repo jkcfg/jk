@@ -11,12 +11,12 @@ const config = {
   provider: {
     github: {
       organization,
-      anonymous: true
+      anonymous: true,
     },
   },
   resource: {
     github_membership: {},
-  }
+  },
 };
 
 for (const dev of developers) {
