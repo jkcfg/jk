@@ -1,14 +1,16 @@
 "provider" "github" {
   "organization" = "myorg"
+
+  "anonymous" = true
 }
 
-"github_membership" "myorg_alice84" {
+"resource" "github_membership" "myorg_alice84" {
   "username" = "alice84"
 
   "role" = "admin"
 }
 
-"github_membership" "myorg_bob93" {
+"resource" "github_membership" "myorg_bob93" {
   "username" = "bob93"
 
   "role" = "member"
