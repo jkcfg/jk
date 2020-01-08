@@ -3,6 +3,7 @@
 /jk
 /pkg/__std/*.go
 /pkg/__std/lib/assets_vfsdata.go
+/plugins/jk-plugin-echo/jk-plugin-echo
 /std/internal/__std_generated.*
 /std/node_modules
 /std/dist

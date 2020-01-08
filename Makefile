@@ -1,18 +1,28 @@
 .PHONY: build-image std-install dep all install test api-reference FORCE
 
-all: jk
+PLUGINS =					\
+	plugins/jk-plugin-echo/jk-plugin-echo	\
+	$(NULL)
+
+all: jk $(PLUGINS)
 
 VERSION := $(shell git describe --tags)
 
-jk: pkg/__std/lib/assets_vfsdata.go FORCE
-ifeq ($(STATIC),yes)
-	GO111MODULE=on go build -mod=readonly -a -tags netgo -o $@ -ldflags '-X main.Version=$(VERSION) -s -w -extldflags "-static"'
-else
-	GO111MODULE=on go build -mod=readonly -o $@ -ldflags "-X main.Version=$(VERSION) -s -w"
+ifneq ($(RW),yes)
+	RO = -mod=readonly
 endif
 
+ifeq ($(STATIC),yes)
+	A = -a
+	TAGS += -tags netgo
+	LDFLAGS += -extldflags "-static"
+endif
+
+jk: pkg/__std/lib/assets_vfsdata.go FORCE
+	GO111MODULE=on go build $(RO) $(A) $(TAGS) -o $@ -ldflags '-X main.Version=$(VERSION) -s -w $(LDFLAGS)'
+
 pkg/__std/lib/assets_vfsdata.go: std/internal/__std_generated.ts std/dist/index.js
-	GO111MODULE=on go generate -mod=readonly ./pkg/__std/lib
+	GO111MODULE=on go generate $(RO) ./pkg/__std/lib
 
 std/internal/__std_generated.ts: std/internal/*.fbs std/package.json std/generate.sh
 	std/generate.sh
@@ -31,10 +41,14 @@ $(module)/package.json: $(std_sources) std/internal/__std_generated.ts std/packa
 	cd std && npx tsc --declaration --emitDeclarationOnly --allowJs false --outdir ../$(module) || true
 	cp README.md LICENSE std/package.json std/internal/flatbuffers.d.ts $(module)
 
+plugins/jk-plugin-echo/jk-plugin-echo: FORCE
+	GO111MODULE=on go build $(RO) $(A) $(TAGS) -o $@ -ldflags '-X main.Version=$(VERSION) -s -w $(LDFLAGS)' ./$(@D)
+
 D := $(shell go env GOPATH)/bin
-install: jk
+install: all
 	mkdir -p $(D)
 	cp jk $(D)
+	$(foreach p,$(PLUGINS),cp $(p) $(D))
 
 build-image:
 	docker build -t quay.io/justkidding/build -f build/Dockerfile build/

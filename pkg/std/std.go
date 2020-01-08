@@ -9,6 +9,7 @@ import (
 	"github.com/jkcfg/jk/pkg/__std"
 	"github.com/jkcfg/jk/pkg/__std/lib"
 	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/plugin"
 	"github.com/jkcfg/jk/pkg/schema"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -53,13 +54,24 @@ type Options struct {
 // Std represents the standard library.
 type Std struct {
 	options Options
+	plugins *plugin.Library
 }
 
 // NewStd creates a new instance of the standard library.
 func NewStd(options Options) *Std {
 	return &Std{
 		options: options,
+		plugins: plugin.NewLibrary(plugin.LibraryOptions{
+			Verbose:         options.Verbose,
+			PluginDirectory: ".",
+		}),
 	}
+}
+
+// Close frees precious resources allocated during the lifetime of the standard
+// library.
+func (std *Std) Close() {
+	std.plugins.Close()
 }
 
 // stdError builds an Error flatbuffer we can return to the javascript side.
@@ -285,6 +297,19 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 		responseOffset := __std.ParamResponseEnd(b)
 		b.Finish(responseOffset)
 		return b.FinishedBytes()
+
+	case __std.ArgsRenderArgs:
+		args := __std.RenderArgs{}
+		args.Init(union.Bytes, union.Pos)
+
+		pluginURL := string(args.PluginURL())
+
+		if options.Verbose {
+			fmt.Printf("render %s\n", pluginURL)
+		}
+
+		ser := deferred.Register(func() ([]byte, error) { return std.render(pluginURL, args.Params()) }, sendFunc(res.SendBytes))
+		return deferredResponse(ser)
 
 	default:
 		log.Fatalf("unknown Message (%d)", message.ArgsType())

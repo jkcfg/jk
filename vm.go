@@ -182,7 +182,7 @@ func (vm *vm) resolver() *resolve.Resolver {
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access.
-			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "schema.js"},
+			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "render.js", "schema.js"},
 		},
 		&resolve.FileImporter{},
 		&resolve.NodeImporter{ModuleBase: vm.scriptDir},
@@ -233,6 +233,8 @@ func (vm *vm) RunFile(filename string) error {
 
 func (vm *vm) flush() error {
 	deferred.Wait() // TODO(michael): hide this in std?
+
+	vm.std.Close()
 
 	if vm.recorder != nil {
 		data, err := json.MarshalIndent(vm.recorder, "", "  ")
