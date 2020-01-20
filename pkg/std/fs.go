@@ -2,9 +2,12 @@ package std
 
 import (
 	"errors"
-	"os"
-	"path/filepath"
+	"path"
 	"sort"
+
+	"github.com/jkcfg/jk/pkg/vfs"
+
+	"github.com/shurcooL/httpfs/vfsutil"
 )
 
 // FileInfo is the result from a std.fileinfo RPC (and used to
@@ -25,26 +28,26 @@ type Directory struct {
 // FileInfo returns a response to a FileInfo request, encoded ready to
 // send to the V8 worker.
 func (r ReadBase) FileInfo(path, module string) (FileInfo, error) {
-	base, path, err := r.getPath(path, module)
+	loc, rel, err := r.getPath(path, module)
 	if err != nil {
 		return FileInfo{}, err
 	}
-	return fileInfo(base, path)
+	return fileInfo(loc, rel)
 }
 
 // DirectoryListing returns a response to a Dir request, encoded ready
 // to send to the V8 worker.
 func (r ReadBase) DirectoryListing(path, module string) (Directory, error) {
-	base, path, err := r.getPath(path, module)
+	loc, rel, err := r.getPath(path, module)
 	if err != nil {
 		return Directory{}, err
 	}
-	return directoryListing(base, path)
+	return directoryListing(loc, rel)
 }
 
-func fileInfo(base, rel string) (FileInfo, error) {
-	path := filepath.Join(base, rel)
-	info, err := os.Stat(path)
+func fileInfo(loc vfs.Location, rel string) (FileInfo, error) {
+	p := path.Join(loc.Path, rel)
+	info, err := vfsutil.Stat(loc.Vfs, p)
 	switch {
 	case err != nil:
 		return FileInfo{}, err
@@ -54,9 +57,9 @@ func fileInfo(base, rel string) (FileInfo, error) {
 	return FileInfo{Name: info.Name(), Path: rel, IsDir: info.IsDir()}, nil
 }
 
-func directoryListing(base, rel string) (Directory, error) {
-	path := filepath.Join(base, rel)
-	dir, err := os.Open(path)
+func directoryListing(base vfs.Location, rel string) (Directory, error) {
+	p := path.Join(base.Path, rel)
+	dir, err := base.Vfs.Open(p)
 	if err != nil {
 		return Directory{}, err
 	}
@@ -76,14 +79,14 @@ func directoryListing(base, rel string) (Directory, error) {
 		if infos[i].IsDir() || infos[i].Mode().IsRegular() {
 			files = append(files, FileInfo{
 				Name:  infos[i].Name(),
-				Path:  filepath.Join(rel, infos[i].Name()),
+				Path:  path.Join(rel, infos[i].Name()),
 				IsDir: infos[i].IsDir(),
 			})
 		}
 	}
 
 	return Directory{
-		Name:  filepath.Base(rel),
+		Name:  path.Base(rel),
 		Path:  rel,
 		Files: files,
 	}, nil

@@ -1,10 +1,11 @@
 package resolve
 
 import (
-	"path/filepath"
 	"strings"
 
+	"github.com/jkcfg/jk/pkg/__std/lib"
 	"github.com/jkcfg/jk/pkg/std"
+	"github.com/jkcfg/jk/pkg/vfs"
 )
 
 const (
@@ -31,51 +32,48 @@ func (i *StdImporter) publicModule(path string) string {
 }
 
 // Import implements importer.
-func (i *StdImporter) Import(basePath, specifier, referrer string) ([]byte, string, []Candidate) {
+func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]byte, vfs.Location, []Candidate) {
 	candidate := []Candidate{{specifier, staticRule}}
 
-	// Short circuit the lookup when:
-	//  - we're not trying to load a @jkcfg/std.* module
-	//  - we're not inside the std library resolution
-	if !isStdModule(specifier) && !strings.HasPrefix(basePath, stdPrefix) {
-		return nil, "", candidate
+	// Short circuit the lookup when we're not trying to load a
+	// @jkcfg/std.* module. `Relative` should take care of loading
+	// imports on relative paths when the importing module is also a
+	// std module.
+	if !isStdModule(specifier) {
+		return nil, vfs.Nowhere, candidate
 	}
 
-	path := specifier
-	if isStdModule(path) {
-		path = specifier[len(stdPrefix):]
+	p := specifier
+	if isStdModule(p) {
+		p = specifier[len(stdPrefix):]
 	}
-	path = strings.TrimPrefix(path, "/")
-	if path == "" {
-		path = "index.js"
+	p = strings.TrimPrefix(p, "/")
+	if p == "" {
+		p = "index.js"
 	}
-	if !strings.HasSuffix(path, ".js") {
-		path += ".js"
+	if !strings.HasSuffix(p, ".js") {
+		p += ".js"
 	}
 
-	// fmt.Printf("import %s from %s (basePath=%s, path=%s)\n", specifier, referrer, basePath, path)
-
-	// Ensure we only allow users to import PublicModules. Modules from the std lib
-	// itself are allowed to import internal private modules.
-	m := i.publicModule(path)
+	// Ensure we only allow users to import PublicModules. Modules
+	// from the std lib itself are allowed to import internal private
+	// modules.
+	m := i.publicModule(p)
 	if !isStdModule(referrer) && m == "" {
 		trace(i, "'%s' is not a public module", specifier)
-		return nil, "", candidate
+		return nil, vfs.Nowhere, candidate
 	}
 
-	source := path
-	if isStdModule(basePath) {
-		directory := basePath[len(stdPrefix):]
-		source = filepath.Join(directory, path)
-	}
+	sourcePath := p
 	if m != "" {
-		source = m
-	}
-	module := std.Module(source)
-	if len(module) == 0 {
-		trace(i, "'%s' is not part of the standard library", specifier)
-		return nil, "", candidate
+		sourcePath = m
 	}
 
-	return module, filepath.Join(stdPrefix, source), candidate
+	src := std.Module(sourcePath)
+	if len(src) == 0 {
+		trace(i, "'%s' is not part of the standard library", specifier)
+		return nil, vfs.Nowhere, candidate
+	}
+
+	return src, vfs.Location{Vfs: vfs.Internal(stdPrefix, lib.Assets), Path: sourcePath}, candidate
 }

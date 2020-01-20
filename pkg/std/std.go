@@ -190,7 +190,7 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 				if err != nil {
 					return nil, err
 				}
-				return schema.ValidateWithFile(v, filepath.Join(base, rel))
+				return schema.ValidateWithFile(v, base.Vfs, filepath.Join(base.Path, rel))
 			})
 		default:
 			rpcfn = options.ExtMethods[method]

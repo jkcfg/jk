@@ -3,12 +3,14 @@ package resolve
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"reflect"
 	"strings"
 
 	"github.com/jkcfg/jk/pkg/record"
+	"github.com/jkcfg/jk/pkg/vfs"
 )
 
 // This is how the module loading works with V8Worker: You can ask a
@@ -43,12 +45,20 @@ func Debug(debug bool) {
 	debugImports = debug
 }
 
+// ScriptBase returns a base location representing the filesystem
+// under the path given. It is so called because it's used to create
+// the initial base for resolving modules relative to the script being
+// run.
+func ScriptBase(path string) vfs.Location {
+	return vfs.Location{Vfs: vfs.User(path, http.Dir(path)), Path: "/"}
+}
+
 // Resolver implements module resolution by deferring to the set of
 // importers that it's given.
 type Resolver struct {
 	recorder  *record.Recorder
 	loader    Loader
-	base      string
+	base      vfs.Location
 	importers []Importer
 }
 
@@ -59,10 +69,10 @@ func (r *Resolver) SetRecorder(recorder *record.Recorder) {
 }
 
 // NewResolver creates a new Resolver.
-func NewResolver(loader Loader, basePath string, importers ...Importer) *Resolver {
+func NewResolver(loader Loader, base vfs.Location, importers ...Importer) *Resolver {
 	return &Resolver{
 		loader:    loader,
-		base:      basePath,
+		base:      base,
 		importers: importers,
 	}
 }
@@ -79,43 +89,40 @@ func trace(i Importer, f string, args ...interface{}) {
 	log.Printf("debug: % 6s: %s", importerName(i), msg)
 }
 
-func isInternalImporter(i Importer) bool {
-	name := importerName(i)
-	return name == "Std" || name == "Magic" || name == "Static"
-}
-
 // ResolveModule imports the specifier from an import statement located in the
 // referrer module.
 func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 	// The first importer that resolves the specifier wins.
-	var resolvedPath, source string
+	var resolved vfs.Location
+	var source string
 	var candidates []Candidate
 
 	for _, importer := range r.importers {
-		data, path, considered := importer.Import(r.base, specifier, referrer)
+		data, loc, considered := importer.Import(r.base, specifier, referrer)
 
 		if len(data) == 0 {
-			trace(importer, "✘ import %s from %s (base=%s)", specifier, referrer, r.base)
+			trace(importer, "✘ import %s from %s (base=%s)", specifier, referrer, r.base.CanonicalPath())
 		} else {
-			if r.recorder != nil && !isInternalImporter(importer) {
+			fullpath := loc.CanonicalPath()
+			if r.recorder != nil && !loc.Vfs.IsInternal() {
 				r.recorder.Record(record.ImportFile, record.Params{
 					"specifier": specifier,
-					"path":      path,
+					"path":      fullpath,
 				})
 			}
-			trace(importer, "✔ import %s from %s (base=%s) -> %s", specifier, referrer, r.base, path)
+			trace(importer, "✔ import %s from %s (base=%s) -> %s", specifier, referrer, r.base.CanonicalPath(), fullpath)
 		}
 
 		candidates = append(candidates, considered...)
 		if data != nil {
 			source = string(data)
-			resolvedPath = path
+			resolved = loc
 			break
 		}
 	}
 
 	if source == "" {
-		fmt.Fprintf(os.Stderr, "error: could not import '%s' from '%s'\n", specifier, filepath.Join(r.base, referrer))
+		fmt.Fprintf(os.Stderr, "error: could not import '%s' from '%s'\n", specifier, path.Join(r.base.Path, referrer))
 		if len(candidates) > 0 {
 			fmt.Fprintf(os.Stderr, "candidates considered:\n")
 			for _, candidate := range candidates {
@@ -125,11 +132,14 @@ func (r Resolver) ResolveModule(specifier, referrer string) (string, int) {
 		return "", 1
 	}
 
-	resolver := r
-	resolver.base = filepath.Dir(resolvedPath)
-	if err := r.loader.LoadModule(resolvedPath, source, resolver.ResolveModule); err != nil {
+	nextResolver := r
+	nextResolver.base = vfs.Location{Vfs: resolved.Vfs, Path: path.Dir(resolved.Path)}
+	// TODO the path will be used to uniquify modules, so it needs to
+	// be uniquified itself, by the location, somehow
+	fullpath := resolved.CanonicalPath()
+	if err := r.loader.LoadModule(fullpath, source, nextResolver.ResolveModule); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return "", 1
 	}
-	return resolvedPath, 0
+	return fullpath, 0
 }
