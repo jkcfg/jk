@@ -1,3 +1,2 @@
-./validate-files/invalid.yaml:
-  error: value not valid
+./validate-files/invalid.yaml: value not valid
 ./validate-files/valid.yaml: ok

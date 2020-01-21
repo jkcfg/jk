@@ -4,29 +4,9 @@
 
 import { RPC, RPCSync } from './internal/rpc';
 import { valueFromUTF8Bytes } from './internal/data';
+import { ValidationResult } from './validation';
 
-// These two types could be put in a more general validation module
-// (along with convenience formatters), since they are generic.
-
-interface Location {
-  line: number;
-  column: number;
-}
-
-/**
- * ValidationError represents a specific problem encountered when
- * validating a value.
- */
-export interface ValidationError {
-  msg: string;
-  path?: string;
-  start?: Location;
-  end?: Location;
-}
-
-export type Result = 'ok' | ValidationError[];
-
-function decodeResponse(bytes: Uint8Array): Result {
+function decodeResponse(bytes: Uint8Array): ValidationResult {
   const results = valueFromUTF8Bytes(bytes);
   if (results === null) {
     return 'ok';
@@ -45,7 +25,7 @@ function decodeResponse(bytes: Uint8Array): Result {
  * const result = validateWithObject(5, { type: 'number' });
  * ```
  */
-export function validateWithObject(obj: any, schema: Record<string, any>): Result {
+export function validateWithObject(obj: any, schema: Record<string, any>): ValidationResult {
   return decodeResponse(RPCSync('std.validate.schema', JSON.stringify(obj), JSON.stringify(schema)));
 }
 
@@ -53,7 +33,7 @@ export function validateWithObject(obj: any, schema: Record<string, any>): Resul
  * validateWithFile validates a value using a schema located at
  * the path (relative to the input directory).
  */
-export function validateWithFile(obj: any, path: string): Promise<Result> {
+export function validateWithFile(obj: any, path: string): Promise<ValidationResult> {
   return RPC('std.validate.schemafile', JSON.stringify(obj), path, '').then(decodeResponse);
 }
 
@@ -71,6 +51,7 @@ export function validateWithFile(obj: any, path: string): Promise<Result> {
  * }
  * ```
  */
-export function validateWithResource(obj: any, path: string, moduleRef: string): Promise<Result> {
+export function validateWithResource(obj: any, path: string,
+                                     moduleRef: string): Promise<ValidationResult> {
   return RPC('std.validate.schemafile', JSON.stringify(obj), path, moduleRef).then(decodeResponse);
 }

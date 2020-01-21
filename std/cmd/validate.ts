@@ -1,35 +1,12 @@
 import * as std from '../index';
 import * as param from '../param';
+import { formatError, normaliseResult, ValidationError, ValidationResult, ValidateFnResult } from '../validation';
 
-// ValidateResult is the canonical type of results for a validation
-// procedure.
-type ValidateResult = 'ok' | string[];
-
-// ValidateFnResult is the range of results we accept from an ad-hoc
-// procedure given to us.
-type ValidateFnResult = boolean | string | string[];
 type ValidateFn = (obj: any) => ValidateFnResult | Promise<ValidateFnResult>;
-
-async function normaliseResult(val: Promise<ValidateFnResult>): Promise<ValidateResult> {
-  const result = await val;
-  switch (typeof result) {
-  case 'string':
-    if (result === 'ok') return result;
-    return [result];
-  case 'boolean':
-    if (result) return 'ok';
-    return ['value not valid'];
-  case 'object':
-    if (Array.isArray(result)) return result;
-    break;
-  default:
-  }
-  throw new Error(`unrecognised result from validation function: ${result}`);
-}
 
 interface FileResult {
   path: string;
-  result: ValidateResult;
+  result: ValidationResult;
 }
 
 export default function validate(fn: ValidateFn): void {
@@ -38,7 +15,7 @@ export default function validate(fn: ValidateFn): void {
 
   const validateFile = async function vf(path: string): Promise<FileResult> {
     const obj = await std.read(path);
-    const result = await normaliseResult(Promise.resolve(fn(obj)));
+    const result = normaliseResult(await Promise.resolve(fn(obj)));
     return { path, result };
   };
 
@@ -48,9 +25,8 @@ export default function validate(fn: ValidateFn): void {
       if (result === 'ok') {
         std.log(`${path}: ok`);
       } else {
-        std.log(`${path}:`);
         for (const err of result) {
-          std.log(`  error: ${err}`);
+          std.log(formatError(path, err));
         }
       }
     }
