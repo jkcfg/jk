@@ -2,8 +2,11 @@
 
 [![Build Status](https://travis-ci.org/jkcfg/jk.svg?branch=master)](https://travis-ci.org/jkcfg/jk)
 
-> `jk` is still in very early stages. The standard library API isn't frozen
-> and will most likely change. Feedback is most definitely welcome!
+Caveat: jk is pre-1.0, and as such, features, commands, and APIs inevitably
+will change.
+
+Releases within a minor version should be stable; we try to signal breaking
+changes ahead of time in [./docs/deprecations.md](./docs/deprecations.md).
 
 ## jk - configuration as code
 
