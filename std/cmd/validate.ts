@@ -2,7 +2,7 @@ import * as std from '../index';
 import * as param from '../param';
 import { formatError, normaliseResult, ValidationError, ValidationResult, ValidateFnResult } from '../validation';
 
-type ValidateFn = (obj: any) => ValidateFnResult | Promise<ValidateFnResult>;
+export type ValidateFn = (obj: any) => ValidateFnResult | Promise<ValidateFnResult>;
 
 interface FileResult {
   path: string;

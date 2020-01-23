@@ -1,11 +1,8 @@
 import * as std from '../index';
+import { ValidateFn } from './validate';
+import { normaliseResult, formatError } from '../validation';
 
 /* eslint @typescript-eslint/explicit-function-return-type: "off" */
-
-// ValidateFn is a function that accepts a value, and returns either
-// 'ok' indicating a valid value, or a array of validation error
-// messages.
-type ValidateFn = (value: any) => 'ok' | string[];
 
 /**
  * File is the basic unit of input for generate; it represents a
@@ -41,7 +38,7 @@ Notes:
 - Optional parameters are the same as std.write().`;
 
 function error(msg: string): void {
-  std.log(`error: ${msg}`);
+  std.log(msg);
 }
 
 function help(): void {
@@ -247,6 +244,7 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
         files[i].value = v;
       });
 
+      // check the format of the generated value
       const { valid: formatValid, stdoutFormat, showHelp } = validateFormat(files, params);
       if (showHelp) {
         help();
@@ -255,34 +253,37 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
         throw new Error('jk-internal-skip: format invalid');
       }
 
-      let valuesValid = true;
-      files.forEach(({ path, value, validate = (() => 'ok') }) => {
-        const validationResult = validate(value);
-        if (validationResult !== 'ok') {
-          valuesValid = false;
-          if (Array.isArray(validationResult)) {
-            validationResult.forEach(err => error(`${path}: ${err}`));
+      let results = Promise.all(files.map(({ path, value, validate = (() => 'ok') }) => {
+        return Promise.resolve(validate(value))
+          .then(r => ({ path, result: normaliseResult(r) }));
+      }));
+
+      results.then((results) => {
+        let valuesValid = true;
+        results.forEach(({ path, result }) => {
+          if (result !== 'ok') {
+            result.forEach(err => error(formatError(path, err)));
+            valuesValid = false;
+          }
+        });
+
+        if (!valuesValid) {
+          throw new Error('values failed validation');
+        }
+
+        if (stdout) {
+          if (files.length > 1) {
+            std.write(justValues, '', { format: stdoutFormat });
           } else {
-            error(`${path}: ${validationResult}`);
+            std.write(justValues[0], '', { format: stdoutFormat });
+          }
+        } else {
+          for (const o of files) {
+            const { path, value, ...args } = o;
+            std.write(value, path, { overwrite, ...args });
           }
         }
       });
-      if (!valuesValid) {
-        throw new Error('values failed validation');
-      }
-
-      if (stdout) {
-        if (files.length > 1) {
-          std.write(justValues, '', { format: stdoutFormat });
-        } else {
-          std.write(justValues[0], '', { format: stdoutFormat });
-        }
-      } else {
-        for (const o of files) {
-          const { path, value, ...args } = o;
-          std.write(value, path, { overwrite, ...args });
-        }
-      }
     });
   });
 }
