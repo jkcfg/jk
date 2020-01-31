@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
 
@@ -23,10 +24,17 @@ import (
 const cacheFileMode = os.FileMode(0400)
 const cacheDirMode = os.FileMode(0700)
 
+func linkTagManifest(digestManifestPath, tagManifestPath string) error {
+	if err := os.MkdirAll(filepath.Dir(tagManifestPath), cacheDirMode); err != nil {
+		return err
+	}
+	return os.Symlink(digestManifestPath, tagManifestPath)
+}
+
 // Download makes sure the manifest and layers for a particular image
 // are present in the cache.
-func (c *Cache) Download(image string) error { // <-- could return the digest?
-	// Ref for this code:
+func (c *Cache) Download(image string) error {
+	// Example of code using crane packages to pull images:
 	// https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go#Save
 	ref, err := name.ParseReference(image)
 	if err != nil {
@@ -70,12 +78,7 @@ func (c *Cache) Download(image string) error { // <-- could return the digest?
 		tagManifestPath, manifestPath = manifestPath, digestManifestPath
 		_, err = os.Stat(manifestPath)
 		if err == nil {
-			// TODO(michael): factor this out
-			if err = os.MkdirAll(filepath.Dir(tagManifestPath), cacheDirMode); err != nil {
-				return err
-			}
-			err = os.Symlink(manifestPath, tagManifestPath)
-			return err
+			return linkTagManifest(manifestPath, tagManifestPath)
 		}
 		if !os.IsNotExist(err) {
 			return err
@@ -89,55 +92,8 @@ func (c *Cache) Download(image string) error { // <-- could return the digest?
 		return err
 	}
 	for _, layer := range layers {
-		// Check for the layer in the layers directory
-		digest, err := layer.Digest()
-		if err != nil {
+		if err = c.writeLayer(layer); err != nil {
 			return err
-		}
-		p := c.layerPath(digest.Algorithm, digest.Hex)
-		_, err = os.Stat(p)
-		if err == nil { // already have it
-			continue
-		}
-
-		// TODO(michael): if there's a problem after this, clean up
-		// the expanded layer before returning, so it doesn't look
-		// like we've succeeded. In fact, better to expand somewhere
-		// else, then rename it to the right place if it succeeds.
-		if err = os.MkdirAll(p, cacheDirMode); err != nil {
-			return err
-		}
-
-		// Write the layer by expanding it into the directory.
-
-		layerReader, err := layer.Uncompressed()
-		if err != nil {
-			return err
-		}
-		rdr := tar.NewReader(layerReader)
-		for {
-			hdr, err := rdr.Next()
-			if err == io.EOF {
-				break
-			}
-			targetPath := filepath.Join(p, hdr.Name)
-			info := hdr.FileInfo()
-			if info.IsDir() {
-				if os.MkdirAll(targetPath, 0755); err != nil {
-					// TODO cleanup
-					return err
-				}
-			} else {
-				f, err := os.OpenFile(targetPath, os.O_CREATE|os.O_RDWR, cacheFileMode)
-				if err != nil {
-					return err // TODO cleanup
-				}
-				if _, err := io.Copy(f, rdr); err != nil {
-					f.Close()
-					return err // TODO cleanup
-				}
-				f.Close()
-			}
 		}
 	}
 
@@ -145,7 +101,6 @@ func (c *Cache) Download(image string) error { // <-- could return the digest?
 	// (compatible) manifest
 	man, err := img.RawManifest()
 	if err != nil {
-		// TODO cleanup
 		return err
 	}
 
@@ -153,15 +108,67 @@ func (c *Cache) Download(image string) error { // <-- could return the digest?
 		return err
 	}
 	if err = ioutil.WriteFile(manifestPath, man, cacheFileMode); err != nil {
-		// TODO cleanup
 		return err
 	}
 
 	if tagManifestPath != "" {
-		if err = os.MkdirAll(filepath.Dir(tagManifestPath), cacheDirMode); err != nil {
-			return err
+		return linkTagManifest(manifestPath, tagManifestPath)
+	}
+	return nil
+}
+
+func (c *Cache) writeLayer(layer v1.Layer) error {
+	// Check for the layer in the layers directory
+	digest, err := layer.Digest()
+	if err != nil {
+		return err
+	}
+	layerPath := c.layerPath(digest.Algorithm, digest.Hex)
+	_, err = os.Stat(layerPath)
+	if err == nil { // already have it
+		return nil
+	}
+
+	tmpLayerPath, err := ioutil.TempDir("", "jk.layer")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpLayerPath)
+
+	// Write the layer by expanding it into the directory.
+	layerReader, err := layer.Uncompressed()
+	if err != nil {
+		return err
+	}
+	rdr := tar.NewReader(layerReader)
+	for {
+		hdr, err := rdr.Next()
+		if err == io.EOF {
+			break
 		}
-		err = os.Symlink(manifestPath, tagManifestPath)
+		targetPath := filepath.Join(tmpLayerPath, hdr.Name)
+		info := hdr.FileInfo()
+		if info.IsDir() {
+			if os.MkdirAll(targetPath, hdr.FileInfo().Mode()); err != nil {
+				return err
+			}
+		} else {
+			f, err := os.OpenFile(targetPath, os.O_CREATE|os.O_RDWR, hdr.FileInfo().Mode())
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(f, rdr); err != nil {
+				f.Close()
+				return err
+			}
+			f.Close()
+		}
+	}
+
+	if err = os.MkdirAll(filepath.Dir(layerPath), cacheDirMode); err != nil {
+		return err
+	}
+	if err = os.Rename(tmpLayerPath, layerPath); err != nil {
 		return err
 	}
 
