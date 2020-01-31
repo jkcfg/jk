@@ -33,13 +33,9 @@ func linkTagManifest(digestManifestPath, tagManifestPath string) error {
 
 // Download makes sure the manifest and layers for a particular image
 // are present in the cache.
-func (c *Cache) Download(image string) error {
+func (c *Cache) Download(ref name.Reference) error {
 	// Example of code using crane packages to pull images:
 	// https://github.com/google/go-containerregistry/blob/master/pkg/crane/pull.go#Save
-	ref, err := name.ParseReference(image)
-	if err != nil {
-		return err
-	}
 
 	manifestPath := c.manifestPath(ref)
 	if manifestPath == "" {
@@ -48,7 +44,7 @@ func (c *Cache) Download(image string) error {
 
 	// Whichever kind of image ref, if the manifest is already in the
 	// filesystem, we must have completed this previously.
-	_, err = os.Stat(manifestPath)
+	_, err := os.Stat(manifestPath)
 	if err == nil {
 		return nil
 	}

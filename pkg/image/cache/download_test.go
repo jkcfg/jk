@@ -34,7 +34,7 @@ func TestDownloadToCache(t *testing.T) {
 	regSrv, imgTag, imgDigest := setupRegistry(t)
 	defer regSrv.Close()
 
-	err = cache.Download(imgTag)
+	err = cache.Download(mustParseRef(imgTag))
 	assert.NoError(t, err)
 
 	ov, err := cache.FileSystemForImage(mustParseRef(imgTag))

@@ -42,7 +42,6 @@ import (
 )
 
 const (
-	appDir       = "jk"
 	layersDir    = "layers"
 	manifestsDir = "manifests"
 )
@@ -56,7 +55,20 @@ type Cache struct {
 // directory. Usually the cache directory would be obtained with
 // `os.UserCacheDir()`.
 func New(userCacheDir string) *Cache {
-	return &Cache{base: filepath.Join(userCacheDir, appDir)}
+	return &Cache{base: userCacheDir}
+}
+
+// EnsureImage constructs a filesystem for a given image, downloading
+// it if necessary.
+func (cache *Cache) EnsureImage(image string) (vfs.FileSystem, error) {
+	ref, err := name.ParseReference(image)
+	if err != nil {
+		return nil, err
+	}
+	if err = cache.Download(ref); err != nil {
+		return nil, err
+	}
+	return cache.FileSystemForImage(ref)
 }
 
 // Standardises the construction of the path to a layer.

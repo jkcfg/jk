@@ -1,12 +1,18 @@
 package tests
 
 import (
+	"io/ioutil"
+	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"sort"
 	"testing"
 
-	"github.com/jkcfg/jk/pkg/test"
+	"github.com/google/go-containerregistry/pkg/crane"
+	"github.com/google/go-containerregistry/pkg/registry"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/jkcfg/jk/pkg/test"
 )
 
 func listTestFiles(t *testing.T) []string {
@@ -39,11 +45,47 @@ func listTestFiles(t *testing.T) []string {
 	return files
 }
 
+// Run an image registry, loading any tar files that are in testfiles/
+func runRegistry(t *testing.T) *httptest.Server {
+	regHandler := registry.New()
+	regSrv := httptest.NewServer(regHandler)
+	host := regSrv.URL[len("http://"):]
+	println("Registry server: ", regSrv.URL)
+	files, err := filepath.Glob("testfiles/*.tar")
+	assert.NoError(t, err)
+	for _, file := range files {
+		img, err := crane.Load(file)
+		imageName := filepath.Base(file[:len(file)-len(".tar")]) + ":v1"
+		assert.NoError(t, err)
+		assert.NoError(t, crane.Push(img, host+"/"+imageName))
+		println("Uploaded", imageName)
+	}
+	return regSrv
+}
+
 func TestEndToEnd(t *testing.T) {
 	files := listTestFiles(t)
 
+	reg := runRegistry(t)
+	defer reg.Close()
+
+	env := []string{
+		"REGISTRY=" + reg.URL[len("http://"):],
+	}
+
+	tmp, err := ioutil.TempDir("", "jk-testing")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmp)
+
 	for _, file := range files {
-		test := test.New(file)
+		testTmp := filepath.Join(tmp, file+".d")
+		if err := os.Mkdir(testTmp, os.FileMode(0755)); err != nil {
+			t.Fatal(err)
+		}
+		testEnv := append(env, "TEMP="+testTmp)
+		test := test.New(file, test.Options{Env: testEnv})
 		t.Run(test.Name(), func(t *testing.T) {
 			test.Run(t)
 		})

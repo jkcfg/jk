@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/image/cache"
 	"github.com/jkcfg/jk/pkg/record"
 	"github.com/jkcfg/jk/pkg/resolve"
 	"github.com/jkcfg/jk/pkg/std"
@@ -28,6 +29,8 @@ type vmOptions struct {
 	verbose          bool
 	outputDirectory  string
 	inputDirectory   string
+	cacheDir         string
+	libraryImages    []string
 	parameters       std.Params
 	parameterFiles   []string // list of files specified on the command line with -f.
 	emitDependencies bool
@@ -44,6 +47,8 @@ func initInputFlags(cmd *cobra.Command, opts *vmOptions) {
 func initExecFlags(cmd *cobra.Command, opts *vmOptions) {
 	opts.parameters = std.NewParams()
 
+	cmd.PersistentFlags().StringSliceVar(&opts.libraryImages, "lib", nil, "use image in module search path, downloading it if necessary")
+	cmd.PersistentFlags().StringVar(&opts.cacheDir, "cache", "", "directory to use for caching downloaded images; if empty, the default for the OS will be used")
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "where to output generated files")
 	cmd.PersistentFlags().VarP(parameters(opts, paramSourceCommandLine), "parameter", "p", "set input parameters")
@@ -95,8 +100,9 @@ var rpcExtMethods = map[string]std.RPCFunc{
 type vm struct {
 	vmOptions
 
-	scriptDir string
-	inputDir  string
+	scriptDir         string
+	inputDir          string
+	moduleFilesystems []vfs.FileSystem
 
 	worker    *v8.Worker
 	recorder  *record.Recorder
@@ -120,6 +126,26 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 	 * stdlib and the module resolving mechanism.
 	 */
 	vm.setWorkingDirectory(workingDirectory)
+
+	if vm.vmOptions.cacheDir == "" {
+		userCache, err := os.UserCacheDir()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cannot determine user cache dir; using ./.jk for cache")
+			vm.vmOptions.cacheDir = "./.jk"
+		} else {
+			vm.vmOptions.cacheDir = filepath.Join(userCache, "jk")
+		}
+	}
+
+	cache := cache.New(vm.vmOptions.cacheDir)
+
+	for _, lib := range opts.libraryImages {
+		imgVfs, err := cache.EnsureImage(lib)
+		if err != nil {
+			log.Fatalf("run: unable to fetch image %q: %s", lib, err.Error())
+		}
+		vm.moduleFilesystems = append(vm.moduleFilesystems, imgVfs)
+	}
 
 	/* Setup a recorder object to gather the list of dependencies */
 	if opts.emitDependencies {
@@ -202,8 +228,7 @@ func (vm *vm) resolver() *resolve.Resolver {
 		})
 	}
 
-	resolver := resolve.NewResolver(vm.worker,
-		resolve.ScriptBase(vm.scriptDir),
+	importers := []resolve.Importer{
 		&resolve.Relative{},
 		&resolve.MagicImporter{
 			Specifier: "@jkcfg/std/resource",
@@ -217,7 +242,13 @@ func (vm *vm) resolver() *resolve.Resolver {
 		},
 		resolve.NewFileImporter(vfs.User(vm.scriptDir, http.Dir(vm.scriptDir))),
 		resolve.NewNodeImporter(vfs.User(vm.scriptDir, http.Dir(vm.scriptDir))),
-	)
+	}
+
+	for _, fs := range vm.moduleFilesystems {
+		importers = append(importers, resolve.NewFileImporter(fs))
+	}
+
+	resolver := resolve.NewResolver(vm.worker, resolve.ScriptBase(vm.scriptDir), importers...)
 	resolver.SetRecorder(vm.recorder)
 	return resolver
 }
