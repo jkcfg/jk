@@ -27,9 +27,6 @@ package cache
 //           - if not present, download it and verify it
 //   3. construct an overlay filesytem out of the layers
 
-// Ref for downloading things:
-// https://github.com/containers/skopeo/blob/master/cmd/skopeo/copy.go
-
 import (
 	"encoding/json"
 	"fmt"
@@ -37,6 +34,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	oci_v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/jkcfg/jk/pkg/image/overlay"
@@ -66,17 +64,24 @@ func (cache *Cache) layerPath(algo, digest string) string {
 	return filepath.Join(cache.base, layersDir, algo, digest)
 }
 
-// Standardises the construction of the path to a manifest.
-func (cache *Cache) manifestPath(image, ref string) string {
-	return filepath.Join(cache.base, manifestsDir, image, ref)
+// Standardises the construction of the path to a manifest. The ref
+// can be a digest or a tag.
+func (cache *Cache) manifestPath(imageRef name.Reference) string {
+	if tag, ok := imageRef.(name.Tag); ok {
+		return filepath.Join(cache.base, manifestsDir, imageRef.Context().Name(), "tag", tag.TagStr())
+	} else if dig, ok := imageRef.(name.Digest); ok {
+		return filepath.Join(cache.base, manifestsDir, imageRef.Context().Name(), dig.DigestStr())
+	}
+	return ""
 }
 
 // FileSystemForImage takes an image name and ref (tag), and
 // constructs a vfs.FileSystem from the image's layers as found in the
 // cache. It assumes the manifest and layers will be present in the
-// cache.
-func (cache *Cache) FileSystemForImage(image, ref string) (vfs.FileSystem, error) {
-	m := cache.manifestPath(image, ref)
+// cache. TODO accept the image as just one string, and parse it with
+// go-containerregistry/pkg/name
+func (cache *Cache) FileSystemForImage(image name.Reference) (vfs.FileSystem, error) {
+	m := cache.manifestPath(image)
 	mfile, err := os.Open(m)
 	if err != nil {
 		return nil, fmt.Errorf("cannot stat manifest at implied path %s: %s", m, err.Error())
@@ -105,5 +110,5 @@ func (cache *Cache) FileSystemForImage(image, ref string) (vfs.FileSystem, error
 		// the layers are bottom-most first in the manifest.
 		layers[layerCount-i-1] = http.Dir(layerPath)
 	}
-	return vfs.User(image+":"+ref+"!", overlay.New(layers...)), nil
+	return vfs.User(image.String()+"!", overlay.New(layers...)), nil
 }

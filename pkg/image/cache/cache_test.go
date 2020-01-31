@@ -4,12 +4,21 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/stretchr/testify/assert"
 )
 
+func mustParseRef(ref string) name.Reference {
+	parsed, err := name.ParseReference(ref)
+	if err != nil {
+		panic(err)
+	}
+	return parsed
+}
+
 func TestCacheOverlayCreation(t *testing.T) {
 	c := New("testfiles/dotcache")
-	ov, err := c.FileSystemForImage("image-repo", "image-tag")
+	ov, err := c.FileSystemForImage(mustParseRef("image-repo:image-tag"))
 	assert.NoError(t, err)
 
 	// Open a file known to be present. This verifies that the overlay
