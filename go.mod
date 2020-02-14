@@ -2,7 +2,7 @@ module github.com/jkcfg/jk
 
 require (
 	github.com/ghodss/yaml v1.0.0
-	github.com/google/flatbuffers v1.10.0
+	github.com/google/flatbuffers v1.11.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jkcfg/v8worker2 v0.0.0-20191022163158-90e467066938
