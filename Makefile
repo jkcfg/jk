@@ -37,7 +37,7 @@ install: jk
 	cp jk $(D)
 
 build-image:
-	docker build -t quay.io/justkidding/build -f build/Dockerfile build/
+	docker build -t jkcfg/build -f build/Dockerfile build/
 
 # Pulls the std/node_modules directory
 std-install:
