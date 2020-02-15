@@ -19,8 +19,6 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 )
 
-// FIXME don't force permissions on the actual files, since some may
-// need to be executable
 const cacheFileMode = os.FileMode(0400)
 const cacheDirMode = os.FileMode(0700)
 
