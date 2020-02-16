@@ -141,12 +141,12 @@ func (c *Cache) writeLayer(layer v1.Layer) error {
 			break
 		}
 		targetPath := filepath.Join(tmpLayerPath, hdr.Name)
-		info := hdr.FileInfo()
-		if info.IsDir() {
+		switch hdr.Typeflag {
+		case tar.TypeDir:
 			if os.MkdirAll(targetPath, hdr.FileInfo().Mode()); err != nil {
 				return err
 			}
-		} else {
+		case tar.TypeReg:
 			f, err := os.OpenFile(targetPath, os.O_CREATE|os.O_RDWR, hdr.FileInfo().Mode())
 			if err != nil {
 				return err
@@ -156,6 +156,12 @@ func (c *Cache) writeLayer(layer v1.Layer) error {
 				return err
 			}
 			f.Close()
+		case tar.TypeSymlink:
+			if err := os.Symlink(hdr.Linkname, targetPath); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("unhandled type in tar header: %v", hdr.Typeflag)
 		}
 	}
 

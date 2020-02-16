@@ -87,13 +87,8 @@ func (cache *Cache) manifestPath(imageRef name.Reference) string {
 	return ""
 }
 
-// FileSystemForImage takes an image name and ref (tag), and
-// constructs a vfs.FileSystem from the image's layers as found in the
-// cache. It assumes the manifest and layers will be present in the
-// cache. TODO accept the image as just one string, and parse it with
-// go-containerregistry/pkg/name
-func (cache *Cache) FileSystemForImage(image name.Reference) (vfs.FileSystem, error) {
-	m := cache.manifestPath(image)
+func (cache *Cache) manifest(imageRef name.Reference) (*oci_v1.Manifest, error) {
+	m := cache.manifestPath(imageRef)
 	mfile, err := os.Open(m)
 	if err != nil {
 		return nil, fmt.Errorf("cannot stat manifest at implied path %s: %s", m, err.Error())
@@ -105,6 +100,18 @@ func (cache *Cache) FileSystemForImage(image name.Reference) (vfs.FileSystem, er
 	err = json.NewDecoder(mfile).Decode(&manifest)
 	if err != nil {
 		return nil, fmt.Errorf("cannot decode manifest at %s: %s", m, err.Error())
+	}
+	return &manifest, nil
+}
+
+// FileSystemForImage takes an image name and ref (tag), and
+// constructs a vfs.FileSystem from the image's layers as found in the
+// cache. It assumes the manifest and layers will be present in the
+// cache.
+func (cache *Cache) FileSystemForImage(image name.Reference) (vfs.FileSystem, error) {
+	manifest, err := cache.manifest(image)
+	if err != nil {
+		return nil, err
 	}
 
 	layerCount := len(manifest.Layers)
