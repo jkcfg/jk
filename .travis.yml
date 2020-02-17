@@ -13,11 +13,17 @@ matrix:
     - os: linux
       services:
         - docker
+      cache:
+        directories:
+        - "$HOME/.npm" # npm ci will remove node_modules; this is _its_ download cache
       script:
         - ./run-in-docker.sh make dep install test api-reference STATIC=yes
 
     - os: osx
       osx_image: xcode11.3
+      cache:
+        directories:
+        - "$HOME/.npm"  # npm ci will remove node_modules; this is _its_ download cache
       before_install:
         # v8 prebuilt library
         - git clone https://github.com/jkcfg/prebuilt.git
