@@ -3,7 +3,7 @@ language: minimal
 
 env:
   global:
-    - GOVERSION=1.12.1
+    - GOVERSION=1.13.8
     - GOMETALINTER_VERSION=2.0.11
     - GITHUB_RELEASE_VERSION=0.7.2
 
@@ -17,7 +17,7 @@ matrix:
         - ./run-in-docker.sh make dep install test api-reference STATIC=yes
 
     - os: osx
-      osx_image: xcode10.1
+      osx_image: xcode11.3
       before_install:
         # v8 prebuilt library
         - git clone https://github.com/jkcfg/prebuilt.git

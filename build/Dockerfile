@@ -1,5 +1,5 @@
 # Build v8
-FROM golang:1.12.1 as v8builder
+FROM golang:1.13.8 as v8builder
 RUN apt-get update && apt-get install -y \
     bzip2 \
     libglib2.0-dev \
@@ -11,11 +11,11 @@ RUN cd $GOPATH/src/github.com/jkcfg/v8worker2 \
     && ./build.py
 
 # Build flatbuffer compiler, flatc
-FROM golang:1.12.1 as flatc-builder
+FROM golang:1.13.8 as flatc-builder
 RUN apt-get update && apt-get install -y \
     cmake \
   && rm -rf /var/lib/apt/lists/*
-ENV FLATBUFFERS_VERSION 1.10.0
+ENV FLATBUFFERS_VERSION 1.11.0
 RUN curl -fsSLO --compressed "https://github.com/google/flatbuffers/archive/v${FLATBUFFERS_VERSION}.tar.gz" \
     && tar -xf v${FLATBUFFERS_VERSION}.tar.gz \
     && rm v${FLATBUFFERS_VERSION}.tar.gz \
@@ -27,12 +27,12 @@ RUN curl -fsSLO --compressed "https://github.com/google/flatbuffers/archive/v${F
     && rm -rf flatbuffers-${FLATBUFFERS_VERSION}
 
 # Build github-release
-FROM golang:1.12.1 as github-release-builder
+FROM golang:1.13.8 as github-release-builder
 RUN go get github.com/aktau/github-release \
   && cp `go env GOPATH`/bin/github-release /usr/local/bin \
   && rm -rf `go env GOPATH`/src/github.com/aktau/github-release
 
-FROM golang:1.12.1 as fetcher
+FROM golang:1.13.8 as fetcher
 RUN apt-get update && apt-get install -y \
     xz-utils \
   && rm -rf /var/lib/apt/lists/*
@@ -56,7 +56,7 @@ RUN curl -fsSLo /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/dow
     && chmod +x /usr/local/bin/gosu
 
 # Our final build image
-FROM golang:1.12.1
+FROM golang:1.13.8
 COPY --from=v8builder /go/src/github.com/jkcfg/v8worker2/v8.pc /usr/local/lib/pkgconfig/
 RUN sed -i \
      -e 's#Cflags: .*#Cflags: -I/usr/local/include/v8#' \

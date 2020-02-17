@@ -224,7 +224,7 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 			}
 		}
 
-		if args.Sync() == 1 {
+		if args.Sync() {
 			result, err := rpcfn(arguments)
 			if err != nil {
 				return rpcError(err.Error())
