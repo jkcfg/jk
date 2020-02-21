@@ -9,7 +9,7 @@ repo=jk
 pkg=github.com/$user/$repo
 
 function docker_run() {
-    docker run -e GITHUB_TOKEN -e NPM_TOKEN -v "$(pwd)":/go/src/$pkg quay.io/justkidding/build "$@"
+    docker run -e GITHUB_TOKEN -e NPM_TOKEN -v "$(pwd)":/go/src/$pkg jkcfg/build "$@"
 }
 
 function run() {
