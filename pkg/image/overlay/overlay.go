@@ -36,7 +36,7 @@ func New(layers ...http.FileSystem) *Overlay {
 }
 
 const whiteoutPrefix = ".wh."
-const whiteoutOpaque = ".wh..wh.opq"
+const whiteoutOpaque = ".wh..wh..opq"
 
 func whiteoutPath(d, base string) string {
 	return path.Join(d, whiteoutPrefix+base)

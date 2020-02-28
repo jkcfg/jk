@@ -152,11 +152,11 @@ func TestReadDuplicates(t *testing.T) {
 // layer.
 func TestWhiteout(t *testing.T) {
 	files1 := map[string]string{
-		"dir/.wh.foo":       "empty", // hides the file in the lower layer
-		"dir/.wh.bar":       "empty", // hides file in lower layer, but not this layer
-		"dir/bar":           "not hidden",
-		"other/.wh.dir":     "empty", // hides a directory in the lower layer
-		"third/.wh..wh.opq": "empty", // hides everything under third/ in lower layers
+		"dir/.wh.foo":        "empty", // hides the file in the lower layer
+		"dir/.wh.bar":        "empty", // hides file in lower layer, but not this layer
+		"dir/bar":            "not hidden",
+		"other/.wh.dir":      "empty", // hides a directory in the lower layer
+		"third/.wh..wh..opq": "empty", // hides everything under third/ in lower layers
 	}
 	files2 := map[string]string{
 		"dir/foo":                 "hidden",
@@ -206,7 +206,7 @@ func TestWhiteout(t *testing.T) {
 	assert.Len(t, infos, 0)
 
 	// and that the opaque whiteout file can't be seen
-	_, err = fs.Open("/third/.wh..wh.opq")
+	_, err = fs.Open("/third/.wh..wh..opq")
 	assert.Error(t, err)
 	// assert.True(t, errors.Is(err, os.ErrNotExist)) // TODO go 1.13
 
