@@ -72,6 +72,10 @@ export function write(value: any, path = '', { format = Format.FromExtension, in
 
 // print is a convenience for printing any value to stdout
 export function print(value: any, opts: WriteOptions): void {
+  if (arguments.length === 0) {
+    write('\n', '', { format: Format.Raw });
+    return;
+  }
   if (value === undefined) {
     write('undefined\n', '', { format: Format.Raw });
     return;
