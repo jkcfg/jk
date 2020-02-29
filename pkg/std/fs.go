@@ -63,6 +63,7 @@ func directoryListing(base vfs.Location, rel string) (Directory, error) {
 	if err != nil {
 		return Directory{}, err
 	}
+	defer dir.Close()
 	infos, err := dir.Readdir(0)
 	if err != nil {
 		return Directory{}, err
