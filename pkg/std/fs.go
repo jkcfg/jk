@@ -25,9 +25,9 @@ type Directory struct {
 	Files []FileInfo `json:"files"`
 }
 
-// FileInfo returns a response to a FileInfo request, encoded ready to
-// send to the V8 worker.
-func (r ReadBase) FileInfo(path, module string) (FileInfo, error) {
+// MakeFileInfo returns a response to a FileInfo request, encoded
+// ready to send to the V8 worker.
+func MakeFileInfo(r ReadBase, path, module string) (FileInfo, error) {
 	loc, rel, err := r.getPath(path, module)
 	if err != nil {
 		return FileInfo{}, err
@@ -35,9 +35,9 @@ func (r ReadBase) FileInfo(path, module string) (FileInfo, error) {
 	return fileInfo(loc, rel)
 }
 
-// DirectoryListing returns a response to a Dir request, encoded ready
-// to send to the V8 worker.
-func (r ReadBase) DirectoryListing(path, module string) (Directory, error) {
+// MakeDirectoryListing returns a response to a Dir request, encoded
+// ready to send to the V8 worker.
+func MakeDirectoryListing(r ReadBase, path, module string) (Directory, error) {
 	loc, rel, err := r.getPath(path, module)
 	if err != nil {
 		return Directory{}, err

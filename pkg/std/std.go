@@ -174,11 +174,11 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 		switch method {
 		case "std.fileinfo":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
-				return options.Root.FileInfo(path, module)
+				return MakeFileInfo(options.Root, path, module)
 			})
 		case "std.dir":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
-				return options.Root.DirectoryListing(path, module)
+				return MakeDirectoryListing(options.Root, path, module)
 			})
 		case "std.validate.schema":
 			rpcfn = requireTwoStrings(func(v, s string) (interface{}, error) {
