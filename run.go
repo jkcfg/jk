@@ -47,7 +47,7 @@ func runExamples() string {
 }
 
 const inlineTemplate = `
-import { log, write, read } from '@jkcfg/std';
+import { print, log, write, read, Format, Encoding } from '@jkcfg/std';
 import { dir, info } from '@jkcfg/std/fs';
 import * as param from '@jkcfg/std/param';
 
