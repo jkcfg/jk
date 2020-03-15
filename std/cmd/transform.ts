@@ -1,6 +1,7 @@
 import * as std from '../index';
 import * as param from '../param';
 import { generate, File, GenerateParams } from './generate';
+import { valuesFormatFromPath } from '../read';
 
 type TransformFn = (value: any) => any | void;
 
@@ -8,19 +9,6 @@ const inputParams: GenerateParams = {
   stdout: param.Boolean('jk.transform.stdout', false),
   overwrite: param.Boolean('jk.transform.overwrite', false) ? std.Overwrite.Write : std.Overwrite.Err,
 };
-
-function readFormatFromPath(path: string): std.Format {
-  const ext = path.split('.').pop();
-  switch (ext) {
-  case 'yaml':
-  case 'yml':
-    return std.Format.YAMLStream;
-  case 'json':
-    return std.Format.JSONStream;
-  default:
-    return std.Format.FromExtension;
-  }
-}
 
 function transformOne(fn: TransformFn, file: string, obj: any): File {
   let txObj = fn(obj);
@@ -35,7 +23,7 @@ function transform(fn: TransformFn): void {
   const inputFiles = param.Object('jk.transform.input', {});
   const outputs = [];
   for (const file of Object.keys(inputFiles)) {
-    const format = readFormatFromPath(file);
+    const format = valuesFormatFromPath(file);
     outputs.push(std.read(file, { format }).then((obj): File[] => {
       switch (format) {
       case std.Format.YAMLStream:

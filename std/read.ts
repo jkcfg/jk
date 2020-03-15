@@ -27,6 +27,24 @@ export interface ReadOptions {
   module?: string;
 }
 
+// valuesFormatFromPath guesses, for a path, the format that will
+// return all values in a file. In other words, it prefers YAML
+// streams and concatenated JSON. You may need to treat the read value
+// differently depending on the format you got here, since YAMLStream
+// and JSONStream will both result in an array of values.
+export function valuesFormatFromPath(path: string): Format {
+  const ext = path.split('.').pop();
+  switch (ext) {
+  case 'yaml':
+  case 'yml':
+    return Format.YAMLStream;
+  case 'json':
+    return Format.JSONStream;
+  default:
+    return Format.FromExtension;
+  }
+}
+
 // read requests the path and returns a promise that will be resolved
 // with the contents at the path, or rejected.
 export function read(path: string, opts: ReadOptions = {}): Promise<any> {
