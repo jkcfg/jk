@@ -173,36 +173,24 @@ function assembleForStdout(values: RealisedFile[]) {
 
     switch (format) {
     case std.Format.YAML:
-      if (stdoutFormat !== undefined && stdoutFormat !== std.Format.YAMLStream) {
-        error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
-        return { valid: false }
-      }
-      stdoutFormat = std.Format.YAMLStream;
-      stream.push(v.value);
-      break;
     case std.Format.YAMLStream:
       if (stdoutFormat !== undefined && stdoutFormat !== std.Format.YAMLStream) {
         error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
         return { valid: false }
       }
       stdoutFormat = std.Format.YAMLStream;
-      stream = stream.concat(v.value);
+      stream = (format === std.Format.YAML) ?
+        stream.push(v.value) && stream : stream.concat(v.value);
       break;
     case std.Format.JSON:
-      if (stdoutFormat !== undefined && stdoutFormat !== std.Format.JSONStream) {
-        error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
-        return { valid: false }
-      }
-      stdoutFormat = std.Format.JSONStream;
-      stream.push(v.value);
-      break;
     case std.Format.JSONStream:
       if (stdoutFormat !== undefined && stdoutFormat !== std.Format.JSONStream) {
         error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
         return { valid: false }
       }
       stdoutFormat = std.Format.JSONStream;
-      stream = stream.concat(v.value);
+      stream = (format === std.Format.JSON) ?
+        stream.push(v.value) && stream : stream.concat(v.value);
       break;
     default:
       // for anything else, only one value is allowed; therefore keep
