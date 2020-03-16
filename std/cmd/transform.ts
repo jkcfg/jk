@@ -10,31 +10,33 @@ const inputParams: GenerateParams = {
   overwrite: param.Boolean('jk.transform.overwrite', false) ? std.Overwrite.Write : std.Overwrite.Err,
 };
 
-function transformOne(fn: TransformFn, file: string, obj: any): File {
-  let txObj = fn(obj);
-  txObj = (txObj === undefined) ? obj : txObj;
-  return {
-    value: txObj,
-    path: file,
-  };
-}
-
 function transform(fn: TransformFn): void {
+
+  function transformOne(obj: any): any {
+    let txObj = fn(obj);
+    txObj = (txObj === undefined) ? obj : txObj;
+    return txObj;
+  }
+
   const inputFiles = param.Object('jk.transform.input', {});
   const outputs = [];
-  for (const file of Object.keys(inputFiles)) {
-    const format = valuesFormatFromPath(file);
-    outputs.push(std.read(file, { format }).then((obj): File[] => {
+  for (const path of Object.keys(inputFiles)) {
+    const format = valuesFormatFromPath(path);
+    outputs.push(std.read(path, { format }).then((obj): File => {
       switch (format) {
       case std.Format.YAMLStream:
       case std.Format.JSONStream:
-        return obj.map((v: any): File => transformOne(fn, file, v));
+        return {
+          path,
+          format,
+          value: Array.prototype.map.call(obj, transformOne),
+        };
       default:
-        return [transformOne(fn, file, obj)];
+        return { path, value: transformOne(obj) };
       }
     }));
   }
-  generate(Promise.all(outputs).then((vs): File[] => Array.prototype.concat(...vs)), inputParams);
+  generate(Promise.all(outputs), inputParams);
 }
 
 export default transform;

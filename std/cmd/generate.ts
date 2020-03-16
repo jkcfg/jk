@@ -119,27 +119,7 @@ function fileFormat(o: RealisedFile): std.Format {
   return format;
 }
 
-function formatSummary(files: RealisedFile[]): number[] {
-  const formats = Array(Object.keys(std.Format).length).fill(0);
-
-  files.forEach((e): void => {
-    formats[fileFormat(e)] += 1;
-  });
-
-  return formats;
-}
-
-const formatNames = [
-  'FromExtension',
-  'JSON',
-  'YAML',
-  'Raw',
-  'YAMLStream',
-  'JSONStream',
-  'HCL',
-];
-
-const formatName = (f: std.Format): string => formatNames[f];
+const formatName = (f: std.Format): string => std.Format[f];
 
 function usedFormats(summary: number[]): string[] {
   const augmented = summary.map((n, i) => ({ format: formatName(i), n }));
@@ -174,42 +154,70 @@ function validateFormat(files: RealisedFile[], params: GenerateParams) {
     });
   });
 
-  if (!valid) {
-    return { valid, showHelp: true };
-  }
+  return { valid, showHelp: !valid };
+}
 
-  /* when outputting to stdout, ensure that: */
+function assembleForStdout(values: RealisedFile[]) {
+  // When writing to stdout, we need to
+  //  1. make sure everything is a mutually compatible format (e.g.,
+  //     YAMLs and YAMLStreams, but not JSON with YAMLStreams);
+  //  2. collate the values to be printed as a streamable array, which
+  //     means anything that's _already_ a stream value is inlined.
   let stdoutFormat;
-  if (params.stdout === true) {
-    /* there's a single output format defined */
-    const summary = formatSummary(files);
-    const formats = usedFormats(summary);
-    if (formats.length > 1) {
-      error(`stdout output requires using a single format but got: ${formats.join(',')}`);
-      return { valid: false, showHelp: false };
-    }
+  let stream: any[] = [];
+  const formatsSeen = Array(Object.keys(std.Format).length).fill(0);
 
-    /*
-     * If we have more than one file to generate, make sure it's either JSON or
-     * YAML so we can output a stream of documents.
-     */
-    if (files.length > 1 && formats[0] !== 'JSON' && formats[0] !== 'YAML') {
-      error(`stdout output for multiple files requires either JSON or YAML format but got: ${formats[0]}`);
-      return { valid: false, showHelp: false };
-    }
+  for (const v of values) {
+    const format = fileFormat(v);
+    formatsSeen[format] += 1;
 
-    if (files.length > 1) {
-      if (formats[0] === 'JSON') {
-        stdoutFormat = std.Format.JSONStream;
-      } else if (formats[0] === 'YAML') {
-        stdoutFormat = std.Format.YAMLStream;
+    switch (format) {
+    case std.Format.YAML:
+      if (stdoutFormat !== undefined && stdoutFormat !== std.Format.YAMLStream) {
+        error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
+        return { valid: false }
       }
-    } else {
-      stdoutFormat = fileFormat(files[0]);
+      stdoutFormat = std.Format.YAMLStream;
+      stream.push(v.value);
+      break;
+    case std.Format.YAMLStream:
+      if (stdoutFormat !== undefined && stdoutFormat !== std.Format.YAMLStream) {
+        error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
+        return { valid: false }
+      }
+      stdoutFormat = std.Format.YAMLStream;
+      stream = stream.concat(v.value);
+      break;
+    case std.Format.JSON:
+      if (stdoutFormat !== undefined && stdoutFormat !== std.Format.JSONStream) {
+        error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
+        return { valid: false }
+      }
+      stdoutFormat = std.Format.JSONStream;
+      stream.push(v.value);
+      break;
+    case std.Format.JSONStream:
+      if (stdoutFormat !== undefined && stdoutFormat !== std.Format.JSONStream) {
+        error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
+        return { valid: false }
+      }
+      stdoutFormat = std.Format.JSONStream;
+      stream = stream.concat(v.value);
+      break;
+    default:
+      // for anything else, only one value is allowed; therefore keep
+      // the value as it is, but check that this is the only value.
+      if (stdoutFormat !== undefined) {
+        error(`stdout requires compatible formats, but have seen ${usedFormats(formatsSeen).join(',')}`);
+        return { valid: false }
+      }
+      stdoutFormat = format;
+      stream = v.value;
+      break;
     }
   }
 
-  return { valid: true, stdoutFormat, showHelp: false };
+  return { valid: true, stdoutFormat, stream }
 }
 
 type GenerateArg = File[] | Promise<File[]> | (() => File[]);
@@ -245,7 +253,7 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
       });
 
       // check the format of the generated value
-      const { valid: formatValid, stdoutFormat, showHelp } = validateFormat(files, params);
+      const { valid: formatValid, showHelp } = validateFormat(files, params);
       if (showHelp) {
         help();
       }
@@ -268,15 +276,15 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
         });
 
         if (!valuesValid) {
-          throw new Error('values failed validation');
+          throw new Error('jk-internal-skip: values failed validation');
         }
 
         if (stdout) {
-          if (files.length > 1) {
-            std.write(justValues, '', { format: stdoutFormat });
-          } else {
-            std.write(justValues[0], '', { format: stdoutFormat });
+          const { valid, stdoutFormat, stream } = assembleForStdout(files);
+          if (!valid) {
+            throw new Error('jk-internal-skip: validation failed');
           }
+          std.write(stream, '', { format: stdoutFormat });
         } else {
           for (const o of files) {
             const { path, value, ...args } = o;
