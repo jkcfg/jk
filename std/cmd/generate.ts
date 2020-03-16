@@ -243,55 +243,51 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
 
   const { stdout = false, overwrite = false } = params;
 
-  inputs.then((files) => {
-    /* values can be promises as well */
-    const justValues = files.map(f => f.value);
-    Promise.all(justValues).then((resolved) => {
-      resolved.forEach((v, i) => {
-        // eslint-disable-next-line no-param-reassign
-        files[i].value = v;
-      });
-
-      // check the format of the generated value
-      const { valid: formatValid, showHelp } = validateFormat(files, params);
-      if (showHelp) {
-        help();
-      }
-      if (!formatValid) {
-        throw new Error('jk-internal-skip: format invalid');
-      }
-
-      let results = Promise.all(files.map(({ path, value, validate = (() => 'ok') }) => {
-        return Promise.resolve(validate(value))
-          .then(r => ({ path, result: normaliseResult(r) }));
-      }));
-
-      results.then((results) => {
-        let valuesValid = true;
-        results.forEach(({ path, result }) => {
-          if (result !== 'ok') {
-            result.forEach(err => error(formatError(path, err)));
-            valuesValid = false;
-          }
-        });
-
-        if (!valuesValid) {
-          throw new Error('jk-internal-skip: values failed validation');
-        }
-
-        if (stdout) {
-          const { valid, stdoutFormat, stream } = assembleForStdout(files);
-          if (!valid) {
-            throw new Error('jk-internal-skip: validation failed');
-          }
-          std.write(stream, '', { format: stdoutFormat });
-        } else {
-          for (const o of files) {
-            const { path, value, ...args } = o;
-            std.write(value, path, { overwrite, ...args });
-          }
-        }
-      });
+  return async function() {
+    const files = await inputs;
+    const resolved = await Promise.all(files.map(f => f.value));
+    resolved.forEach((v, i) => {
+      // eslint-disable-next-line no-param-reassign
+      files[i].value = v;
     });
-  });
+
+    // check the format of the generated value
+    const { valid: formatValid, showHelp } = validateFormat(files, params);
+    if (showHelp) {
+      help();
+    }
+    if (!formatValid) {
+      throw new Error('jk-internal-skip: format invalid');
+    }
+
+    let results = await Promise.all(files.map(({ path, value, validate = (() => 'ok') }) => {
+      return Promise.resolve(validate(value))
+        .then(r => ({ path, result: normaliseResult(r) }));
+    }));
+
+    let valuesValid = true;
+    results.forEach(({ path, result }) => {
+      if (result !== 'ok') {
+        result.forEach(err => error(formatError(path, err)));
+        valuesValid = false;
+      }
+    });
+
+    if (!valuesValid) {
+      throw new Error('jk-internal-skip: values failed validation');
+    }
+
+    if (stdout) {
+      const { valid, stdoutFormat, stream } = assembleForStdout(files);
+      if (!valid) {
+        throw new Error('jk-internal-skip: validation failed');
+      }
+      std.write(stream, '', { format: stdoutFormat });
+    } else {
+      for (const o of files) {
+        const { path, value, ...args } = o;
+        std.write(value, path, { overwrite, ...args });
+      }
+    }
+  }();
 }
