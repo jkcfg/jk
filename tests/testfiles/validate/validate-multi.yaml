@@ -1,0 +1,10 @@
+---
+# The first value is valid; if no other values are read, the result will
+# be 'ok'
+name: Valid
+other: stuff
+---
+# The second value is invalid; if this one is read as well, the result
+# will be an error.
+version: 3
+name: Invalid

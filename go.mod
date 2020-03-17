@@ -17,7 +17,7 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.1.0
 	golang.org/x/text v0.3.0
-	golang.org/x/tools v0.0.0-20190815212832-922a4ee32d1a // indirect
+	golang.org/x/tools v0.0.0-20190815212832-922a4ee32d1a
 	gopkg.in/yaml.v2 v2.2.1
 )
 
