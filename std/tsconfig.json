@@ -18,6 +18,7 @@
   "typedocOptions": {
     "out": "docs",
     "mode": "modules",
+    "includeDeclarations": true,
     "excludeNotExported": true,
     "excludeExternals": true,
     "externalPattern": [
@@ -25,6 +26,8 @@
       "cmd/**/*.{ts,js}",
       "docs/**/*.{ts,js}",
       "dist/**/*.{ts.js}",
+      "debug.ts",
+      "v8worker.d.ts",
       "index.ts"
     ],
     "hideGenerator": true,
