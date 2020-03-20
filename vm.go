@@ -182,7 +182,7 @@ func (vm *vm) setWorkingDirectory(dir string) {
 
 func (vm *vm) resolver() *resolve.Resolver {
 	hostFs := vfs.User("file://", http.Dir("/"))
-	workingDir := vfs.Location{Vfs: hostFs, Path: vm.inputDir}
+	workingDir := vfs.Location{Vfs: hostFs, Path: vm.inputDir, AllowParentPaths: true}
 	hostModule, hostModulePath := vm.resources.MakeModule(workingDir)
 	makeHostModule := func(_ vfs.Location) ([]byte, string) {
 		return hostModule, hostModulePath

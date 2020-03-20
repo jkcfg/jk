@@ -80,8 +80,9 @@ func Internal(prefix string, fs http.FileSystem) InternalFileSystem {
 
 // Location is a path within a specific filesystem.
 type Location struct {
-	Vfs  FileSystem
-	Path string
+	Vfs              FileSystem
+	Path             string
+	AllowParentPaths bool
 }
 
 // CanonicalPath gives an identifying (though not necessarily valid) path
