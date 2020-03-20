@@ -1,4 +1,5 @@
-import * as std from '../index';
+import { log, Format } from '../index';
+import * as host from '@jkcfg/std/internal/host'; // magic module
 import * as param from '../param';
 import { formatError, normaliseResult, ValidationError, ValidationResult, ValidateFnResult } from '../validation';
 import { valuesFormatFromPath } from '../read';
@@ -28,10 +29,10 @@ export default function validate(fn: ValidateFn): void {
 
   async function validateFile(path: string): Promise<FileResult> {
     const format = valuesFormatFromPath(path);
-    const obj = await std.read(path, { format });
+    const obj = await host.read(path, { format });
     switch (format) {
-    case std.Format.YAMLStream:
-    case std.Format.JSONStream:
+    case Format.YAMLStream:
+    case Format.JSONStream:
       const results: Promise<ValidationResult>[] = obj.map(validateValue);
       const resolvedResults = await Promise.all(results);
       return { path, result: reduce(resolvedResults) };
@@ -45,10 +46,10 @@ export default function validate(fn: ValidateFn): void {
   Promise.all(objects).then((results): void => {
     for (const { path, result } of results) {
       if (result === 'ok') {
-        std.log(`${path}: ok`);
+        log(`${path}: ok`);
       } else {
         for (const err of result) {
-          std.log(formatError(path, err));
+          log(formatError(path, err));
         }
       }
     }

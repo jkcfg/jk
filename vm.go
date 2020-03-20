@@ -170,11 +170,12 @@ func (vm *vm) setWorkingDirectory(dir string) {
 
 	inputDir := dir
 	if vm.inputDirectory != "" {
-		var err error
-		inputDir, err = filepath.Abs(vm.inputDirectory)
-		if err != nil {
-			log.Fatal(err)
-		}
+		inputDir = vm.inputDirectory
+	}
+
+	inputDir, err = filepath.Abs(inputDir)
+	if err != nil {
+		log.Fatal(err)
 	}
 	vm.inputDir = inputDir
 }

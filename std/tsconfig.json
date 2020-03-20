@@ -13,7 +13,11 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "baseUrl": ".",
+    "paths": {
+      "@jkcfg/std/*": ["./*"]
+    }
   },
   "typedocOptions": {
     "out": "docs",
