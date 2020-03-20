@@ -10,6 +10,8 @@ The examples directory contains various examples illustrating how one can use
 - How to use well known libraries: [lodash](jk/lodash), [handlebars](jk/handlebars)
 - How to use the [filesystem module](jk/fileystem)
 - [How to use parameters](jk/template-params) from the command-line in templates
+- How to use [parse and stringify](jk/parse) to modify configuration
+  embedded in other files
 
 ## Docker
 
