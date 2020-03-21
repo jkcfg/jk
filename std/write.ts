@@ -6,6 +6,8 @@ import { __std } from './internal/__std_generated';
 import { flatbuffers } from './internal/flatbuffers';
 import { sendRequest } from './internal/deferred';
 
+export const stdout: unique symbol = Symbol('<stdout>');
+
 /* we re-define Format from the generated __std.Format to document it */
 
 export enum Format {
@@ -30,10 +32,15 @@ export interface WriteOptions {
   overwrite?: Overwrite | boolean;
 }
 
-export function write(value: any, path = '', { format = Format.FromExtension, indent = 2, overwrite = Overwrite.Write }: WriteOptions = {}): void {
+type WritePath = string | typeof stdout;
+
+export function write(value: any, path: WritePath = stdout, opts: WriteOptions = {}): void {
   if (value === undefined) {
     throw TypeError('cannot write undefined value');
   }
+
+  const { format = Format.FromExtension, indent = 2, overwrite = Overwrite.Write } = opts;
+  const pathArg = (path === stdout) ? '' : path;
 
   let overwriteVal: Overwrite;
   if (typeof overwrite === 'boolean') {
@@ -45,7 +52,7 @@ export function write(value: any, path = '', { format = Format.FromExtension, in
   const builder = new flatbuffers.Builder(1024);
   const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
   const strOff = builder.createString(str);
-  const pathOff = builder.createString(path);
+  const pathOff = builder.createString(pathArg);
 
   __std.WriteArgs.startWriteArgs(builder);
   __std.WriteArgs.addValue(builder, strOff);
@@ -71,14 +78,14 @@ export function write(value: any, path = '', { format = Format.FromExtension, in
 }
 
 // print is a convenience for printing any value to stdout
-export function print(value: any, opts: WriteOptions): void {
+export function print(value: any, opts: WriteOptions = {}): void {
   if (arguments.length === 0) {
-    write('\n', '', { format: Format.Raw });
+    write('\n', stdout, { format: Format.Raw });
     return;
   }
   if (value === undefined) {
-    write('undefined\n', '', { format: Format.Raw });
+    write('undefined\n', stdout, { format: Format.Raw });
     return;
   }
-  write(value, '', opts);
+  write(value, stdout, opts);
 }
