@@ -1,4 +1,4 @@
 import * as std from '@jkcfg/std';
 
-std.read('', { format: std.Format.JSONStream })
-  .then(v => std.write(v, '', { format: std.Format.YAMLStream }));
+std.read(std.stdin, { format: std.Format.JSONStream })
+  .then(v => std.write(v, std.stdout, { format: std.Format.YAMLStream }));

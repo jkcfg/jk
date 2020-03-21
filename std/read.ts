@@ -13,6 +13,8 @@ import { flatbuffers } from './internal/flatbuffers';
 import { __std } from './internal/__std_generated';
 import { Format } from './write';
 
+export const stdin: unique symbol = Symbol('<stdin>');
+
 /* we re-define Encoding from the generated __std.Encoding to document it */
 
 export enum Encoding {
@@ -45,13 +47,16 @@ export function valuesFormatFromPath(path: string): Format {
   }
 }
 
+type ReadPath = string | typeof stdin;
+
 // read requests the path and returns a promise that will be resolved
 // with the contents at the path, or rejected.
-export function read(path: string, opts: ReadOptions = {}): Promise<any> {
+export function read(path: ReadPath = stdin, opts: ReadOptions = {}): Promise<any> {
   const { encoding = Encoding.JSON, format = Format.FromExtension, module } = opts;
+  const pathArg = (path === stdin) ? '' : path;
 
   const builder = new flatbuffers.Builder(512);
-  const pathOffset = builder.createString(path);
+  const pathOffset = builder.createString(pathArg);
   let moduleOffset = 0;
   if (module !== undefined) {
     moduleOffset = builder.createString(module);

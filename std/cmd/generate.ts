@@ -270,7 +270,7 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
       if (!valid) {
         throw new Error('jk-internal-skip: validation failed');
       }
-      std.write(stream, '', { format: stdoutFormat });
+      std.write(stream, std.stdout, { format: stdoutFormat });
     } else {
       for (const o of files) {
         const { path, value, ...args } = o;
