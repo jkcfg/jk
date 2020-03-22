@@ -25,45 +25,42 @@ type Directory struct {
 	Files []FileInfo `json:"files"`
 }
 
-// FileInfo returns a response to a FileInfo request, encoded ready to
-// send to the V8 worker.
-func (r ReadBase) FileInfo(path, module string) (FileInfo, error) {
-	loc, rel, err := r.getPath(path, module)
+// MakeFileInfo returns a response to a FileInfo request, encoded
+// ready to send to the V8 worker.
+func MakeFileInfo(r ReadBase, path, module string) (FileInfo, error) {
+	loc, err := r.getPath(path, module)
 	if err != nil {
 		return FileInfo{}, err
 	}
-	return fileInfo(loc, rel)
+	return fileInfo(loc, path)
 }
 
-// DirectoryListing returns a response to a Dir request, encoded ready
-// to send to the V8 worker.
-func (r ReadBase) DirectoryListing(path, module string) (Directory, error) {
-	loc, rel, err := r.getPath(path, module)
+// MakeDirectoryListing returns a response to a Dir request, encoded
+// ready to send to the V8 worker.
+func MakeDirectoryListing(r ReadBase, p, module string) (Directory, error) {
+	loc, err := r.getPath(p, module)
 	if err != nil {
 		return Directory{}, err
 	}
-	return directoryListing(loc, rel)
+	return directoryListing(loc, p)
 }
 
-func fileInfo(loc vfs.Location, rel string) (FileInfo, error) {
-	p := path.Join(loc.Path, rel)
-	info, err := vfsutil.Stat(loc.Vfs, p)
+func fileInfo(loc vfs.Location, p string) (FileInfo, error) {
+	info, err := vfsutil.Stat(loc.Vfs, loc.Path)
 	switch {
 	case err != nil:
 		return FileInfo{}, err
 	case !(info.IsDir() || info.Mode().IsRegular()):
 		return FileInfo{}, errors.New("not a regular file")
 	}
-	return FileInfo{Name: info.Name(), Path: rel, IsDir: info.IsDir()}, nil
+	return FileInfo{Name: info.Name(), Path: p, IsDir: info.IsDir()}, nil
 }
 
-func directoryListing(base vfs.Location, rel string) (Directory, error) {
-	p := path.Join(base.Path, rel)
-	dir, err := base.Vfs.Open(p)
+func directoryListing(loc vfs.Location, p string) (Directory, error) {
+	dir, err := loc.Vfs.Open(loc.Path)
 	if err != nil {
 		return Directory{}, err
 	}
-	defer dir.Close()
 	infos, err := dir.Readdir(0)
 	if err != nil {
 		return Directory{}, err
@@ -80,15 +77,15 @@ func directoryListing(base vfs.Location, rel string) (Directory, error) {
 		if infos[i].IsDir() || infos[i].Mode().IsRegular() {
 			files = append(files, FileInfo{
 				Name:  infos[i].Name(),
-				Path:  path.Join(rel, infos[i].Name()),
+				Path:  path.Join(p, infos[i].Name()),
 				IsDir: infos[i].IsDir(),
 			})
 		}
 	}
 
 	return Directory{
-		Name:  path.Base(rel),
-		Path:  rel,
+		Name:  path.Base(p),
+		Path:  p,
 		Files: files,
 	}, nil
 }

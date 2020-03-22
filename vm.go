@@ -170,20 +170,33 @@ func (vm *vm) setWorkingDirectory(dir string) {
 
 	inputDir := dir
 	if vm.inputDirectory != "" {
-		var err error
-		inputDir, err = filepath.Abs(vm.inputDirectory)
-		if err != nil {
-			log.Fatal(err)
-		}
+		inputDir = vm.inputDirectory
+	}
+
+	inputDir, err = filepath.Abs(inputDir)
+	if err != nil {
+		log.Fatal(err)
 	}
 	vm.inputDir = inputDir
 }
 
 func (vm *vm) resolver() *resolve.Resolver {
+	hostFs := vfs.User("file://", http.Dir("/"))
+	workingDir := vfs.Location{Vfs: hostFs, Path: vm.inputDir, AllowParentPaths: true}
+	hostModule, hostModulePath := vm.resources.MakeModule(workingDir)
+	makeHostModule := func(_ vfs.Location) ([]byte, string) {
+		return hostModule, hostModulePath
+	}
+
 	resolver := resolve.NewResolver(vm.worker,
 		resolve.ScriptBase(vm.scriptDir),
 		&resolve.Relative{},
-		&resolve.MagicImporter{Specifier: "@jkcfg/std/resource", Generate: vm.resources.MakeModule},
+		&resolve.MagicImporter{
+			Specifier: "@jkcfg/std/resource",
+			Generate:  vm.resources.MakeModule,
+			Public:    true,
+		},
+		&resolve.MagicImporter{Specifier: "@jkcfg/std/internal/host", Generate: makeHostModule},
 		&resolve.StdImporter{
 			// List here the modules users are allowed to access.
 			PublicModules: []string{"index.js", "param.js", "fs.js", "merge.js", "debug.js", "schema.js"},

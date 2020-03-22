@@ -18,7 +18,10 @@ type StdImporter struct {
 	PublicModules []string
 }
 
-func isStdModule(name string) bool {
+// IsStdModule returns `true` if the module name given is part of the
+// standard library, false otherwise. Useful for checking the referrer
+// (importing module), to restrict access to internals.
+func IsStdModule(name string) bool {
 	return strings.HasPrefix(name, stdPrefix)
 }
 
@@ -39,12 +42,12 @@ func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]b
 	// @jkcfg/std.* module. `Relative` should take care of loading
 	// imports on relative paths when the importing module is also a
 	// std module.
-	if !isStdModule(specifier) {
+	if !IsStdModule(specifier) {
 		return nil, vfs.Nowhere, candidate
 	}
 
 	p := specifier
-	if isStdModule(p) {
+	if IsStdModule(p) {
 		p = specifier[len(stdPrefix):]
 	}
 	p = strings.TrimPrefix(p, "/")
@@ -59,7 +62,7 @@ func (i *StdImporter) Import(base vfs.Location, specifier, referrer string) ([]b
 	// from the std lib itself are allowed to import internal private
 	// modules.
 	m := i.publicModule(p)
-	if !isStdModule(referrer) && m == "" {
+	if !IsStdModule(referrer) && m == "" {
 		trace(i, "'%s' is not a public module", specifier)
 		return nil, vfs.Nowhere, candidate
 	}

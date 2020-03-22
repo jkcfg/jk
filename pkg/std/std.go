@@ -174,11 +174,11 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 		switch method {
 		case "std.fileinfo":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
-				return options.Root.FileInfo(path, module)
+				return MakeFileInfo(options.Root, path, module)
 			})
 		case "std.dir":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
-				return options.Root.DirectoryListing(path, module)
+				return MakeDirectoryListing(options.Root, path, module)
 			})
 		case "std.validate.schema":
 			rpcfn = requireTwoStrings(func(v, s string) (interface{}, error) {
@@ -186,11 +186,11 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 			})
 		case "std.validate.schemafile":
 			rpcfn = requireThreeStrings(func(v, path, moduleRef string) (interface{}, error) {
-				base, rel, err := options.Root.getPath(path, moduleRef)
+				loc, err := options.Root.getPath(path, moduleRef)
 				if err != nil {
 					return nil, err
 				}
-				return schema.ValidateWithFile(v, base.Vfs, filepath.Join(base.Path, rel))
+				return schema.ValidateWithFile(v, loc.Vfs, loc.Path)
 			})
 		default:
 			rpcfn = options.ExtMethods[method]

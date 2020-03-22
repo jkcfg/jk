@@ -1,4 +1,5 @@
-import * as std from '../index';
+import { Format, Overwrite } from '../index';
+import * as host from '@jkcfg/std/internal/host'; // magic module
 import * as param from '../param';
 import { generate, File, GenerateParams } from './generate';
 import { valuesFormatFromPath } from '../read';
@@ -7,7 +8,7 @@ type TransformFn = (value: any) => any | void;
 
 const inputParams: GenerateParams = {
   stdout: param.Boolean('jk.transform.stdout', false),
-  overwrite: param.Boolean('jk.transform.overwrite', false) ? std.Overwrite.Write : std.Overwrite.Err,
+  overwrite: param.Boolean('jk.transform.overwrite', false) ? Overwrite.Write : Overwrite.Err,
 };
 
 function transform(fn: TransformFn): void {
@@ -22,10 +23,10 @@ function transform(fn: TransformFn): void {
   const outputs = [];
   for (const path of Object.keys(inputFiles)) {
     const format = valuesFormatFromPath(path);
-    outputs.push(std.read(path, { format }).then((obj): File => {
+    outputs.push(host.read(path, { format }).then((obj): File => {
       switch (format) {
-      case std.Format.YAMLStream:
-      case std.Format.JSONStream:
+      case Format.YAMLStream:
+      case Format.JSONStream:
         return {
           path,
           format,

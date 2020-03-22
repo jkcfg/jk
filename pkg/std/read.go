@@ -107,17 +107,16 @@ func (r ReadBase) Read(relPath string, format __std.Format, encoding __std.Encod
 		return read(nil, "", format, encoding)
 	}
 
-	base, rel, err := r.getPath(relPath, module)
+	loc, err := r.getPath(relPath, module)
 	if err != nil {
 		return nil, err
 	}
-	fullpath := path.Join(base.Path, rel)
 	if r.Recorder != nil {
 		r.Recorder.Record(record.ReadFile, record.Params{
-			"path": base.Vfs.QualifyPath(fullpath),
+			"path": loc.Vfs.QualifyPath(loc.Path),
 		})
 	}
-	return read(base.Vfs, fullpath, format, encoding)
+	return read(loc.Vfs, loc.Path, format, encoding)
 }
 
 func read(vfs http.FileSystem, p string, format __std.Format, encoding __std.Encoding) ([]byte, error) {

@@ -23,23 +23,44 @@ type ReadBase struct {
 	Recorder  *record.Recorder
 }
 
-// getPath resolves a path and an optional module reference; to an
-// base location (either the input directory or the module directory),
-// and a path relative to that. For some uses we want to know the
-// relative path, so it's kept separate rather than returning just the
-// fully-resolved location.
-func (r ReadBase) getPath(p, module string) (vfs.Location, string, error) {
-	// Absolute paths are never allowed
-	if path.IsAbs(p) {
-		return vfs.Nowhere, "", fmt.Errorf("absolute paths are forbidden")
+// getPath resolves a path and an optional module reference, to a
+// location.
+func (r ReadBase) getPath(p, module string) (vfs.Location, error) {
+	base := r.Base
+	if module != "" {
+		modBase, ok := r.Resources.ResourceBase(module)
+		if !ok {
+			return vfs.Nowhere, fmt.Errorf("read from unknown module")
+		}
+		base = modBase
 	}
 
-	// Paths outside the input directory (Base) or module directory
-	// are considered forbidden.
-	//
-	// path.Clean will bring any parent paths (`..`) to the beginning
-	// of the path. Anything that begins with a parent path is
-	// forbidden.
+	p = path.Clean(p)
+
+	// If this particular base location allows parent paths, we're
+	// done.
+	if base.AllowParentPaths {
+		if !path.IsAbs(p) {
+			p = path.Join(base.Path, p)
+		}
+		return vfs.Location{
+			Vfs:              base.Vfs,
+			Path:             p,
+			AllowParentPaths: true,
+		}, nil
+	}
+
+	// But usually, paths outside the input directory (Base) or module
+	// directory are considered forbidden.
+
+	// Absolute paths are easy to detect
+	if path.IsAbs(p) {
+		return vfs.Nowhere, fmt.Errorf("reading absolute paths is forbidden")
+	}
+
+	// path.Clean as done above will bring any parent paths (`..`) to
+	// the beginning of the path. Anything that begins with a parent
+	// path is forbidden.
 	//
 	// Note that it's possible to have a cleaned path that is _within_
 	// the input directory, but begins with a parent path (e.g., if
@@ -53,19 +74,12 @@ func (r ReadBase) getPath(p, module string) (vfs.Location, string, error) {
 	// paths, but these are always able to be expressed such that they
 	// will be allowed (e.g., instead of `../foo/bar.yaml` while
 	// assuming that CWD is `foo`, use `./bar.yaml`).
-	relPath := path.Clean(p)
-	if strings.HasPrefix(relPath, "..") {
-		return vfs.Nowhere, "", fmt.Errorf("reading from a parent path is forbidden")
+	if strings.HasPrefix(p, "..") {
+		return vfs.Nowhere, fmt.Errorf("reading from a parent path is forbidden")
 	}
 
-	base := r.Base
-	if module != "" {
-		modBase, ok := r.Resources.ResourceBase(module)
-		if !ok {
-			return vfs.Nowhere, "", fmt.Errorf("read from unknown module")
-		}
-		base = modBase
-	}
-
-	return base, relPath, nil
+	return vfs.Location{
+		Vfs:  base.Vfs,
+		Path: path.Join(base.Path, p),
+	}, nil
 }
