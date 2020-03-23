@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/jkcfg/jk/pkg/deferred"
+	"github.com/jkcfg/jk/pkg/image"
 	"github.com/jkcfg/jk/pkg/image/cache"
 	"github.com/jkcfg/jk/pkg/record"
 	"github.com/jkcfg/jk/pkg/resolve"
@@ -144,6 +145,7 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 		if err != nil {
 			log.Fatalf("run: unable to fetch image %q: %s", lib, err.Error())
 		}
+		imgVfs = vfs.Chroot(imgVfs, image.ModulesDir)
 		vm.moduleFilesystems = append(vm.moduleFilesystems, imgVfs)
 	}
 
