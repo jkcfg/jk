@@ -5,21 +5,29 @@ imported into a temporary registry so they can be used with the flag
 You can create a tarball from a directory, using Docker, in the
 following way (adapted from [Docker's
 documentation](https://docs.docker.com/develop/develop-images/baseimages/)). For
-a directory `$lib` to be used via the image name `$image`,
+a filesystem under `$src` to be used via the image name `$image`,
 
 ```sh
-$ tar -c $lib | docker import - $image
-$ docker save -o testfiles/$lib.tar $image
+$ tar -C $src -c jk | docker import - $image
+$ docker save -o $image.tar $image
 ```
 
-Assuming the lib provides a module imported as `$lib/foo`, there
-should be a file `$lib/foo.js` or `$lib/foo/index.js`. `$lib` itself
-can be a path with more than one directory.
+`jk` modules are expected to be under the path `/jk/modules/` in the
+image filesystem. Assuming the lib provides a module imported as
+`path/to/foo`, there should be a file `$src/jk/module/path/to/foo.js`
+or `$src/jk/modules/path/to/foo/index.js`.
 
-The image name when uploaded will be `$lib:v1`, arbitrarily, so should
-be used like this:
+The image name when _uploaded_ will be the base name of the tarfile,
+with a tag `v1`; i.e., `$image:v1`. The registry URL will be in the
+environment variable $REGISTRY, so in a test you can refer to, for
+example,
 
-    jk run --lib $lib:v1 ...
+    jk run --lib ${REGISTRY}/$image:v1 ...
+
+## foolib:v1
+
+The Makefile uses the above recipe to create `foolib.tar` from
+`./src/foolib/` as the source path.
 
 ## barlib:v1
 
