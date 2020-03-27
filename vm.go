@@ -9,9 +9,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"github.com/jkcfg/jk/pkg/cli"
 	"github.com/jkcfg/jk/pkg/deferred"
 	"github.com/jkcfg/jk/pkg/image"
 	"github.com/jkcfg/jk/pkg/image/cache"
@@ -31,7 +33,7 @@ type vmOptions struct {
 	outputDirectory  string
 	inputDirectory   string
 	cacheDir         string
-	libraryImages    []string
+	libraryImages    []name.Reference
 	parameters       std.Params
 	parameterFiles   []string // list of files specified on the command line with -f.
 	emitDependencies bool
@@ -48,7 +50,7 @@ func initInputFlags(cmd *cobra.Command, opts *vmOptions) {
 func initExecFlags(cmd *cobra.Command, opts *vmOptions) {
 	opts.parameters = std.NewParams()
 
-	cmd.PersistentFlags().StringSliceVar(&opts.libraryImages, "lib", nil, "use image in module search path, downloading it if necessary")
+	cmd.PersistentFlags().Var(cli.NewImageRefSliceValue(&opts.libraryImages), "lib", "use image in module search path, downloading it if necessary")
 	cmd.PersistentFlags().StringVar(&opts.cacheDir, "cache", "", "directory to use for caching downloaded images; if empty, the default for the OS will be used")
 	cmd.PersistentFlags().BoolVarP(&opts.verbose, "verbose", "v", false, "verbose output")
 	cmd.PersistentFlags().StringVarP(&opts.outputDirectory, "output-directory", "o", "", "where to output generated files")
@@ -141,7 +143,7 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 	cache := cache.New(vm.vmOptions.cacheDir)
 
 	for _, lib := range opts.libraryImages {
-		imgVfs, err := cache.EnsureImage(lib)
+		imgVfs, err := cache.EnsureImage(lib.String())
 		if err != nil {
 			log.Fatalf("run: unable to fetch image %q: %s", lib, err.Error())
 		}
