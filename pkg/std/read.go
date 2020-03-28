@@ -101,7 +101,7 @@ func readerByPath(p string) readFunc {
 
 // Read returns the contents of the file at `path`, relative to the
 // root path or if given, the module directory identified by `module`.
-func (r ReadBase) Read(relPath string, format __std.Format, encoding __std.Encoding, module string) ([]byte, error) {
+func (r Sandbox) Read(relPath string, format __std.Format, encoding __std.Encoding, module string) ([]byte, error) {
 	// Special case for reading from stdin
 	if relPath == "" {
 		return read(nil, "", format, encoding)

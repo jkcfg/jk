@@ -41,7 +41,7 @@ type Options struct {
 	// base directory to output files to.
 	OutputDirectory string
 	// Root is topmost directory under which file reads are allowed
-	Root ReadBase
+	Root Sandbox
 	// DryRun instructs standard library functions to not complete operations that
 	// would mutate something (eg. std.write()).
 	DryRun bool

@@ -142,7 +142,7 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 		Verbose:         vm.verbose,
 		Parameters:      vm.parameters,
 		OutputDirectory: vm.outputDirectory,
-		Root:            std.ReadBase{Base: resolve.ScriptBase(vm.inputDir), Resources: vm.resources, Recorder: vm.recorder},
+		Root:            std.Sandbox{Base: resolve.ScriptBase(vm.inputDir), Resources: vm.resources, Recorder: vm.recorder},
 		DryRun:          vm.emitDependencies,
 		ExtMethods:      rpcExtMethods,
 	})

@@ -14,10 +14,11 @@ type ResourceBaser interface {
 	ResourceBase(string) (vfs.Location, bool)
 }
 
-// ReadBase resolves relative paths, and resources (module-relative
+// Sandbox mediates access to the filesystem by resolving relative
+// paths to the host filesystem and resources (module-relative
 // paths). Reads outside the base are forbidden and will return an
 // error.
-type ReadBase struct {
+type Sandbox struct {
 	Base      vfs.Location
 	Resources ResourceBaser
 	Recorder  *record.Recorder
@@ -25,7 +26,7 @@ type ReadBase struct {
 
 // getPath resolves a path and an optional module reference, to a
 // location.
-func (r ReadBase) getPath(p, module string) (vfs.Location, error) {
+func (r Sandbox) getPath(p, module string) (vfs.Location, error) {
 	base := r.Base
 	if module != "" {
 		modBase, ok := r.Resources.ResourceBase(module)
