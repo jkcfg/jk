@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"path/filepath"
 
 	"github.com/jkcfg/jk/pkg/__std"
 	"github.com/jkcfg/jk/pkg/__std/lib"
@@ -37,11 +36,8 @@ type Options struct {
 	Verbose bool
 	// Parameters is a structured set of input parameters.
 	Parameters Params
-	// OutputDirectory is a directory used by any file producing functions as the
-	// base directory to output files to.
-	OutputDirectory string
-	// Root is topmost directory under which file reads are allowed
-	Root Sandbox
+	// Sandbox mediates reads and writes to the filesystem
+	Sandbox Sandbox
 	// DryRun instructs standard library functions to not complete operations that
 	// would mutate something (eg. std.write()).
 	DryRun bool
@@ -128,21 +124,16 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 		args := __std.WriteArgs{}
 		args.Init(union.Bytes, union.Pos)
 
-		// Weave options.OutputDirectory in there.
 		path := string(args.Path())
-		if path != "" && !filepath.IsAbs(path) {
-			path = filepath.Join(options.OutputDirectory, path)
-		}
-
 		if path != "" && options.Verbose {
-			fmt.Printf("wrote %s\n", path)
+			fmt.Printf("write %s\n", path)
 		}
 
 		if options.DryRun {
 			break
 		}
 
-		if err := write(args.Value(), path, args.Format(), int(args.Indent()), args.Overwrite()); err != nil {
+		if err := std.options.Sandbox.Write(args.Value(), path, args.Format(), int(args.Indent()), args.Overwrite()); err != nil {
 			b := flatbuffers.NewBuilder(512)
 			off := stdError(b, err)
 			b.Finish(off)
@@ -159,7 +150,7 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 		}
 		module := string(args.Module())
 		ser := deferred.Register(func() ([]byte, error) {
-			return options.Root.Read(path, args.Format(), args.Encoding(), module)
+			return options.Sandbox.Read(path, args.Format(), args.Encoding(), module)
 		}, sendFunc(res.SendBytes))
 		return deferredResponse(ser)
 
@@ -174,11 +165,11 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 		switch method {
 		case "std.fileinfo":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
-				return MakeFileInfo(options.Root, path, module)
+				return MakeFileInfo(options.Sandbox, path, module)
 			})
 		case "std.dir":
 			rpcfn = requireTwoStrings(func(path, module string) (interface{}, error) {
-				return MakeDirectoryListing(options.Root, path, module)
+				return MakeDirectoryListing(options.Sandbox, path, module)
 			})
 		case "std.validate.schema":
 			rpcfn = requireTwoStrings(func(v, s string) (interface{}, error) {
@@ -186,7 +177,7 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 			})
 		case "std.validate.schemafile":
 			rpcfn = requireThreeStrings(func(v, path, moduleRef string) (interface{}, error) {
-				loc, err := options.Root.getPath(path, moduleRef)
+				loc, err := options.Sandbox.getReadPath(path, moduleRef)
 				if err != nil {
 					return nil, err
 				}

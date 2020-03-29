@@ -107,7 +107,7 @@ func (r Sandbox) Read(relPath string, format __std.Format, encoding __std.Encodi
 		return read(nil, "", format, encoding)
 	}
 
-	loc, err := r.getPath(relPath, module)
+	loc, err := r.getReadPath(relPath, module)
 	if err != nil {
 		return nil, err
 	}

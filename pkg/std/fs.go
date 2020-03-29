@@ -28,7 +28,7 @@ type Directory struct {
 // MakeFileInfo returns a response to a FileInfo request, encoded
 // ready to send to the V8 worker.
 func MakeFileInfo(r Sandbox, path, module string) (FileInfo, error) {
-	loc, err := r.getPath(path, module)
+	loc, err := r.getReadPath(path, module)
 	if err != nil {
 		return FileInfo{}, err
 	}
@@ -38,7 +38,7 @@ func MakeFileInfo(r Sandbox, path, module string) (FileInfo, error) {
 // MakeDirectoryListing returns a response to a Dir request, encoded
 // ready to send to the V8 worker.
 func MakeDirectoryListing(r Sandbox, p, module string) (Directory, error) {
-	loc, err := r.getPath(p, module)
+	loc, err := r.getReadPath(p, module)
 	if err != nil {
 		return Directory{}, err
 	}

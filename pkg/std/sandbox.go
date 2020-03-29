@@ -19,17 +19,23 @@ type ResourceBaser interface {
 // paths). Reads outside the base are forbidden and will return an
 // error.
 type Sandbox struct {
-	Base      vfs.Location
+	// The location in a virtual filesystem that is the top-most that
+	// can be read from
+	Base vfs.Location
+	// The top-most directory that can be written to
+	WriteRoot string
+	// Look-up for resources (i.e., for module-relative reads)
 	Resources ResourceBaser
-	Recorder  *record.Recorder
+	// For recording each read or write
+	Recorder *record.Recorder
 }
 
-// getPath resolves a path and an optional module reference, to a
-// location.
-func (r Sandbox) getPath(p, module string) (vfs.Location, error) {
-	base := r.Base
+// getReadPath resolves a path and an optional module reference, to a
+// location for reading.
+func (s Sandbox) getReadPath(p, module string) (vfs.Location, error) {
+	base := s.Base
 	if module != "" {
-		modBase, ok := r.Resources.ResourceBase(module)
+		modBase, ok := s.Resources.ResourceBase(module)
 		if !ok {
 			return vfs.Nowhere, fmt.Errorf("read from unknown module")
 		}
@@ -83,4 +89,23 @@ func (r Sandbox) getPath(p, module string) (vfs.Location, error) {
 		Vfs:  base.Vfs,
 		Path: path.Join(base.Path, p),
 	}, nil
+}
+
+// getWritePath verifies the path given and resolves it relative to
+// the output directory.
+func (s Sandbox) getWritePath(p string) (string, error) {
+	if p == "" {
+		return p, nil
+	}
+	if path.IsAbs(p) {
+		return "", fmt.Errorf("writing to an absolute path is forbidden")
+	}
+
+	p = path.Clean(p)
+	// See note in `getReadPath` about parent paths
+	if strings.HasPrefix(p, "../") {
+		return "", fmt.Errorf("writing to parent path is forbidden")
+	}
+	p = path.Join(s.WriteRoot, p)
+	return p, nil
 }

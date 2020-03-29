@@ -139,12 +139,16 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 
 	/* create the stdlib */
 	vm.std = std.NewStd(std.Options{
-		Verbose:         vm.verbose,
-		Parameters:      vm.parameters,
-		OutputDirectory: vm.outputDirectory,
-		Root:            std.Sandbox{Base: resolve.ScriptBase(vm.inputDir), Resources: vm.resources, Recorder: vm.recorder},
-		DryRun:          vm.emitDependencies,
-		ExtMethods:      rpcExtMethods,
+		Verbose:    vm.verbose,
+		Parameters: vm.parameters,
+		Sandbox: std.Sandbox{
+			Base:      resolve.ScriptBase(vm.inputDir),
+			WriteRoot: opts.outputDirectory,
+			Resources: vm.resources,
+			Recorder:  vm.recorder,
+		},
+		DryRun:     vm.emitDependencies,
+		ExtMethods: rpcExtMethods,
 	})
 
 	worker := v8.New(vm.onMessageReceived)

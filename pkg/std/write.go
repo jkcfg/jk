@@ -203,3 +203,11 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 	}
 	return nil
 }
+
+func (s Sandbox) Write(value []byte, path string, format __std.Format, indent int, overwrite __std.Overwrite) error {
+	p, err := s.getWritePath(path)
+	if err != nil {
+		return err
+	}
+	return write(value, p, format, indent, overwrite)
+}
