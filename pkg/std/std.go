@@ -133,7 +133,14 @@ func (std *Std) Execute(msg []byte, res sender) []byte {
 			break
 		}
 
-		if err := std.options.Sandbox.Write(args.Value(), path, args.Format(), int(args.Indent()), args.Overwrite()); err != nil {
+		opts := writeOpts{
+			format:    args.Format(),
+			indent:    int(args.Indent()),
+			overwrite: args.Overwrite(),
+		}
+		module := string(args.Module())
+
+		if err := std.options.Sandbox.Write(args.Value(), path, module, opts); err != nil {
 			b := flatbuffers.NewBuilder(512)
 			off := stdError(b, err)
 			b.Finish(off)

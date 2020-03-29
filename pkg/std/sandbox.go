@@ -9,9 +9,10 @@ import (
 	"github.com/jkcfg/jk/pkg/vfs"
 )
 
-// ResourceBaser is an interface for getting base paths for resources.
-type ResourceBaser interface {
-	ResourceBase(string) (vfs.Location, bool)
+// ModuleAccesser is an interface for getting the module back from a
+// token
+type ModuleAccesser interface {
+	GetModuleAccess(string) (ModuleAccess, bool)
 }
 
 // Sandbox mediates access to the filesystem by resolving relative
@@ -25,7 +26,7 @@ type Sandbox struct {
 	// The top-most directory that can be written to
 	WriteRoot string
 	// Look-up for resources (i.e., for module-relative reads)
-	Resources ResourceBaser
+	Modules ModuleAccesser
 	// For recording each read or write
 	Recorder *record.Recorder
 }
@@ -34,27 +35,26 @@ type Sandbox struct {
 // location for reading.
 func (s Sandbox) getReadPath(p, module string) (vfs.Location, error) {
 	base := s.Base
+	p = path.Clean(p)
+
 	if module != "" {
-		modBase, ok := s.Resources.ResourceBase(module)
+		mod, ok := s.Modules.GetModuleAccess(module)
 		if !ok {
 			return vfs.Nowhere, fmt.Errorf("read from unknown module")
 		}
-		base = modBase
-	}
+		base = mod.Loc
 
-	p = path.Clean(p)
-
-	// If this particular base location allows parent paths, we're
-	// done.
-	if base.AllowParentPaths {
-		if !path.IsAbs(p) {
-			p = path.Join(base.Path, p)
+		// If this particular module allows parent paths, we're
+		// done.
+		if mod.AllowPathsOutsideSandbox {
+			if !path.IsAbs(p) {
+				p = path.Join(base.Path, p)
+			}
+			return vfs.Location{
+				Vfs:  base.Vfs,
+				Path: p,
+			}, nil
 		}
-		return vfs.Location{
-			Vfs:              base.Vfs,
-			Path:             p,
-			AllowParentPaths: true,
-		}, nil
 	}
 
 	// But usually, paths outside the input directory (Base) or module
@@ -93,15 +93,38 @@ func (s Sandbox) getReadPath(p, module string) (vfs.Location, error) {
 
 // getWritePath verifies the path given and resolves it relative to
 // the output directory.
-func (s Sandbox) getWritePath(p string) (string, error) {
+func (s Sandbox) getWritePath(p, module string) (string, error) {
 	if p == "" {
 		return p, nil
 	}
+
+	// If this write is via a module (e.g., a magic module), the rules
+	// for what can be written are determined by that module.
+	if module != "" {
+		mod, ok := s.Modules.GetModuleAccess(module)
+		if !ok {
+			return "", fmt.Errorf("write with unknown module")
+		}
+		if !mod.AllowWriteToHost {
+			return "", fmt.Errorf("writes to host fileystem from this module are forbidden")
+		}
+		if mod.AllowPathsOutsideSandbox {
+			if !path.IsAbs(p) {
+				p = path.Join(s.WriteRoot, p)
+			}
+			return path.Clean(p), nil
+		}
+		// else: we're allowed to write to the host from here, but not
+		// to escape the sandbox, so we're in the same position as
+		// with a non-module write.
+	}
+
+	p = path.Clean(p)
+
 	if path.IsAbs(p) {
 		return "", fmt.Errorf("writing to an absolute path is forbidden")
 	}
 
-	p = path.Clean(p)
 	// See note in `getReadPath` about parent paths
 	if strings.HasPrefix(p, "../") {
 		return "", fmt.Errorf("writing to parent path is forbidden")

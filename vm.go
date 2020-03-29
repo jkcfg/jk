@@ -144,7 +144,7 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 		Sandbox: std.Sandbox{
 			Base:      resolve.ScriptBase(vm.inputDir),
 			WriteRoot: opts.outputDirectory,
-			Resources: vm.resources,
+			Modules:   vm.resources,
 			Recorder:  vm.recorder,
 		},
 		DryRun:     vm.emitDependencies,
@@ -186,10 +186,20 @@ func (vm *vm) setWorkingDirectory(dir string) {
 
 func (vm *vm) resolver() *resolve.Resolver {
 	hostFs := vfs.User("file://", http.Dir("/"))
-	workingDir := vfs.Location{Vfs: hostFs, Path: vm.inputDir, AllowParentPaths: true}
-	hostModule, hostModulePath := vm.resources.MakeModule(workingDir)
+	workingDir := vfs.Location{Vfs: hostFs, Path: vm.inputDir}
+	hostModule, hostModulePath := vm.resources.MakeResourceModule(std.ModuleAccess{
+		Loc:                      workingDir,
+		AllowPathsOutsideSandbox: true,
+		AllowWriteToHost:         true,
+	})
 	makeHostModule := func(_ vfs.Location) ([]byte, string) {
 		return hostModule, hostModulePath
+	}
+
+	makeResourceModule := func(loc vfs.Location) ([]byte, string) {
+		return vm.resources.MakeResourceModule(std.ModuleAccess{
+			Loc: loc,
+		})
 	}
 
 	resolver := resolve.NewResolver(vm.worker,
@@ -197,7 +207,7 @@ func (vm *vm) resolver() *resolve.Resolver {
 		&resolve.Relative{},
 		&resolve.MagicImporter{
 			Specifier: "@jkcfg/std/resource",
-			Generate:  vm.resources.MakeModule,
+			Generate:  makeResourceModule,
 			Public:    true,
 		},
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/internal/host", Generate: makeHostModule},

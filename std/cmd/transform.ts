@@ -11,6 +11,12 @@ const inputParams: GenerateParams = {
   overwrite: param.Boolean('jk.transform.overwrite', false) ? Overwrite.Write : Overwrite.Err,
 };
 
+// If we're told to overwrite, we need to be able to write to the
+// files mentioned on the command-line; but not otherwise.
+if (inputParams.overwrite == Overwrite.Write) {
+  inputParams.writeFile = host.write;
+}
+
 function transform(fn: TransformFn): void {
 
   function transformOne(obj: any): any {

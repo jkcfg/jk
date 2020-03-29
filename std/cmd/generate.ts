@@ -1,4 +1,5 @@
 import * as std from '../index';
+import { WriteOptions } from '../write';
 import { ValidateFn } from './validate';
 import { normaliseResult, formatError } from '../validation';
 
@@ -21,6 +22,7 @@ export interface File {
 export interface GenerateParams {
   stdout?: boolean;
   overwrite?: std.Overwrite;
+  writeFile?: (v: any, p: string, o?: WriteOptions) => void;
 }
 
 const helpMsg = `
@@ -229,7 +231,7 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
     inputs = Promise.resolve(definition);
   }
 
-  const { stdout = false, overwrite = false } = params;
+  const { stdout = false, overwrite = false, writeFile = std.write } = params;
 
   return async function() {
     const files = await inputs;
@@ -274,7 +276,7 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
     } else {
       for (const o of files) {
         const { path, value, ...args } = o;
-        std.write(value, path, { overwrite, ...args });
+        writeFile(value, path, { overwrite, ...args });
       }
     }
   }();

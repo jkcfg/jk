@@ -18,6 +18,12 @@ import (
 	"github.com/hashicorp/hcl/json/parser"
 )
 
+type writeOpts struct {
+	format    __std.Format
+	indent    int
+	overwrite __std.Overwrite
+}
+
 type closer func()
 
 func nilCloser() {}
@@ -161,8 +167,8 @@ func exists(path string) bool {
 	return true
 }
 
-func write(value []byte, path string, format __std.Format, indent int, overwrite __std.Overwrite) error {
-	switch overwrite {
+func write(value []byte, path string, opts writeOpts) error {
+	switch opts.overwrite {
 	case __std.OverwriteWrite:
 		break
 	case __std.OverwriteSkip:
@@ -178,7 +184,7 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 	w, close := writer(path)
 
 	var out writerFunc
-	switch format {
+	switch opts.format {
 	case __std.FormatFromExtension:
 		out = writerFuncFromPath(path)
 	case __std.FormatJSON:
@@ -194,20 +200,20 @@ func write(value []byte, path string, format __std.Format, indent int, overwrite
 	case __std.FormatRaw:
 		out = writeRaw
 	default:
-		return fmt.Errorf("write: unknown output format (%d)", int(format))
+		return fmt.Errorf("write: unknown output format (%d)", int(opts.format))
 	}
 
 	defer close()
-	if err := out(w, value, indent); err != nil {
+	if err := out(w, value, opts.indent); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s Sandbox) Write(value []byte, path string, format __std.Format, indent int, overwrite __std.Overwrite) error {
-	p, err := s.getWritePath(path)
+func (s Sandbox) Write(value []byte, path, module string, opts writeOpts) error {
+	p, err := s.getWritePath(path, module)
 	if err != nil {
 		return err
 	}
-	return write(value, p, format, indent, overwrite)
+	return write(value, p, opts)
 }
