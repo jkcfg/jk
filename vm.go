@@ -139,12 +139,16 @@ func newVM(opts *vmOptions, workingDirectory string) *vm {
 
 	/* create the stdlib */
 	vm.std = std.NewStd(std.Options{
-		Verbose:         vm.verbose,
-		Parameters:      vm.parameters,
-		OutputDirectory: vm.outputDirectory,
-		Root:            std.ReadBase{Base: resolve.ScriptBase(vm.inputDir), Resources: vm.resources, Recorder: vm.recorder},
-		DryRun:          vm.emitDependencies,
-		ExtMethods:      rpcExtMethods,
+		Verbose:    vm.verbose,
+		Parameters: vm.parameters,
+		Sandbox: std.Sandbox{
+			Base:      resolve.ScriptBase(vm.inputDir),
+			WriteRoot: opts.outputDirectory,
+			Modules:   vm.resources,
+			Recorder:  vm.recorder,
+		},
+		DryRun:     vm.emitDependencies,
+		ExtMethods: rpcExtMethods,
 	})
 
 	worker := v8.New(vm.onMessageReceived)
@@ -182,10 +186,20 @@ func (vm *vm) setWorkingDirectory(dir string) {
 
 func (vm *vm) resolver() *resolve.Resolver {
 	hostFs := vfs.User("file://", http.Dir("/"))
-	workingDir := vfs.Location{Vfs: hostFs, Path: vm.inputDir, AllowParentPaths: true}
-	hostModule, hostModulePath := vm.resources.MakeModule(workingDir)
+	workingDir := vfs.Location{Vfs: hostFs, Path: vm.inputDir}
+	hostModule, hostModulePath := vm.resources.MakeResourceModule(std.ModuleAccess{
+		Loc:                      workingDir,
+		AllowPathsOutsideSandbox: true,
+		AllowWriteToHost:         true,
+	})
 	makeHostModule := func(_ vfs.Location) ([]byte, string) {
 		return hostModule, hostModulePath
+	}
+
+	makeResourceModule := func(loc vfs.Location) ([]byte, string) {
+		return vm.resources.MakeResourceModule(std.ModuleAccess{
+			Loc: loc,
+		})
 	}
 
 	resolver := resolve.NewResolver(vm.worker,
@@ -193,7 +207,7 @@ func (vm *vm) resolver() *resolve.Resolver {
 		&resolve.Relative{},
 		&resolve.MagicImporter{
 			Specifier: "@jkcfg/std/resource",
-			Generate:  vm.resources.MakeModule,
+			Generate:  makeResourceModule,
 			Public:    true,
 		},
 		&resolve.MagicImporter{Specifier: "@jkcfg/std/internal/host", Generate: makeHostModule},

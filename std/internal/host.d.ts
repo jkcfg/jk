@@ -2,6 +2,7 @@
 // normally supplied by the runtime.
 
 import { ReadOptions } from '../read';
+import { WriteOptions } from '../write';
 import {
   InfoOptions,
   DirOptions,
@@ -13,7 +14,17 @@ import {
  * read shall read the contents of the file at the path given,
  * relative to the importing module.
  */
+// NB this is not the same signature as std.read, because it is not
+// intended for reading from stdin.
 export declare function read(path: string, opts?: ReadOptions): Promise<any>;
+
+/**
+ * write shall write the value to the host filesystem at the path
+ * given.
+ */
+// NB this is not quite the same signature as std.write, because it is
+// not intended for writing to stdout.
+export declare function write(value: any, path: string, opts?: WriteOptions): void;
 
 /**
  * info shall give the file info at the path given, relative to the

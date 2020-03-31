@@ -30,6 +30,7 @@ export interface WriteOptions {
   format?: Format;
   indent?: number;
   overwrite?: Overwrite | boolean;
+  module?: string;
 }
 
 type WritePath = string | typeof stdout;
@@ -39,7 +40,12 @@ export function write(value: any, path: WritePath = stdout, opts: WriteOptions =
     throw TypeError('cannot write undefined value');
   }
 
-  const { format = Format.FromExtension, indent = 2, overwrite = Overwrite.Write } = opts;
+  const {
+    format = Format.FromExtension,
+    indent = 2,
+    overwrite = Overwrite.Write,
+    module,
+  } = opts;
   const pathArg = (path === stdout) ? '' : path;
 
   let overwriteVal: Overwrite;
@@ -51,15 +57,22 @@ export function write(value: any, path: WritePath = stdout, opts: WriteOptions =
 
   const builder = new flatbuffers.Builder(1024);
   const str = (format === Format.Raw) ? value.toString() : JSON.stringify(value);
-  const strOff = builder.createString(str);
-  const pathOff = builder.createString(pathArg);
+  const strOffset = builder.createString(str);
+  const pathOffset = builder.createString(pathArg);
+  let moduleOffset = 0;
+  if (module !== undefined) {
+    moduleOffset = builder.createString(module);
+  }
 
   __std.WriteArgs.startWriteArgs(builder);
-  __std.WriteArgs.addValue(builder, strOff);
-  __std.WriteArgs.addPath(builder, pathOff);
+  __std.WriteArgs.addValue(builder, strOffset);
+  __std.WriteArgs.addPath(builder, pathOffset);
   __std.WriteArgs.addFormat(builder, format);
   __std.WriteArgs.addIndent(builder, indent);
   __std.WriteArgs.addOverwrite(builder, overwriteVal);
+  if (module !== undefined) {
+    __std.WriteArgs.addModule(builder, moduleOffset);
+  }
   const args = __std.WriteArgs.endWriteArgs(builder);
 
   __std.Message.startMessage(builder);
