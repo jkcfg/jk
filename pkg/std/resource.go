@@ -49,9 +49,7 @@ func (r *ModuleResources) GetModuleAccess(token string) (ModuleAccess, bool) {
 	return mod, ok
 }
 
-// MakeResourceModule generates resource module code (and path) given the
-// importing module's base path.
-func (r *ModuleResources) MakeResourceModule(mod ModuleAccess) ([]byte, string) {
+func (r *ModuleResources) registerModuleAccess(mod ModuleAccess) string {
 	canonicalPath := mod.Loc.CanonicalPath()
 	hash := sha256.New()
 	hash.Write([]byte(canonicalPath))
@@ -60,7 +58,13 @@ func (r *ModuleResources) MakeResourceModule(mod ModuleAccess) ([]byte, string) 
 	r.mu.Lock()
 	r.modules[moduleHash] = mod
 	r.mu.Unlock()
+	return moduleHash
+}
 
+// MakeResourceModule generates resource module code (and path) given the
+// importing module's base path.
+func (r *ModuleResources) MakeResourceModule(mod ModuleAccess) ([]byte, string) {
+	moduleHash := r.registerModuleAccess(mod)
 	exports := []string{
 		"read", "dir", "info", "withModuleRef",
 	}
@@ -97,5 +101,5 @@ function withModuleRef(fn) {
 export { %s };
 `
 	moduleCode := fmt.Sprintf(code, moduleHash, strings.Join(exports, ", "))
-	return []byte(moduleCode), "resource:" + canonicalPath
+	return []byte(moduleCode), "resource:" + mod.Loc.CanonicalPath()
 }
