@@ -11,4 +11,17 @@ longer relevant, or no longer congruent with other parts of `jk`).
 
 ## Process
 
-To be determined.
+To be determined; but for now, an approved PR that adds a file here is
+enough.
+
+## Accepted RFCs
+
+ - [Built-in JSON Schema validation](./0001-json-schema-validation.md)
+   (implemented in the same [PR
+   270](https://github.com/jkcfg/jk/pull/270))
+ - [Validate in generate protocol](./0002-validate-in-generate.md)
+   (implemented in the same [PR
+   268](https://github.com/jkcfg/jk/pull/268/files)
+ - [Use container images for packaging
+   (experimental)](./0003-import-from-images.md) (implementation in
+   [PR 315](https://github.com/jkcfg/jk/pull/315))
