@@ -40,7 +40,11 @@ func (fi *FileImporter) Import(base vfs.Location, specifier, referrer string) ([
 	if isRelative(specifier) {
 		return nil, vfs.Nowhere, nil
 	}
-	return resolvePath(fi.vfs, specifier)
+	bytes, loc, candidates := resolvePath(fi.vfs, specifier)
+	for i := range candidates {
+		candidates[i].Path = fi.vfs.QualifyPath(candidates[i].Path)
+	}
+	return bytes, loc, candidates
 }
 
 // resolvePath tries the rules as given above

@@ -77,7 +77,11 @@ func (n *NodeImporter) Import(base vfs.Location, specifier, referrer string) ([]
 	if isRelative(specifier) {
 		return nil, vfs.Nowhere, nil
 	}
-	return n.loadAsModule(specifier, base.Path)
+	bytes, loc, candidates := n.loadAsModule(specifier, base.Path)
+	for i := range candidates {
+		candidates[i].Path = n.vfs.QualifyPath(candidates[i].Path)
+	}
+	return bytes, loc, candidates
 }
 
 // loadAsPath attempts to load a path when it's unknown whether it

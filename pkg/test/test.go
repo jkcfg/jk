@@ -60,8 +60,13 @@ type Options struct {
 	// empty, the script file name is used to derive the test name.
 	Name string
 
-	// WorkingDirectory is a directoring to change to before executing the test.
+	// WorkingDirectory is a directory to change to before executing the test.
 	WorkingDirectory string
+
+	// Env is additional environment entries for the command run.
+	// These will be expanded in the commands themselves, if they are
+	// supplied in a *.cmd file, since it is executed via `sh`.
+	Env []string
 
 	// CommandFile is a Namer that returns how files containing the list of
 	// commands to run for a test should be named. It defaults to $script.cmd.
@@ -179,6 +184,13 @@ func (test *Test) expectedOutputDirectory() string {
 	return namer(test.file)
 }
 
+func (test *Test) env() []string {
+	if test.opts.Env != nil {
+		return append(os.Environ(), test.opts.Env...)
+	}
+	return nil
+}
+
 func (test *Test) setStdin(cmd *exec.Cmd) error {
 	if exists(test.file + ".in") {
 		infile, err := os.Open(test.file + ".in")
@@ -220,6 +232,7 @@ func (test *Test) execWithCmd() (string, error) {
 		args := test.parseCmd(scanner.Text())
 		cmd := exec.Command("/bin/sh", "-c", strings.Join(args, " "))
 		cmd.Dir = test.opts.WorkingDirectory
+		cmd.Env = test.env()
 		if err := test.setStdin(cmd); err != nil {
 			return "", err
 		}
@@ -250,6 +263,7 @@ func (test *Test) execWithCmd() (string, error) {
 func (test *Test) execDefault() (string, error) {
 	cmd := exec.Command("jk", "run", "-o", test.outputDirectory(), test.file)
 	cmd.Dir = test.opts.WorkingDirectory
+	cmd.Env = test.env()
 	if err := test.setStdin(cmd); err != nil {
 		return "", err
 	}
