@@ -43,11 +43,10 @@ ENV ARCH x64
 RUN curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.xz" \
     && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner
 
-# Fetch gometalinter
-ENV GOMETALINTER_VERSION 2.0.11
+# Fetch golangci-lint
+ENV GOLANGCI_LINT_VERSION v1.24.0
 ENV ARCH amd64
-RUN curl -fsSLO --compressed "https://github.com/alecthomas/gometalinter/releases/download/v$GOMETALINTER_VERSION/gometalinter-$GOMETALINTER_VERSION-linux-$ARCH.tar.gz" \
-    && tar -xf "gometalinter-$GOMETALINTER_VERSION-linux-$ARCH.tar.gz" -C /usr/local/bin --strip-components=1 --no-same-owner
+RUN curl -fsSLO curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT}
 
 # Fetch gosu
 ENV GOSU_VERSION 1.11
