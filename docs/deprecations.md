@@ -1,5 +1,20 @@
 # List of std library deprecations
 
+## Deprecated in 0.4.x (will be changed in 0.5.0)
+
+### Special case for default input directory
+
+In most cases, the input directory will be the current directory if
+not explicitly set with `--input-directory`.
+
+However, there is a special case: if the script being run is from the
+filesystem, the input directory will be set to the directory
+containing the script.
+
+This special case is deprecated. From 0.5.0, the input directory will
+_always default to the current working directory_ unless explicitly
+set with `--input-directory`.
+
 ## Deprecated in 0.3.x (will be removed in 0.4.0)
 
 ### `generate` file property is now called path
@@ -17,9 +32,10 @@ const object = {
 export default [
   { file: 'object0.yaml', value: object },
 ];
-````
+```
 
 **Use**:
+
 ```
 export default [
   { path: 'object0.yaml', value: object },
