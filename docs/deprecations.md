@@ -15,6 +15,13 @@ This special case is deprecated. From 0.5.0, the input directory will
 _always default to the current working directory_ unless explicitly
 set with `--input-directory`.
 
+### Use of empty string to mean stdin/stdout
+
+In 0.4.0, symbols were introduced for representing `stdin` and
+`stdout` when calling `read` and `write` respectively. Previously, an
+empty string stood in for whichever; in 0.5.0 an empty path argument
+will be an error.
+
 ## Deprecated in 0.3.x (will be removed in 0.4.0)
 
 ### `generate` file property is now called path
