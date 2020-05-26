@@ -37,12 +37,14 @@ var generateOptions struct {
 	vmOptions
 
 	stdout bool
+	format string
 }
 
 func init() {
 	initAllVMFlags(generateCmd, &generateOptions.vmOptions)
 
 	generateCmd.PersistentFlags().BoolVar(&generateOptions.stdout, "stdout", false, "print values on stdout")
+	generateCmd.PersistentFlags().StringVar(&generateOptions.format, "format", "", "force all values to this format")
 
 	jk.AddCommand(generateCmd)
 }
@@ -70,6 +72,9 @@ func generate(cmd *cobra.Command, args []string) {
 
 	vm := newVM(&generateOptions.vmOptions, ".")
 	vm.parameters.SetBool("jk.generate.stdout", generateOptions.stdout)
+	if generateOptions.format != "" {
+		vm.parameters.SetString("jk.generate.format", generateOptions.format)
+	}
 
 	if err := vm.Run("@jkcfg/std/cmd/<generate>", fmt.Sprintf(string(std.Module("cmd/generate-module.js")), args[0])); err != nil {
 		if !skipException(err) {

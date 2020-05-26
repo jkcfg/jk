@@ -17,10 +17,25 @@ export interface File {
 }
 
 /*
+ * OutputFormat enumerates the values that a "forced format" argument
+ * can take.
+ */
+export enum OutputFormat {
+  JSON = "json",
+  YAML = "yaml",
+}
+
+const outputFormatToFormat = {
+  [OutputFormat.JSON]: std.Format.JSON,
+  [OutputFormat.YAML]: std.Format.YAML,
+};
+
+/*
  * GenerateParams types the optional arguments to generate.
  */
 export interface GenerateParams {
   stdout?: boolean;
+  format?: OutputFormat;
   overwrite?: std.Overwrite;
   writeFile?: (v: any, p: string, o?: WriteOptions) => void;
 }
@@ -77,8 +92,20 @@ const nth = (n: number): string => {
   return n + (s[mod(v - 20, 10)] || s[v] || s[0]);
 };
 
+function splitExtension(path: string): [string, string] {
+  const parts = path.split('.');
+  const ext = parts.pop()
+  // When there's no extension, either there will be a single part (no
+  // dots anywhere), or a path separator in the last part (a dot
+  // somewhere before the last path segment)
+  if (parts.length == 0 || ext.includes('/')) {
+    return [ext, '']
+  }
+  return [parts.join(''), ext]
+}
+
 function extension(path: string): string {
-  return path.split('.').pop();
+  return splitExtension(path)[1]
 }
 
 function formatFromPath(path: string): std.Format {
@@ -157,6 +184,33 @@ function validateFormat(files: RealisedFile[], params: GenerateParams) {
   });
 
   return { valid, showHelp: !valid };
+}
+
+function forceFormat(forced: OutputFormat, files: RealisedFile[]) {
+  for (const file of files) {
+    const { path, value, format } = file;
+    // this makes sure the forced file format is a stream if the
+    // original file is a stream.
+    switch (fileFormat(file)) {
+    case std.Format.YAMLStream:
+      if (forced === OutputFormat.JSON) {
+        file.format = std.Format.JSONStream;
+      }
+      break;
+    case std.Format.JSONStream:
+      if (forced == OutputFormat.YAML) {
+        file.format = std.Format.YAMLStream;
+      }
+      break;
+    default:
+      file.format = outputFormatToFormat[forced];
+      break;
+    }
+    const [p, ext] = splitExtension(path);
+    if (ext !== '') {
+      file.path = [p, forced].join('.');
+    }
+  }
 }
 
 function assembleForStdout(values: RealisedFile[]) {
@@ -265,6 +319,10 @@ export function generate(definition: GenerateArg, params: GenerateParams) {
 
     if (!valuesValid) {
       throw new Error('jk-internal-skip: values failed validation');
+    }
+
+    if (params.format !== undefined) {
+      forceFormat(params.format, files)
     }
 
     if (stdout) {
