@@ -15,7 +15,7 @@ import (
 func mustParseRef(img string) name.Reference {
 	ref, err := name.ParseReference(img)
 	if err != nil {
-		log.Fatalf("could not parse reference from %q: %w", img, err)
+		log.Fatalf("could not parse reference from %q: %s", img, err)
 	}
 	return ref
 }
@@ -51,16 +51,16 @@ func main() {
 	image := (*out)[:len(*out)-4] + ":latest"
 	newTag, err := name.NewTag(image)
 	if err != nil {
-		log.Fatalf("could not create image ref %q: %w", image, err)
+		log.Fatalf("could not create image ref %q: %s", image, err)
 	}
 	f, err := os.Create(*out)
 	if err != nil {
-		log.Fatalf("could not create file %q: %w", *out, err)
+		log.Fatalf("could not create file %q: %s", *out, err)
 	}
 	defer f.Close()
 
 	if err := tarball.Write(newTag, img, f); err != nil {
-		log.Fatalf("could not write image to %v: %w", *out, err)
+		log.Fatalf("could not write image to %v: %s", *out, err)
 	}
 
 	digest, err := img.Digest()
