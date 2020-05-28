@@ -1,7 +1,7 @@
 import { Format, Overwrite } from '../index';
 import * as host from '@jkcfg/std/internal/host'; // magic module
 import * as param from '../param';
-import { generate, File, GenerateParams } from './generate';
+import { generate, File, GenerateParams, maybeSetFormat } from './generate';
 import { valuesFormatFromPath } from '../read';
 
 type TransformFn = (value: any) => any | void;
@@ -10,6 +10,7 @@ const inputParams: GenerateParams = {
   stdout: param.Boolean('jk.transform.stdout', false),
   overwrite: param.Boolean('jk.transform.overwrite', false) ? Overwrite.Write : Overwrite.Err,
 };
+maybeSetFormat(inputParams, param.String('jk.generate.format', undefined)); // NB jk.generate. param
 
 // If we're told to overwrite, we need to be able to write to the
 // files mentioned on the command-line; but not otherwise.

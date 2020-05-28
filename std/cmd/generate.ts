@@ -40,6 +40,19 @@ export interface GenerateParams {
   writeFile?: (v: any, p: string, o?: WriteOptions) => void;
 }
 
+export function maybeSetFormat(inputParams: GenerateParams, format?: string) {
+  switch (format) {
+  case "json":
+    inputParams.format = OutputFormat.JSON;
+    break;
+  case "yaml":
+    inputParams.format = OutputFormat.YAML;
+    break;
+  default:
+    break;
+  }
+}
+
 const helpMsg = `
 To use generate, export a default value with the list of files to generate:
 

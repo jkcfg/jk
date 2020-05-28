@@ -53,6 +53,19 @@ func skipException(err error) bool {
 	return strings.Contains(err.Error(), "jk-internal-skip: ")
 }
 
+var errUnsupportedFormat = errors.New("--format accepts 'json' or 'yaml'")
+
+func setGenerateFormat(format string, vm *vm) {
+	switch format {
+	case "":
+		return
+	case "json", "yaml":
+		vm.parameters.SetString("jk.generate.format", format)
+	default:
+		log.Fatal(errUnsupportedFormat)
+	}
+}
+
 func generateArgs(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return errors.New("generate requires an input script")
@@ -72,9 +85,7 @@ func generate(cmd *cobra.Command, args []string) {
 
 	vm := newVM(&generateOptions.vmOptions, ".")
 	vm.parameters.SetBool("jk.generate.stdout", generateOptions.stdout)
-	if generateOptions.format != "" {
-		vm.parameters.SetString("jk.generate.format", generateOptions.format)
-	}
+	setGenerateFormat(generateOptions.format, vm)
 
 	if err := vm.Run("@jkcfg/std/cmd/<generate>", fmt.Sprintf(string(std.Module("cmd/generate-module.js")), args[0])); err != nil {
 		if !skipException(err) {

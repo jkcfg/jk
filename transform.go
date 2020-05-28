@@ -27,8 +27,9 @@ const transformExamples = `
 var transformOptions struct {
 	vmOptions
 	scriptOptions
-	stdout    bool // print everything to stdout
-	overwrite bool // permit the overwriting of input files
+	stdout    bool   // print everything to stdout
+	overwrite bool   // permit the overwriting of input files
+	format    string // force the format of the output
 }
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 	initExecFlags(transformCmd, &transformOptions.vmOptions)
 	transformCmd.PersistentFlags().BoolVar(&transformOptions.stdout, "stdout", false, "print the resulting values to stdout")
 	transformCmd.PersistentFlags().BoolVar(&transformOptions.overwrite, "overwrite", false, "allow input file(s) to be overwritten by output file(s); otherwise, an error will be thrown")
+	transformCmd.PersistentFlags().StringVar(&transformOptions.format, "format", "", "force all values to this format")
 	jk.AddCommand(transformCmd)
 }
 
@@ -64,6 +66,7 @@ func transform(cmd *cobra.Command, args []string) {
 	vm.parameters.Set("jk.transform.input", inputs)
 	vm.parameters.Set("jk.transform.stdout", transformOptions.stdout)
 	vm.parameters.Set("jk.transform.overwrite", transformOptions.overwrite)
+	setGenerateFormat(transformOptions.format, vm)
 
 	var module string
 	switch {
