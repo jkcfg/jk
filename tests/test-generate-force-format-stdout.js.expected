@@ -1,0 +1,19 @@
+- item1: JSON
+- item2: JSON
+- item3: JSON
+---
+item1: JSONStream
+---
+item2: JSONStream
+---
+item3: JSONStream
+---
+- item1: YAML
+- item2: YAML
+- item3: YAML
+---
+item1: YAMLStream
+---
+item2: YAMLStream
+---
+item3: YAMLStream

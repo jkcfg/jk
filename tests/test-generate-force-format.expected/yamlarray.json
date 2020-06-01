@@ -1,5 +1,11 @@
 [
   {
-    "message": "hello"
+    "item1": "YAML"
+  },
+  {
+    "item2": "YAML"
+  },
+  {
+    "item3": "YAML"
   }
 ]

@@ -1,1 +1,1 @@
-jk generate --format=json -o %d %t.js
+jk generate --format=json -o %d ./generate-force-format.js

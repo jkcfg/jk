@@ -1,12 +1,19 @@
 import { Format } from '@jkcfg/std';
 
-const array = [
-  { message: 'hello' },
-];
+function valueAndFormat(f) {
+  return {
+    format: f,
+    value: [
+      { item1: Format[f] },
+      { item2: Format[f] },
+      { item3: Format[f] },
+    ],
+  };
+}
 
 export default [
-  { format: Format.JSON, path: 'jsonarray.json', value: array },
-  { format: Format.JSONStream, path: 'jsonstream.json', value: array },
-  { format: Format.YAML, path: 'yamlarray.yaml', value: array },
-  { format: Format.YAMLStream, path: 'yamlstream.yaml', value: array },
+  { path: 'jsonarray.json', ...valueAndFormat(Format.JSON) },
+  { path: 'jsonstream.json', ...valueAndFormat(Format.JSONStream) },
+  { path: 'yamlarray.yaml', ...valueAndFormat(Format.YAML) },
+  { path: 'yamlstream.yaml', ...valueAndFormat(Format.YAMLStream) },
 ];

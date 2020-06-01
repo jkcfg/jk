@@ -1,5 +1,11 @@
 [
   {
-    "message": "hello"
+    "item1": "JSON"
+  },
+  {
+    "item2": "JSON"
+  },
+  {
+    "item3": "JSON"
   }
 ]
