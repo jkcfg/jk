@@ -27,9 +27,14 @@ const transformExamples = `
 var transformOptions struct {
 	vmOptions
 	scriptOptions
-	stdout    bool   // print everything to stdout
-	overwrite bool   // permit the overwriting of input files
-	format    string // force the format of the output
+	// print everything to stdout
+	stdout bool
+	// permit the overwriting of input files
+	overwrite bool
+	// force the format of the output
+	format string
+	// read from stdin, expecting a stream of values in the format given
+	stdinFormat string
 }
 
 func init() {
@@ -38,6 +43,7 @@ func init() {
 	transformCmd.PersistentFlags().BoolVar(&transformOptions.stdout, "stdout", false, "print the resulting values to stdout")
 	transformCmd.PersistentFlags().BoolVar(&transformOptions.overwrite, "overwrite", false, "allow input file(s) to be overwritten by output file(s); otherwise, an error will be thrown")
 	transformCmd.PersistentFlags().StringVar(&transformOptions.format, "format", "", "force all values to this format")
+	transformCmd.PersistentFlags().StringVar(&transformOptions.stdinFormat, "stdin-format", "", "read values from stdin, assuming this format; implies --stdout")
 	jk.AddCommand(transformCmd)
 }
 
@@ -67,6 +73,14 @@ func transform(cmd *cobra.Command, args []string) {
 	vm.parameters.Set("jk.transform.stdout", transformOptions.stdout)
 	vm.parameters.Set("jk.transform.overwrite", transformOptions.overwrite)
 	setGenerateFormat(transformOptions.format, vm)
+
+	switch transformOptions.stdinFormat {
+	case "json", "yaml":
+		vm.parameters.Set("jk.transform.stdin.format", transformOptions.stdinFormat)
+		vm.parameters.Set("jk.transform.stdout", true)
+	default:
+		break
+	}
 
 	var module string
 	switch {

@@ -1,5 +1,6 @@
 import * as std from '../index';
 import { WriteOptions } from '../write';
+import { splitPath, formatFromPath } from '../read';
 import { ValidateFn } from './validate';
 import { normaliseResult, formatError } from '../validation';
 
@@ -105,37 +106,6 @@ const nth = (n: number): string => {
   return n + (s[mod(v - 20, 10)] || s[v] || s[0]);
 };
 
-function splitExtension(path: string): [string, string] {
-  const parts = path.split('.');
-  const ext = parts.pop()
-  // When there's no extension, either there will be a single part (no
-  // dots anywhere), or a path separator in the last part (a dot
-  // somewhere before the last path segment)
-  if (parts.length == 0 || ext.includes('/')) {
-    return [ext, '']
-  }
-  return [parts.join(''), ext]
-}
-
-function extension(path: string): string {
-  return splitExtension(path)[1]
-}
-
-function formatFromPath(path: string): std.Format {
-  switch (extension(path)) {
-  case 'yaml':
-  case 'yml':
-    return std.Format.YAML;
-  case 'json':
-    return std.Format.JSON;
-  case 'hcl':
-  case 'tf':
-    return std.Format.HCL;
-  default:
-    return std.Format.JSON;
-  }
-}
-
 const isString = (s: any): boolean => typeof s === 'string' || s instanceof String;
 
 // represents a file spec that has its promise resolved, if necessary
@@ -219,7 +189,7 @@ function forceFormat(forced: OutputFormat, files: RealisedFile[]) {
       file.format = outputFormatToFormat[forced];
       break;
     }
-    const [p, ext] = splitExtension(path);
+    const [p, ext] = splitPath(path);
     if (ext !== '') {
       file.path = [p, forced].join('.');
     }
