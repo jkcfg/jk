@@ -1,4 +1,4 @@
-import { Format, Overwrite, read, stdin } from '../index';
+import { Format, Overwrite, read, stdin, print } from '../index';
 import * as host from '@jkcfg/std/internal/host'; // magic module
 import * as param from '../param';
 import { generate, File, GenerateParams, maybeSetFormat } from './generate';
@@ -29,15 +29,16 @@ function transform(fn: TransformFn): void {
   const inputFiles = param.Object('jk.transform.input', {});
   const outputs = [];
 
-  const stdinFormat = param.String('jk.transform.stdin.format', '');
-  if (stdinFormat !== '') {
-    const format = valuesFormatFromExtension(stdinFormat);
-    const path = `stdin.${stdinFormat}`;  // path is a stand-in
-    const value = read(stdin, { format }).then(v => v.map(transformOne));
-    outputs.push({ path, value, format });
-  }
-
   for (const path of Object.keys(inputFiles)) {
+    if (path === '') { // read from stdin
+      const stdinFormat = param.String('jk.transform.stdin.format', 'yaml');
+      const format = valuesFormatFromExtension(stdinFormat);
+      const path = `stdin.${stdinFormat}`;  // path is a stand-in
+      const value = read(stdin, { format }).then(v => v.map(transformOne));
+      outputs.push({ path, value, format });
+      continue;
+    }
+
     const format = valuesFormatFromPath(path);
     outputs.push(host.read(path, { format }).then((obj): File => {
       switch (format) {
