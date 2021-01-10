@@ -22,6 +22,12 @@ In 0.4.0, symbols were introduced for representing `stdin` and
 empty string stood in for whichever; in 0.5.0 an empty path argument
 will be an error.
 
+### jk generate silently ignoring overwrites
+
+By default, `jk generate` will silently refuse to overwrite files. In
+0.5.0 it will behave similarly to `jk transform` and return an error
+when asked to overwrite files, unless `--overwrite` is used.
+
 ## Deprecated in 0.3.x (will be removed in 0.4.0)
 
 ### `generate` file property is now called path
