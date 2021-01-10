@@ -29,13 +29,47 @@ export interface ReadOptions {
   module?: string;
 }
 
-// valuesFormatFromPath guesses, for a path, the format that will
-// return all values in a file. In other words, it prefers YAML
-// streams and concatenated JSON. You may need to treat the read value
-// differently depending on the format you got here, since YAMLStream
-// and JSONStream will both result in an array of values.
-export function valuesFormatFromPath(path: string): Format {
-  const ext = path.split('.').pop();
+// splitPath returns [all-but-extension, extension] for a path. If a
+// path does not end with an extension, it will be an empty string.
+export function splitPath(path: string): [string, string] {
+  const parts = path.split('.');
+  const ext = parts.pop();
+  // When there's no extension, either there will be a single part (no
+  // dots anywhere), or a path separator in the last part (a dot
+  // somewhere before the last path segment)
+  if (parts.length === 0 || ext.includes('/')) {
+    return [ext, ''];
+  }
+  return [parts.join(''), ext];
+}
+
+function extension(path: string): string {
+  return splitPath(path)[1];
+}
+
+// formatFromPath guesses, for a file path, the format in which to
+// read the file. It will assume one value per file, so if you have
+// files that may have multiple values (e.g., YAML streams), it's
+// better to use `valuesFormatFromPath` and be prepared to get
+// multiple values.
+export function formatFromPath(path: string): Format {
+  switch (extension(path)) {
+  case 'yaml':
+  case 'yml':
+    return Format.YAML;
+  case 'json':
+    return Format.JSON;
+  case 'hcl':
+  case 'tf':
+    return Format.HCL;
+  default:
+    return Format.JSON;
+  }
+}
+
+// valuesFormatFromExtension returns the format implied by a
+// particular file extension.
+export function valuesFormatFromExtension(ext: string): Format {
   switch (ext) {
   case 'yaml':
   case 'yml':
@@ -45,6 +79,16 @@ export function valuesFormatFromPath(path: string): Format {
   default:
     return Format.FromExtension;
   }
+}
+
+// valuesFormatFromPath guesses, for a path, the format that will
+// return all values in a file. In other words, it prefers YAML
+// streams and concatenated JSON. You may need to treat the read value
+// differently depending on the format you got here, since YAMLStream
+// and JSONStream will both result in an array of values.
+export function valuesFormatFromPath(path: string): Format {
+  const ext = extension(path);
+  return valuesFormatFromExtension(ext);
 }
 
 type ReadPath = string | typeof stdin;
