@@ -1,5 +1,33 @@
 # List of std library deprecations
 
+## Deprecated in 0.4.x (will be changed in 0.5.0)
+
+### Special case for default input directory
+
+In most cases, the input directory will be the current directory if
+not explicitly set with `--input-directory`.
+
+However, there is a special case: if the script being run is from the
+filesystem, the input directory will be set to the directory
+containing the script.
+
+This special case is deprecated. From 0.5.0, the input directory will
+_always default to the current working directory_ unless explicitly
+set with `--input-directory`.
+
+### Use of empty string to mean stdin/stdout
+
+In 0.4.0, symbols were introduced for representing `stdin` and
+`stdout` when calling `read` and `write` respectively. Previously, an
+empty string stood in for whichever; in 0.5.0 an empty path argument
+will be an error.
+
+### jk generate silently ignoring overwrites
+
+By default, `jk generate` will silently refuse to overwrite files. In
+0.5.0 it will behave similarly to `jk transform` and return an error
+when asked to overwrite files, unless `--overwrite` is used.
+
 ## Deprecated in 0.3.x (will be removed in 0.4.0)
 
 ### `generate` file property is now called path
@@ -17,9 +45,10 @@ const object = {
 export default [
   { file: 'object0.yaml', value: object },
 ];
-````
+```
 
 **Use**:
+
 ```
 export default [
   { path: 'object0.yaml', value: object },
