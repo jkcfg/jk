@@ -32,14 +32,15 @@ echo "==> Running eslint on examples"
 
 echo
 echo "==> Running go linters"
-gometalinter --tests --vendor --disable-all --deadline=600s \
-    --enable=misspell \
-    --enable=vet \
-    --enable=ineffassign \
-    --enable=gofmt \
-    --enable=deadcode \
-    --enable=golint \
-    ./...
+golangci-lint run --no-config --timeout=600s \
+  --disable-all --enable=deadcode --enable=golint --enable=varcheck \
+  --enable=structcheck --enable=dupl --enable=ineffassign \
+  --enable=interfacer --enable=govet --enable=gofmt --enable=misspell \
+  ./...
+
+# these are unused linters at present; some may fail.
+# --enable=unconvert --enable=megacheck --enable=errcheck --enable=maligned
+# --enable=goconst --enable=gosec
 
 # Tests, both unit tests and integration tests under /tests
 echo
